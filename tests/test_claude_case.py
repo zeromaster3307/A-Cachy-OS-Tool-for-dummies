@@ -58,3 +58,26 @@ def test_search_finds_menu_name():
     p.desktop_entries = [desktop.entry_from_raw(desktop.Path("/x.desktop"), "x.desktop", {"Name": "Claude Code"})]
     text = p.search_text()
     assert all(w in text for w in "claude code".split())
+
+
+def test_missing_program_no_false_alarms(monkeypatch):
+    """Wine-, Steam- und Flatpak-Einträge sind nicht „kaputt“, nur weil danach ein Argument folgt."""
+    installed = {"wine", "steam", "flatpak", "gamescope", "konsole", "claude", "ls", "sudo", "sh", "python3"}
+    monkeypatch.setattr(desktop, "target_exists", lambda target: desktop.Path(target).name in installed)
+    ok = [
+        "wine start /unix %f",
+        "steam steam://rungameid/570",
+        "/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gimp org.gimp.GIMP @@u %U @@",
+        "gamescope -W 1920 -H 1080 -- steam",
+        "konsole -e claude",
+        "sh -c 'cd ~/Projekte && export FOO=1 && claude'",
+    ]
+    for line in ok:
+        assert desktop.missing_program(line) == "", line
+    assert desktop.missing_program("gibtsnicht --flag") == "gibtsnicht"
+    assert desktop.missing_program("konsole -e weg") == "weg"
+    assert desktop.missing_program("sudo weg") == "weg"
+    assert desktop.missing_program("python3 /opt/gibtsnicht/app.py") == "/opt/gibtsnicht/app.py"
+    # Für die Zuordnung zählt bei Starter + Argument der Starter selbst, nicht „start“
+    assert desktop.main_target("wine start /unix %f") == "wine"
+    assert desktop.main_target("gamescope -W 1920 -- steam") == "steam"
