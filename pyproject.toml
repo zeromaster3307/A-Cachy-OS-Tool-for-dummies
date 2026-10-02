@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cachy-kompass"
+description = "Zeigt installierte Programme unter CachyOS, ihre Herkunft, ihren Startmenü-Status und ob sie aktuell sind."
+readme = "README.md"
+requires-python = ">=3.10"
+dynamic = ["version"]
+# Für die Oberfläche wird PySide6 gebraucht. Unter CachyOS am besten über
+# pacman installieren („sudo pacman -S pyside6“), nicht über pip.
+dependencies = []
+
+[project.optional-dependencies]
+gui = ["PySide6>=6.5"]
+dev = ["pytest>=7", "ruff>=0.5"]
+
+[project.scripts]
+cachy-kompass = "cachy_kompass.app:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "cachy_kompass.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["cachy_kompass*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 130
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501", "B905"]
