@@ -1,0 +1,33 @@
+# Änderungen
+
+Hier steht, was sich von Version zu Version geändert hat. Die installierte
+Version siehst du im Fenstertitel, im Reiter „Hilfe“ oder mit
+`cachy-kompass --version`.
+
+## 0.2.0
+
+- **Paketverwaltungen einstufen:** Jedes Werkzeug ist als „empfohlen“, „bei
+  Bedarf“ oder „nicht empfohlen“ eingestuft, mit Begründung.
+- **Empfohlene Werkzeuge nachinstallieren:** nur aus den offiziellen
+  Paketquellen und sichtbar in einem Terminalfenster, in dem du selbst dein
+  Passwort eingibst.
+- **Suche in allen Reitern:** durchsucht auch die Namen von Startmenü-Einträgen,
+  Befehle und Pfade.
+- **Startmenü-Einträge besser zuordnen:** Einträge wie `konsole -e claude`
+  gehören jetzt zum eigentlichen Programm. npm-Programme kennen ihre Befehle.
+- **Eigene Symbole:** Bilder werden in den eigenen Symbolordner kopiert, andere
+  Formate (JPG, ICO …) automatisch umgewandelt. Der Dialog zeigt, ob ein Symbol
+  gefunden wurde.
+- **Einträge entfernen:** Alle Einträge im eigenen Benutzerordner lassen sich
+  entfernen, fremde nur nach einer Warnung.
+- **Weniger Fehlalarme:** Programme von pacman in `/opt` (z. B. TeamSpeak)
+  erscheinen nicht mehr zusätzlich als „Manuell“.
+- **Brauchbare Löschbefehle** für manuell installierte Programme und AppImages.
+- **Versionsanzeige** im Fenstertitel und im Hilfe-Reiter.
+- **Lizenz:** GNU GPL v3 oder später.
+
+## 0.1.0
+
+- Erste Version: Programme aus allen gängigen Quellen auflisten, Herkunft
+  erklären, Startmenü-Status anzeigen und Einträge anlegen, Update-Prüfung,
+  Übersicht der Paketverwaltungen.
