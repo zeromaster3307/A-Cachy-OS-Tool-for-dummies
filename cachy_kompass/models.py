@@ -315,5 +315,16 @@ class Program:
         rm = ("rm -r" if Path(path).is_dir() else "rm") if in_home else ("sudo rm -r" if Path(path).is_dir() else "sudo rm")
         return template.format(name=self.name, qpath=shlex.quote(path), rm=rm)
 
+    def search_text(self) -> str:
+        """Alles, wonach man suchen können sollte – in Kleinbuchstaben.
+
+        Neben Name und Beschreibung auch die Namen der Startmenü-Einträge
+        (z. B. „Claude Code“ für das Programm „claude“), Herkunft und Befehle.
+        """
+        parts = [self.display_name, self.name, self.description, self.origin, self.info.label]
+        parts += [f"{e.name} {e.comment}" for e in self.desktop_entries]
+        parts += [Path(x).name for x in self.executables]
+        return " ".join(parts).lower()
+
     def update_hint(self) -> str:
         return self.info.update_hint.format(name=self.name)

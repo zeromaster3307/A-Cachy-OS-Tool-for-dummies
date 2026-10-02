@@ -123,7 +123,7 @@ Ein Klick auf eine Spaltenüberschrift sortiert die Liste, zum Beispiel nach
 |---|---|
 | **Neu einlesen** (F5) | sucht alle Programme erneut |
 | **Nach Updates suchen** | fragt im Internet nach neueren Versionen; dabei wird **nichts** installiert |
-| **Suchen …** | filtert nach Name oder Beschreibung |
+| **Suchen …** | filtert **alle Reiter** gleichzeitig: Namen, Beschreibungen, Namen der Startmenü-Einträge (z. B. „Claude Code“ für das Programm `claude`), Befehle und Pfade |
 | **Alle Quellen** | zeigt nur Programme aus einer bestimmten Quelle, z. B. nur Flatpaks |
 | **Startmenü: …** | zeigt z. B. nur Programme **ohne** Startmenü-Eintrag |
 | **Nur veraltete** | zeigt nur Programme mit verfügbarem Update |
@@ -238,7 +238,9 @@ Flatpak- und Snap-Einträgen) und den Programmen so zugeordnet:
 1. **Sicher:** Die Datei gehört laut pacman zum Paket, oder der Eintrag trägt die
    Flatpak-ID bzw. den Snap-Namen.
 2. **Über den Startbefehl:** Der Eintrag startet eine Programmdatei, die zu
-   einem Programm gehört (z. B. `~/.cargo/bin/rg` → ripgrep).
+   einem Programm gehört (z. B. `~/.cargo/bin/rg` → ripgrep). Dabei wird hinter
+   Terminals und Shells geschaut: Ein Eintrag mit `konsole -e claude` oder
+   `sh -c "cd ~/Projekte && claude"` gehört zu `claude`, nicht zu Konsole.
 
 ---
 

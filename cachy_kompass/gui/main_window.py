@@ -89,10 +89,11 @@ class MainWindow(QMainWindow):
         bar.addSeparator()
 
         self.search = QLineEdit()
-        self.search.setPlaceholderText("Suchen …")
+        self.search.setPlaceholderText("Suchen (in allen Reitern) …")
+        self.search.setToolTip("Durchsucht Namen, Beschreibungen, Startmenü-Einträge, Befehle und Pfade")
         self.search.setClearButtonEnabled(True)
         self.search.setMaximumWidth(260)
-        self.search.textChanged.connect(lambda text: self.proxy.update_filter(search=text))
+        self.search.textChanged.connect(self._apply_search)
         bar.addWidget(self.search)
 
         self.source_filter = QComboBox()
@@ -311,6 +312,18 @@ class MainWindow(QMainWindow):
         outdated = sum(1 for r in results.values() if r.status is UpdateStatus.OUTDATED)
         self._status(f"Update-Prüfung fertig: {outdated} Programme haben eine neuere Version.")
 
+    def _apply_search(self, _text: str = "") -> None:
+        """Filtert alle Reiter gleichzeitig nach dem Suchbegriff."""
+        text = self.search.text()
+        self.proxy.update_filter(search=text)
+        words = text.lower().split()
+        for table in (self.entries_table, self.installer_table):
+            for row in range(table.rowCount()):
+                cells = (table.item(row, col) for col in range(table.columnCount()))
+                # Tooltips mit durchsuchen – dort steht z. B. der vollständige Startbefehl
+                row_text = " ".join(f"{c.text()} {c.toolTip()}" for c in cells if c is not None).lower()
+                table.setRowHidden(row, not all(w in row_text for w in words))
+
     def _toggle_dependencies(self, on: bool) -> None:
         self.proxy.update_filter(show_dependencies=on)
 
@@ -420,7 +433,7 @@ class MainWindow(QMainWindow):
         table.setRowCount(len(entries))
         for row, e in enumerate(entries):
             owner = self.result.owner_of(e)
-            target = desktop.exec_target(e.exec)
+            target = desktop.main_target(e.exec)
             exists = desktop.target_exists(target)
             owner_text = f"{owner.display_name} ({owner.info.label})" if owner else "–"
             cells = [
@@ -444,6 +457,7 @@ class MainWindow(QMainWindow):
                     item.setToolTip(e.exec)
                 table.setItem(row, col, item)
         table.setSortingEnabled(True)
+        self._apply_search()
 
     def _selected_entry(self) -> DesktopEntry | None:
         rows = self.entries_table.selectionModel().selectedRows()
@@ -482,6 +496,7 @@ class MainWindow(QMainWindow):
                 table.setItem(row, col, item)
         if table.isVisible():
             table.resizeRowsToContents()
+        self._apply_search()
 
 
 def run_gui() -> int:

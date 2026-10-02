@@ -27,7 +27,20 @@ GENERIC_LAUNCHERS = {
     "sh", "bash", "zsh", "fish", "dash", "env", "flatpak", "snap", "python", "python3",
     "java", "wine", "wine64", "xdg-open", "kioclient", "kioclient5", "kioclient6",
     "gtk-launch", "electron", "steam", "pkexec", "sudo", "gamemoderun", "systemd-run",
+    "nohup", "prime-run", "mangohud", "gamescope",
 }
+
+# Terminalprogramme: Ein Eintrag wie „konsole -e claude“ gehört zu claude,
+# nicht zu Konsole.
+TERMINALS = {
+    "konsole", "yakuake", "gnome-terminal", "kgx", "ptyxis", "kitty", "alacritty", "foot",
+    "footclient", "wezterm", "ghostty", "xterm", "uxterm", "urxvt", "tilix", "terminator",
+    "xfce4-terminal", "mate-terminal", "lxterminal", "qterminal", "xdg-terminal-exec", "st",
+    "warp-terminal", "cool-retro-term", "rio", "contour",
+}
+# Optionen, nach denen bei Terminals der eigentliche Befehl folgt
+_TERMINAL_COMMAND_FLAGS = {"-e", "-x", "--", "--command", "--exec", "-c"}
+_SHELLS = {"sh", "bash", "zsh", "fish", "dash"}
 
 # Hauptkategorien laut freedesktop.org mit deutscher Beschriftung.
 CATEGORIES = {
@@ -188,6 +201,60 @@ def exec_target(exec_line: str) -> str:
     return ""
 
 
+def _split(exec_line: str) -> list[str]:
+    try:
+        return shlex.split(exec_line)
+    except ValueError:
+        return exec_line.split()
+
+
+def exec_candidates(exec_line: str) -> list[str]:
+    """Alle Programme, die eine Exec-Zeile der Reihe nach aufruft.
+
+    Durchschaut Umgebungsvariablen, Terminals und Shells:
+    ``konsole -e claude``        → ``["konsole", "claude"]``
+    ``sh -c "cd ~; exec foo -x"`` → ``["sh", "cd", "exec", "foo"]`` (Shell-Befehl wird zerlegt)
+    """
+    tokens = [t for t in _split(exec_line) if t and not t.startswith("%")]
+    result: list[str] = []
+    i = 0
+    while i < len(tokens):
+        tok = tokens[i]
+        name = Path(tok).name
+        if tok == "env" or re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", tok) or tok.startswith("-"):
+            i += 1
+            continue
+        result.append(tok)
+        rest = tokens[i + 1 :]
+        if name in TERMINALS:
+            # Bei „-e“, „--“ usw. direkt zum eigentlichen Befehl springen
+            marker = next((j for j, r in enumerate(rest) if r in _TERMINAL_COMMAND_FLAGS), None)
+            i = i + 1 + (marker + 1 if marker is not None else 0)
+            continue
+        if name in _SHELLS and "-c" in rest:
+            inner = rest[rest.index("-c") + 1] if rest.index("-c") + 1 < len(rest) else ""
+            for part in re.split(r"[;&|]+", inner):
+                result.extend(c for c in exec_candidates(part) if c not in ("cd", "exec"))
+            break
+        if name not in GENERIC_LAUNCHERS:
+            break
+        i += 1
+    return result
+
+
+def main_target(exec_line: str) -> str:
+    """Das Programm, um das es in einer Exec-Zeile eigentlich geht.
+
+    Starter wie Terminals oder „sh“ werden übersprungen – außer der Eintrag
+    startet wirklich nur den Starter selbst (z. B. ein Eintrag für kitty).
+    """
+    calls = exec_candidates(exec_line)
+    real = [c for c in calls if Path(c).name not in GENERIC_LAUNCHERS | TERMINALS]
+    if real:
+        return real[0]
+    return calls[0] if calls else ""
+
+
 def target_exists(target: str) -> bool:
     if not target:
         return False
@@ -242,7 +309,7 @@ def match_entries(programs: list[Program], entries: list[DesktopEntry]) -> list[
     for e in entries:
         if e.file_id in assigned:
             continue
-        target = exec_target(e.exec)
+        target = main_target(e.exec)
         if not target or Path(target).name in GENERIC_LAUNCHERS:
             unmatched.append(e)
             continue

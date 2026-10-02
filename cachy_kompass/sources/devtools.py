@@ -104,6 +104,24 @@ def parse_npm_outdated(text: str) -> dict[str, str]:
     return {name: info.get("latest", "") for name, info in data.items() if isinstance(info, dict)}
 
 
+def npm_bin_names(package_dir: Path) -> list[str]:
+    """Befehlsnamen eines npm-Pakets laut ``package.json`` (Feld „bin“).
+
+    ``@anthropic-ai/claude-code`` → ``["claude"]``
+    """
+    try:
+        data = json.loads((package_dir / "package.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    bins = data.get("bin")
+    if isinstance(bins, dict):
+        return list(bins)
+    if isinstance(bins, str):
+        # Kurzform: Befehl heißt wie das Paket (ohne @scope/)
+        return [str(data.get("name", package_dir.name)).split("/")[-1]]
+    return []
+
+
 class NpmSource(PackageSource):
     title = "npm"
     handles = (Source.NPM,)
@@ -118,6 +136,9 @@ class NpmSource(PackageSource):
         # Unter Arch landen auch von pacman installierte Node-Pakete (z. B. npm
         # selbst) im globalen Ordner. Die zählen wir nicht doppelt.
         owned = util.pacman_owners(paths.values())
+        # Global installierte Befehle liegen in <prefix>/bin, der Paketordner in
+        # <prefix>/lib/node_modules.
+        bin_dir = Path(root).parent.parent / "bin" if root else None
         return [
             Program(
                 name=name,
@@ -125,6 +146,7 @@ class NpmSource(PackageSource):
                 source=Source.NPM,
                 origin="npm-Registry",
                 install_path=paths.get(name, ""),
+                executables=[str(bin_dir / b) for b in npm_bin_names(Path(paths[name]))] if bin_dir and name in paths else [],
                 url=f"https://www.npmjs.com/package/{name}",
             )
             for name, version in packages.items()

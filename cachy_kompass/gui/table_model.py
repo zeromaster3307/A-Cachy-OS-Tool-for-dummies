@@ -148,6 +148,6 @@ class ProgramFilterModel(QSortFilterProxyModel):
         if self.only_manual_update and p.info.auto_update is AutoUpdate.YES:
             return False
         if self.search:
-            haystack = f"{p.display_name} {p.name} {p.description}".lower()
+            haystack = p.search_text()
             return all(word in haystack for word in self.search.lower().split())
         return True

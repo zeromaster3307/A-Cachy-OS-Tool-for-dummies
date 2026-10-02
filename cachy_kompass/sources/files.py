@@ -169,7 +169,7 @@ class ManualSource(PackageSource):
             exes = [str(path)] if path.is_file() else _find_main_executable(path)
             program = Program(
                 name=path.name,
-                version="?",
+                version=version_from_link(path) or "?",
                 source=Source.MANUAL,
                 origin=f"{path}" + (f" ({'; '.join(notes)})" if notes else ""),
                 executables=exes,
@@ -191,6 +191,27 @@ def _describe_self(program: Program) -> None:
     program.uninstall_override = (
         f"rm -rf ~/.local/share/{APP_ID} ~/.local/bin/{APP_ID} {apps}/{APP_ID}.desktop"
     )
+
+
+_VERSION_RE = re.compile(r"^v?\d+(\.\d+)+([-+.~]\w+)*$")
+
+
+def version_from_link(path: Path) -> str:
+    """Version aus dem Ziel einer Verknüpfung raten.
+
+    Viele Installer legen jede Version in einen eigenen Ordner und verknüpfen
+    nur darauf, z. B. ``~/.local/bin/claude → ~/.local/share/claude/versions/2.1.42``.
+    """
+    if not path.is_symlink():
+        return ""
+    try:
+        target = path.resolve()
+    except OSError:
+        return ""
+    for part in (target.name, target.parent.name):
+        if _VERSION_RE.match(part):
+            return part.lstrip("v")
+    return ""
 
 
 def is_pacman_owned(path: Path, pacman_paths: set[str]) -> bool:
