@@ -4,6 +4,15 @@ Hier steht, was sich von Version zu Version geändert hat. Die installierte
 Version siehst du im Fenstertitel, im Reiter „Hilfe“ oder mit
 `cachy-kompass --version`.
 
+## 0.2.2
+
+- **KDE-Hilfseinträge werden zugeordnet und erklärt:** Einträge wie
+  `userapp-Thunderbird-XXXX.desktop`, die KDE bei „Öffnen mit …“ anlegt, zeigen
+  oft auf den echten Programmpfad (z. B. `/usr/lib/thunderbird/thunderbird`
+  statt `/usr/bin/thunderbird`). Sie werden jetzt dem richtigen Programm
+  zugeordnet, und ein Hinweis erklärt, woher sie stammen. Das gilt auch für
+  Steam-Verknüpfungen.
+
 ## 0.2.1
 
 - **Keine falschen „Programm fehlt“-Meldungen mehr** im Reiter

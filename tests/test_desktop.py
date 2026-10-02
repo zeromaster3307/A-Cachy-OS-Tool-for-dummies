@@ -183,3 +183,20 @@ def test_suggestions():
     assert desktop.suggest_exec(rg) == "/home/u/.cargo/bin/rg"
     multi = Program("foo", "1", Source.REPO, executables=["/usr/bin/foo-helper", "/usr/bin/foo"])
     assert desktop.suggest_exec(multi) == "/usr/bin/foo"
+
+
+def test_kde_userapp_entry_matches_real_path(tmp_path):
+    """KDE-„userapp“-Einträge zeigen auf den echten Pfad hinter /usr/bin/… – trotzdem zuordnen."""
+    real = tmp_path / "lib" / "thunderbird" / "thunderbird"
+    real.parent.mkdir(parents=True)
+    real.write_text("#!/bin/sh\n")
+    link = tmp_path / "bin" / "thunderbird"
+    link.parent.mkdir()
+    link.symlink_to(real)
+    apps = tmp_path / "applications"
+    write(apps / "userapp-Thunderbird-BXLDV3.desktop",
+          f"[Desktop Entry]\nType=Application\nName=Thunderbird\nExec={real} %u\nNoDisplay=true\n")
+    tb = Program("thunderbird", "128", Source.REPO, executables=[str(link)])
+    desktop.match_entries([tb], desktop.load_entries([apps]))
+    assert tb.menu_status is MenuStatus.HIDDEN
+    assert "Öffnen mit" in desktop.origin_note(tb.desktop_entries[0])

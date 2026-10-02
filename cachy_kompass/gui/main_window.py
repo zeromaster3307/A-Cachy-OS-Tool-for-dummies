@@ -478,6 +478,8 @@ class MainWindow(QMainWindow):
                     item.setData(Qt.ItemDataRole.UserRole, e)
                     if e.created_by_us:
                         item.setToolTip("Vom Software-Kompass angelegt")
+                    elif desktop.origin_note(e):
+                        item.setToolTip(desktop.origin_note(e))
                     elif desktop.is_user_entry(e):
                         item.setToolTip("Liegt in deinem Benutzerordner (von dir oder einem Programm angelegt)")
                 if col == 3:
