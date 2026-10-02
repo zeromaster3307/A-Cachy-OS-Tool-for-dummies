@@ -56,7 +56,7 @@ RATING_COLOR = {Rating.BASE: GREY, Rating.RECOMMENDED: GREEN, Rating.OPTIONAL: O
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle(APP_NAME)
+        self.setWindowTitle(f"{APP_NAME} {__version__}")
         self.setWindowIcon(QIcon.fromTheme("system-software-install", QIcon.fromTheme("applications-system")))
         self.resize(1300, 780)
 

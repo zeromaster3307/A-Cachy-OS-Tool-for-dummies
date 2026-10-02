@@ -69,9 +69,24 @@ Das Installationsskript
 
 ### Auf eine neue Version aktualisieren
 
-Neue Version herunterladen (wie oben) und darin einfach wieder `./install.sh`
-ausführen. Die alte Version musst du **nicht** vorher löschen, sie wird
-automatisch ersetzt. Selbst angelegte Startmenü-Einträge bleiben erhalten.
+Im heruntergeladenen Ordner:
+
+```bash
+cd A-Cachy-OS-Tool-for-dummies
+git pull          # neuesten Stand herunterladen
+./install.sh      # installierte Version ersetzen
+```
+
+Wichtig: `git clone` bzw. `git pull` laden nur den Code herunter. Erst
+`./install.sh` ersetzt das Programm, das im Startmenü startet. Danach den
+Software-Kompass einmal schließen und neu öffnen.
+
+Die alte Version musst du **nicht** vorher löschen, sie wird automatisch
+ersetzt. Selbst angelegte Startmenü-Einträge bleiben erhalten.
+
+**Welche Version habe ich?** Die Versionsnummer steht im Fenstertitel und oben
+im Reiter „Hilfe“, im Terminal zeigt sie `cachy-kompass --version`. Was sich
+zwischen den Versionen geändert hat, steht in [CHANGELOG.md](CHANGELOG.md).
 
 ### Ohne Installation ausprobieren
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 import shlex
 from html import escape
 
-from cachy_kompass import desktop
+from cachy_kompass import APP_NAME, __version__, desktop
 from cachy_kompass.installers import InstallerStatus, Rating
 from cachy_kompass.models import SOURCE_INFO, AutoUpdate, MenuStatus, Program, Source, UpdateStatus
 
@@ -114,6 +114,7 @@ def help_html() -> str:
         for info in SOURCE_INFO.values()
     )
     return f"""
+<p style='color:gray'>{escape(APP_NAME)} – Version {escape(__version__)}</p>
 <h2>Kurze Erklärung</h2>
 <p>Dieses Programm zeigt dir, <b>welche Programme installiert sind</b>, <b>woher sie
 stammen</b>, ob sie im <b>Startmenü</b> auftauchen und ob sie beim normalen
