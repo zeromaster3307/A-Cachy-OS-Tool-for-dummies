@@ -460,8 +460,8 @@ class MainWindow(QMainWindow):
         table.setRowCount(len(entries))
         for row, e in enumerate(entries):
             owner = self.result.owner_of(e)
-            target = desktop.main_target(e.exec)
-            exists = desktop.target_exists(target)
+            missing = desktop.missing_program(e.exec)
+            exists = not missing
             owner_text = f"{owner.display_name} ({owner.info.label})" if owner else "–"
             cells = [
                 (e.name, None),
@@ -481,7 +481,8 @@ class MainWindow(QMainWindow):
                     elif desktop.is_user_entry(e):
                         item.setToolTip("Liegt in deinem Benutzerordner (von dir oder einem Programm angelegt)")
                 if col == 3:
-                    item.setToolTip(e.exec)
+                    hint = f"Nicht gefunden: {missing}\n" if missing else ""
+                    item.setToolTip(f"{hint}Startbefehl: {e.exec}")
                 table.setItem(row, col, item)
         table.setSortingEnabled(True)
         self._apply_search()

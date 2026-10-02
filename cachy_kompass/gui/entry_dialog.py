@@ -176,8 +176,8 @@ class EntryDialog(QDialog):
         if not name or not exec_line:
             QMessageBox.warning(self, "Angaben fehlen", "Bitte einen Namen und einen Startbefehl eintragen.")
             return
-        target = desktop.exec_target(exec_line)
-        if not desktop.target_exists(target):
+        target = desktop.missing_program(exec_line)
+        if target:
             answer = QMessageBox.question(
                 self,
                 "Programm nicht gefunden",

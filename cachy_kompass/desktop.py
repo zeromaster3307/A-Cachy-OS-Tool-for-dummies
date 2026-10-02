@@ -23,11 +23,26 @@ OUR_PREFIX = "cachy-kompass-"
 
 # Startbefehle, die nur andere Programme aufrufen. Darüber ordnen wir nichts zu,
 # sonst würde z. B. jeder Eintrag mit „sh -c …“ dem Paket bash zugerechnet.
-GENERIC_LAUNCHERS = {
-    "sh", "bash", "zsh", "fish", "dash", "env", "flatpak", "snap", "python", "python3",
-    "java", "wine", "wine64", "xdg-open", "kioclient", "kioclient5", "kioclient6",
-    "gtk-launch", "electron", "steam", "pkexec", "sudo", "gamemoderun", "systemd-run",
-    "nohup", "prime-run", "mangohud", "gamescope",
+#
+# Zwei Arten:
+#   * Vorschalt-Programme starten das nächste Wort als Programm
+#     („gamemoderun foo“, „sudo foo“).
+#   * Programm-Starter bekommen danach nur ein Argument – kein Programm
+#     („wine start …“, „steam steam://…“, „flatpak run org.x“, „python3 skript.py“).
+WRAPPERS = {
+    "env", "nohup", "pkexec", "sudo", "gamemoderun", "systemd-run", "prime-run", "mangohud", "gamescope",
+}
+HANDLERS = {
+    "flatpak", "snap", "python", "python3", "java", "wine", "wine64", "xdg-open", "kioclient",
+    "kioclient5", "kioclient6", "gtk-launch", "electron", "steam", "node", "mono", "dotnet",
+}
+GENERIC_LAUNCHERS = WRAPPERS | HANDLERS | {"sh", "bash", "zsh", "fish", "dash"}
+
+# Shell-Befehle, die kein eigenes Programm sind (für „sh -c '…'“-Einträge)
+_SHELL_BUILTINS = {
+    "cd", "exec", "export", "source", ".", "if", "then", "else", "fi", "for", "do", "done", "while",
+    "case", "esac", "exit", "set", "unset", "[", "[[", "test", "true", "false", "echo", "printf",
+    "read", "eval", "trap", "wait", "sleep", "command", "builtin",
 }
 
 # Terminalprogramme: Ein Eintrag wie „konsole -e claude“ gehört zu claude,
@@ -234,12 +249,39 @@ def exec_candidates(exec_line: str) -> list[str]:
         if name in _SHELLS and "-c" in rest:
             inner = rest[rest.index("-c") + 1] if rest.index("-c") + 1 < len(rest) else ""
             for part in re.split(r"[;&|]+", inner):
-                result.extend(c for c in exec_candidates(part) if c not in ("cd", "exec"))
+                result.extend(c for c in exec_candidates(part) if c not in _SHELL_BUILTINS)
             break
         if name not in GENERIC_LAUNCHERS:
             break
+        if name in WRAPPERS and "--" in rest:
+            # z. B. „gamescope -W 1920 -- steam“: Optionen samt Werten überspringen
+            i = i + 1 + rest.index("--") + 1
+            continue
         i += 1
     return result
+
+
+def real_programs(exec_line: str) -> list[str]:
+    """Nur die Wörter einer Exec-Zeile, die tatsächlich Programme sind.
+
+    Nach einem Programm-Starter wie „wine“ oder „steam“ folgt ein Argument
+    („start“, „steam://…“), kein Programm. Das zählt nur, wenn es ein
+    vollständiger Pfad ist (z. B. „python3 /opt/tool/app.py“).
+    """
+    calls = exec_candidates(exec_line)
+    if not calls:
+        return []
+    result = [calls[0]]
+    for prev, tok in zip(calls, calls[1:]):
+        if Path(prev).name in HANDLERS and not tok.startswith("/"):
+            break
+        result.append(tok)
+    return result
+
+
+def missing_program(exec_line: str) -> str:
+    """Das erste Programm einer Exec-Zeile, das es nicht gibt – oder „“, wenn alles da ist."""
+    return next((c for c in real_programs(exec_line) if not target_exists(c)), "")
 
 
 def main_target(exec_line: str) -> str:
@@ -248,11 +290,12 @@ def main_target(exec_line: str) -> str:
     Starter wie Terminals oder „sh“ werden übersprungen – außer der Eintrag
     startet wirklich nur den Starter selbst (z. B. ein Eintrag für kitty).
     """
-    calls = exec_candidates(exec_line)
+    calls = real_programs(exec_line)
     real = [c for c in calls if Path(c).name not in GENERIC_LAUNCHERS | TERMINALS]
     if real:
         return real[0]
-    return calls[0] if calls else ""
+    # Nur Starter: der innerste zählt („gamescope -- steam“ → steam, „kitty“ → kitty)
+    return calls[-1] if calls else ""
 
 
 def target_exists(target: str) -> bool:

@@ -4,6 +4,15 @@ Hier steht, was sich von Version zu Version geändert hat. Die installierte
 Version siehst du im Fenstertitel, im Reiter „Hilfe“ oder mit
 `cachy-kompass --version`.
 
+## 0.2.1
+
+- **Keine falschen „Programm fehlt“-Meldungen mehr** im Reiter
+  „Startmenü-Einträge“. Einträge wie `wine start …` (Wine), `steam steam://…`
+  (Steam-Spiele) oder `flatpak run …` (alle Flatpaks) wurden fälschlich als
+  kaputt angezeigt, weil das Wort nach dem Starter für ein Programm gehalten
+  wurde.
+- Der Tooltip in der Spalte „Startbefehl“ nennt jetzt, welches Programm fehlt.
+
 ## 0.2.0
 
 - **Paketverwaltungen einstufen:** Jedes Werkzeug ist als „empfohlen“, „bei
