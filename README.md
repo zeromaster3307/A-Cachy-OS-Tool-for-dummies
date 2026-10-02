@@ -397,7 +397,15 @@ python -m cachy_kompass     # starten
 
 ## Lizenz
 
-Noch keine Lizenz festgelegt. Ohne Lizenz dürfen andere den Code zwar ansehen,
-aber nicht weiterverwenden. Wenn das Projekt offen sein soll, empfiehlt sich
-z. B. die [MIT-](https://choosealicense.com/licenses/mit/) oder
-[GPL-3.0-Lizenz](https://choosealicense.com/licenses/gpl-3.0/).
+Copyright © 2026 zeromaster3307 und Mitwirkende
+
+Der Cachy Software-Kompass ist freie Software unter der
+**GNU General Public License, Version 3 oder später** (GPL-3.0-or-later).
+Den vollständigen Lizenztext findest du in der Datei [LICENSE](LICENSE).
+
+Kurz gesagt (ohne rechtliche Verbindlichkeit):
+
+- Du darfst das Programm **benutzen, weitergeben und verändern**, auch kommerziell.
+- Wenn du eine **veränderte Version weitergibst**, muss sie ebenfalls unter der
+  GPL stehen, und der Quellcode muss mitgeliefert bzw. zugänglich gemacht werden.
+- Es gibt **keine Garantie**: Die Nutzung erfolgt auf eigene Verantwortung.

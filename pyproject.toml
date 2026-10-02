@@ -6,6 +6,13 @@ build-backend = "setuptools.build_meta"
 name = "cachy-kompass"
 description = "Zeigt installierte Programme unter CachyOS, ihre Herkunft, ihren Startmenü-Status und ob sie aktuell sind."
 readme = "README.md"
+license = { text = "GPL-3.0-or-later" }
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Environment :: X11 Applications :: Qt",
+]
 requires-python = ">=3.10"
 dynamic = ["version"]
 # Für die Oberfläche wird PySide6 gebraucht. Unter CachyOS am besten über
