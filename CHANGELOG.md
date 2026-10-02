@@ -24,6 +24,8 @@ Version siehst du im Fenstertitel, im Reiter „Hilfe“ oder mit
   erscheinen nicht mehr zusätzlich als „Manuell“.
 - **Brauchbare Löschbefehle** für manuell installierte Programme und AppImages.
 - **Versionsanzeige** im Fenstertitel und im Hilfe-Reiter.
+- **Deinstallationsbefehl für den Software-Kompass** funktioniert jetzt auch in der
+  fish-Shell (Standard unter CachyOS).
 - **Lizenz:** GNU GPL v3 oder später.
 
 ## 0.1.0

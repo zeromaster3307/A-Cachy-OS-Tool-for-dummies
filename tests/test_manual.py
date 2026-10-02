@@ -1,5 +1,8 @@
 """Tests für die Erkennung manuell installierter Programme."""
 
+import shutil
+import subprocess
+
 import pytest
 
 from cachy_kompass.models import Program, Source
@@ -74,9 +77,29 @@ def test_finds_itself(tmp_path, monkeypatch):
     launcher.write_text("#!/bin/sh\n")
     launcher.chmod(0o755)
     monkeypatch.setattr(files, "HOME", tmp_path)
+    monkeypatch.delenv("XDG_DATA_HOME", raising=False)
     monkeypatch.setattr(files, "MANUAL_BIN_DIRS", [local_bin])
     monkeypatch.setattr(files, "OPT_DIR", tmp_path / "keins")
     monkeypatch.setattr(files.util, "pacman_owners", lambda paths: {})
     (me,) = files.ManualSource().scan(ScanContext())
     assert me.display_name == "Cachy Software-Kompass"
-    assert me.uninstall_command().startswith("rm -rf ~/.local/share/cachy-kompass ")
+    cmd = me.uninstall_command()
+    assert cmd == (
+        f"rm -rf {tmp_path}/.local/share/cachy-kompass {tmp_path}/.local/bin/cachy-kompass "
+        f"{tmp_path}/.local/share/applications/cachy-kompass.desktop"
+    )
+    # Keine Shell-Variablen, die fish (Standard-Shell von CachyOS) nicht versteht
+    assert "$" not in cmd and "~" not in cmd
+
+
+@pytest.mark.skipif(shutil.which("fish") is None, reason="fish nicht installiert")
+def test_uninstall_commands_work_in_fish():
+    """CachyOS nutzt standardmäßig fish – alle kopierbaren Befehle müssen dort funktionieren."""
+    from cachy_kompass.models import Program, Source
+
+    me = Program("x", "?", Source.MANUAL, install_path="/home/u/.local/bin/cachy-kompass")
+    files._describe_self(me)
+    commands = [me.uninstall_command()]
+    commands += [Program("tool", "1", s, install_path="/home/u/My Apps/Tool 1.AppImage").uninstall_command() for s in Source]
+    for cmd in commands:
+        assert subprocess.run(["fish", "-n", "-c", cmd]).returncode == 0, cmd

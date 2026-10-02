@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import re
+import shlex
 from pathlib import Path
 
 from cachy_kompass import APP_ID, APP_NAME, __version__, util
@@ -187,10 +188,11 @@ def _describe_self(program: Program) -> None:
     program.version = __version__
     program.description = "Dieses Programm. Wurde mit install.sh in deinen Benutzerordner installiert."
     program.origin = f"{program.install_path} (Startbefehl, angelegt von install.sh)"
-    apps = "${XDG_DATA_HOME:-$HOME/.local/share}/applications"
-    program.uninstall_override = (
-        f"rm -rf ~/.local/share/{APP_ID} ~/.local/bin/{APP_ID} {apps}/{APP_ID}.desktop"
-    )
+    # Nur ausgeschriebene Pfade, keine Shell-Variablen: CachyOS nutzt standardmäßig
+    # die fish-Shell, die z. B. „${XDG_DATA_HOME:-…}“ nicht versteht.
+    data_home = Path(os.environ.get("XDG_DATA_HOME") or HOME / ".local" / "share")
+    paths = [data_home / APP_ID, HOME / ".local" / "bin" / APP_ID, data_home / "applications" / f"{APP_ID}.desktop"]
+    program.uninstall_override = "rm -rf " + " ".join(shlex.quote(str(p)) for p in paths)
 
 
 _VERSION_RE = re.compile(r"^v?\d+(\.\d+)+([-+.~]\w+)*$")
