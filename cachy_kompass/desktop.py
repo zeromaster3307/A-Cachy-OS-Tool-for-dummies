@@ -347,6 +347,12 @@ def match_entries(programs: list[Program], entries: list[DesktopEntry]) -> list[
         for exe in prog.executables:
             by_path.setdefault(exe, []).append(prog)
             by_name.setdefault(Path(exe).name, []).append(prog)
+            # /usr/bin/thunderbird ist z. B. nur eine Verknüpfung auf
+            # /usr/lib/thunderbird/thunderbird – KDE schreibt in seine
+            # „userapp-…“-Einträge oft den echten Pfad.
+            real = os.path.realpath(exe)
+            if real != exe:
+                by_path.setdefault(real, []).append(prog)
 
     unmatched = []
     for e in entries:
@@ -507,6 +513,20 @@ def _is_within(path: Path, folder: Path) -> bool:
 def is_user_entry(entry: DesktopEntry) -> bool:
     """Liegt der Eintrag in deinem eigenen Benutzerordner (nicht im System)?"""
     return _is_within(entry.path, user_applications_dir())
+
+
+def origin_note(entry: DesktopEntry) -> str:
+    """Kurze Erklärung, wer einen Eintrag typischerweise anlegt (sonst „“)."""
+    if entry.file_id.startswith("userapp-"):
+        return (
+            "Von KDE angelegt, als eine Datei oder ein Link über „Öffnen mit …“ diesem "
+            "Programm zugeordnet wurde. Versteckter Hilfseintrag, harmlos."
+        )
+    if entry.raw.get("X-AppImage-Version") or "appimagekit" in entry.file_id.lower():
+        return "Von einem AppImage-Werkzeug angelegt."
+    if "steam://" in entry.exec:
+        return "Von Steam angelegte Spiele-Verknüpfung."
+    return ""
 
 
 def can_remove(entry: DesktopEntry) -> bool:

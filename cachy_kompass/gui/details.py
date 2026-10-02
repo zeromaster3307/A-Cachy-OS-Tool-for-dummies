@@ -78,6 +78,8 @@ def program_html(p: Program) -> str:
                 flags.append("ausgeblendet")
             if e.created_by_us:
                 flags.append("vom Software-Kompass angelegt")
+            elif desktop.origin_note(e):
+                flags.append(desktop.origin_note(e))
             elif desktop.is_user_entry(e):
                 flags.append("in deinem Benutzerordner")
             flag_text = f" <i>({', '.join(flags)})</i>" if flags else ""

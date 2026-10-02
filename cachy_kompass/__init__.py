@@ -3,6 +3,6 @@
 CachyOS-System installiert sind, woher sie stammen und ob sie im Startmenü
 auftauchen."""
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 APP_NAME = "Cachy Software-Kompass"
 APP_ID = "cachy-kompass"
