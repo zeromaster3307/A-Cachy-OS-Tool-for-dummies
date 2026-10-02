@@ -26,7 +26,9 @@ cachy_kompass/
 ├── scanner.py           Ablaufsteuerung: Quellen → Startmenü → Paketverwaltungen;
 │                        Update-Prüfung
 ├── desktop.py           .desktop-Dateien lesen, zuordnen, anlegen, löschen
-├── installers.py        Erkennung von Paketverwaltungen / App-Stores
+├── installers.py        Erkennung, Einstufung und Installationsplan für
+│                        Paketverwaltungen / App-Stores
+├── terminal.py          Befehle sichtbar in einem Terminalfenster ausführen
 ├── sources/             eine Datei pro Installationsquelle
 │   ├── base.py          Basisklasse PackageSource
 │   ├── pacman.py        Repos + AUR
@@ -83,8 +85,13 @@ Wichtige Grundsätze:
   `ScanResult.warnings`.
 - **Hintergrund-Threads verändern keine Objekte, die die GUI anzeigt.** Die
   Update-Prüfung liefert ein Wörterbuch, übernommen wird im Hauptthread.
-- **Nichts kaputt machen.** Gelöscht werden nur Einträge mit
-  `X-Cachy-Kompass=true`, Programme werden nie deinstalliert.
+- **Nichts kaputt machen.** Gelöscht werden nur Startmenü-Einträge im
+  Benutzerordner (nach Rückfrage), Programme werden nie deinstalliert.
+- **Nie selbst root.** Was Administratorrechte braucht (Installieren von
+  Paketverwaltungen), läuft sichtbar über `terminal.run_in_terminal()` – der
+  Nutzer sieht den Befehl und gibt das Passwort selbst ein. Installiert wird
+  nur, was `installers.plan_install()` erlaubt: nie „nicht empfohlene“
+  Werkzeuge, nur aus offiziellen Repos (geprüft per `pacman -Si`).
 
 ## Eine neue Installationsquelle hinzufügen
 

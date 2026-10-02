@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import shlex
 from html import escape
 
 from cachy_kompass import desktop
+from cachy_kompass.installers import InstallerStatus, Rating
 from cachy_kompass.models import SOURCE_INFO, AutoUpdate, MenuStatus, Program, Source, UpdateStatus
 
 
@@ -144,3 +146,37 @@ Benutzerordner – nach Rückfrage, Systemeinträge nie.</li>
 <h3>Die Installationsquellen</h3>
 <table cellspacing="6">{sources}</table>
 """
+
+
+def installer_html(status: InstallerStatus) -> str:
+    """Detailansicht für eine Paketverwaltung bzw. ein Werkzeug."""
+    spec = status.spec
+    parts = [f"<h2>{escape(spec.name)}</h2>", f"<p>{escape(spec.description)}</p>"]
+    parts.append(f"<h3>Einstufung: {escape(spec.rating.value)}</h3><p>{escape(spec.reason)}</p>")
+    if status.present:
+        parts.append("<h3>Status</h3><p>✔ Auf diesem System vorhanden")
+        if status.found_via:
+            parts.append(f" <span style='color:gray'>(gefunden über: {escape(', '.join(status.found_via))})</span>")
+        parts.append(".</p>")
+        if status.program_count:
+            parts.append(
+                f"<p>Darüber sind <b>{status.program_count} Programme</b> installiert. Würdest du "
+                f"{escape(spec.name)} entfernen, wären diese Programme nicht mehr nutzbar bzw. "
+                "nicht mehr aktualisierbar.</p>"
+            )
+        if status.uninstall_command and spec.rating is not Rating.BASE:
+            parts.append(
+                "<p style='color:gray'>Der Software-Kompass entfernt keine Paketverwaltungen. "
+                f"Falls du es wirklich willst, ginge es mit:<br>{_code(status.uninstall_command)}</p>"
+            )
+        return "".join(parts)
+
+    parts.append("<h3>Installieren</h3>")
+    if status.install_command:
+        parts.append(f"<p>{escape(status.install_note)} Befehl:<br>{_code(shlex.join(status.install_command))}</p>")
+        parts.append("<p>Klicke auf „Installieren …“ – der Befehl läuft dann sichtbar in einem Terminalfenster.</p>")
+        if spec.after_install:
+            parts.append(f"<p><b>Danach:</b> {escape(spec.after_install)}</p>")
+    else:
+        parts.append(f"<p style='color:gray'>{escape(status.install_note or 'Wird nicht zur Installation angeboten.')}</p>")
+    return "".join(parts)

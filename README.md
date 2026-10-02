@@ -188,6 +188,32 @@ und wie viele Programme jeweils darüber installiert wurden. So siehst du zum
 Beispiel, ob du irgendwann für eine Anleitung Snap oder Homebrew nachinstalliert
 hast.
 
+Jedes Werkzeug hat eine **Einstufung** mit Begründung:
+
+| Einstufung | Bedeutung | Beispiele |
+|---|---|---|
+| ✔ **empfohlen** | passt gut zu CachyOS, risikoarm | Flatpak, paru, CachyOS Package Installer, cachy-update |
+| ◐ **bei Bedarf** | nützlich, wenn man es braucht, sonst überflüssig | pipx, uv, Gear Lever, Topgrade, Discover, Distrobox |
+| ✘ **nicht empfohlen** | doppelt, am System vorbei oder unter Arch unüblich | Snap, Homebrew, Nix, pip, yay (neben paru), Pamac |
+
+**Installieren:** Fehlt ein Werkzeug, das „empfohlen“ oder „bei Bedarf“ ist,
+kannst du es mit **„Installieren …“** nachinstallieren. Dabei gilt:
+
+- Es wird **nur aus den offiziellen Paketquellen** installiert (CachyOS/Arch).
+  Der Software-Kompass prüft vorher mit `pacman -Si`, ob das Paket dort wirklich
+  verfügbar ist. Einzige Ausnahme: Gear Lever wird von Flathub geholt, wenn es
+  nicht in den Repos ist und Flatpak schon vorhanden ist.
+- **Nichts aus dem AUR, keine Skripte aus dem Internet.**
+- Der Befehl läuft **sichtbar in einem Terminalfenster** (z. B. Konsole). Dort
+  gibst du selbst dein Passwort ein, und pacman fragt vor der Installation noch
+  einmal nach. Der Software-Kompass bekommt nie Administratorrechte.
+- „Nicht empfohlene“ Werkzeuge bekommen **keinen** Installieren-Knopf, nur die
+  Begründung und eine bessere Alternative.
+- **Entfernen** geht bewusst nicht per Knopf. Entfernt man eine
+  Paketverwaltung, verschwinden auch alle Programme, die darüber installiert
+  wurden. Die Detailansicht zeigt dazu die Anzahl der betroffenen Programme und
+  den Befehl.
+
 ### Reiter „Hilfe“
 
 Eine Kurzfassung dieser Anleitung direkt im Programm.
@@ -252,6 +278,7 @@ Flatpak- und Snap-Einträgen) und den Programmen so zugeordnet:
 | Nach Updates suchen | Nein. Es werden nur Versionsnummern aus dem Internet abgefragt. `checkupdates` arbeitet in einem temporären Ordner und fasst die Paketdatenbank des Systems nicht an. |
 | Startmenü-Eintrag anlegen | Legt **eine** Datei `~/.local/share/applications/cachy-kompass-<name>.desktop` an, bei eigenem Bild zusätzlich eine Kopie in `~/.local/share/icons/cachy-kompass/` |
 | Eintrag entfernen | Löscht nur Einträge aus deinem Benutzerordner, nach Rückfrage. Bei fremden Einträgen gibt es eine zusätzliche Warnung. Systemeinträge werden nie angefasst. |
+| Paketverwaltung installieren | Nur nach Rückfrage, nur aus den offiziellen Paketquellen, sichtbar in einem Terminalfenster, in dem du selbst dein Passwort eingibst |
 | Programme deinstallieren | **Macht der Software-Kompass nicht.** Er zeigt dir nur den passenden Befehl, den du selbst ins Terminal kopieren kannst. |
 
 Für die Update-Prüfung werden folgende Adressen abgefragt (nur wenn du auf

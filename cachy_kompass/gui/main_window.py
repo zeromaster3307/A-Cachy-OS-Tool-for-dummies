@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import shlex
 import sys
 
 from PySide6.QtCore import QModelIndex, Qt
@@ -31,7 +32,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from cachy_kompass import APP_ID, APP_NAME, __version__, desktop, scanner
+from cachy_kompass import APP_ID, APP_NAME, __version__, desktop, scanner, terminal
 from cachy_kompass.gui import details
 from cachy_kompass.gui.entry_dialog import EntryDialog
 from cachy_kompass.gui.table_model import (
@@ -39,13 +40,17 @@ from cachy_kompass.gui.table_model import (
     COL_NAME,
     GREEN,
     GREY,
+    ORANGE,
     PROGRAM_ROLE,
     RED,
     ProgramFilterModel,
     ProgramTableModel,
 )
 from cachy_kompass.gui.workers import TaskRunner
+from cachy_kompass.installers import InstallerStatus, Rating
 from cachy_kompass.models import SOURCE_INFO, DesktopEntry, MenuStatus, Program, UpdateStatus
+
+RATING_COLOR = {Rating.BASE: GREY, Rating.RECOMMENDED: GREEN, Rating.OPTIONAL: ORANGE, Rating.DISCOURAGED: RED}
 
 
 class MainWindow(QMainWindow):
@@ -227,25 +232,47 @@ class MainWindow(QMainWindow):
     def _build_installers_tab(self) -> QWidget:
         info = QLabel(
             "Welche Paketverwaltungen, App-Stores und Update-Werkzeuge auf diesem System vorhanden "
-            "sind. Viele davon werden durch Anleitungen aus dem Internet nachinstalliert."
+            "sind – und ob sie unter CachyOS empfehlenswert sind. Viele davon werden durch Anleitungen "
+            "aus dem Internet nachinstalliert. Wähle eine Zeile für Details."
         )
         info.setWordWrap(True)
-        self.installer_table = QTableWidget(0, 5)
-        self.installer_table.setHorizontalHeaderLabels(["Werkzeug", "Art", "Vorhanden", "Programme", "Erklärung"])
+        self.installer_table = QTableWidget(0, 6)
+        self.installer_table.setHorizontalHeaderLabels(["Werkzeug", "Art", "Vorhanden", "Programme", "Einstufung", "Erklärung"])
         self.installer_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.installer_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.installer_table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.installer_table.verticalHeader().setVisible(False)
         self.installer_table.setWordWrap(True)
-        self.installer_table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
+        self.installer_table.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
         # Zeilenhöhe an den umbrochenen Text anpassen, sobald sich die Breite ändert
         self.installer_table.horizontalHeader().sectionResized.connect(
             lambda *_: self.installer_table.resizeRowsToContents()
         )
-        for col, width in enumerate([200, 160, 90, 90]):
+        for col, width in enumerate([190, 150, 80, 80, 130]):
             self.installer_table.setColumnWidth(col, width)
+        self.installer_table.itemSelectionChanged.connect(self._installer_selected)
+
+        self.installer_details = QTextBrowser()
+        self.installer_details.setHtml("<p style='color:gray'>Wähle links ein Werkzeug aus.</p>")
+        self.install_button = QPushButton(QIcon.fromTheme("run-install", QIcon.fromTheme("list-add")), "Installieren …")
+        self.install_button.setEnabled(False)
+        self.install_button.clicked.connect(self._install_selected)
+
+        right = QWidget()
+        right_layout = QVBoxLayout(right)
+        right_layout.setContentsMargins(0, 0, 0, 0)
+        right_layout.addWidget(self.installer_details)
+        right_layout.addWidget(self.install_button)
+
+        splitter = QSplitter()
+        splitter.addWidget(self.installer_table)
+        splitter.addWidget(right)
+        splitter.setSizes([950, 380])
+
         widget = QWidget()
         layout = QVBoxLayout(widget)
         layout.addWidget(info)
-        layout.addWidget(self.installer_table)
+        layout.addWidget(splitter, 1)  # die Tabelle bekommt den ganzen Platz
         return widget
 
     def _build_statusbar(self) -> None:
@@ -475,24 +502,76 @@ class MainWindow(QMainWindow):
         if entry and self._confirm_remove(entry):
             self._rematch()
 
+    def _selected_installer(self) -> InstallerStatus | None:
+        rows = self.installer_table.selectionModel().selectedRows()
+        if not rows:
+            return None
+        item = self.installer_table.item(rows[0].row(), 0)
+        return item.data(Qt.ItemDataRole.UserRole) if item else None
+
+    def _installer_selected(self) -> None:
+        status = self._selected_installer()
+        self.install_button.setEnabled(bool(status and not status.present and status.install_command))
+        if status:
+            self.installer_details.setHtml(details.installer_html(status))
+
+    def _install_selected(self) -> None:
+        status = self._selected_installer()
+        if not status or not status.install_command:
+            return
+        spec = status.spec
+        command = shlex.join(status.install_command)
+        text = (
+            f"„{spec.name}“ installieren?\n\n{spec.description}\n\n"
+            f"Einstufung: {spec.rating.value} – {spec.reason}\n\n"
+            f"Es öffnet sich ein Terminalfenster mit diesem Befehl:\n\n    {command}\n\n"
+            "Dort siehst du genau, was passiert, und gibst – falls nötig – dein Passwort ein. "
+            "Bevor pacman etwas installiert, fragt es noch einmal nach."
+        )
+        if spec.after_install:
+            text += f"\n\nDanach wichtig: {spec.after_install}"
+        box = QMessageBox(QMessageBox.Icon.Question, "Installieren", text, parent=self)
+        box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        box.setDefaultButton(QMessageBox.StandardButton.No)
+        box.button(QMessageBox.StandardButton.Yes).setText("Terminal öffnen")
+        box.button(QMessageBox.StandardButton.No).setText("Abbrechen")
+        if box.exec() != QMessageBox.StandardButton.Yes:
+            return
+        if terminal.run_in_terminal(status.install_command):
+            self._status("Terminal geöffnet. Wenn die Installation fertig ist, auf „Neu einlesen“ klicken.")
+        else:
+            QGuiApplication.clipboard().setText(command)
+            QMessageBox.information(
+                self,
+                "Kein Terminal gefunden",
+                f"Es wurde kein Terminalprogramm gefunden. Der Befehl wurde in die Zwischenablage kopiert:\n\n{command}\n\n"
+                "Füge ihn in ein Terminal ein und drücke Enter.",
+            )
+
     def _fill_installer_table(self) -> None:
         assert self.result is not None
         table = self.installer_table
-        rows = sorted(self.result.installers, key=lambda s: (not s.present, s.spec.kind))
+        rating_order = list(Rating)
+        rows = sorted(self.result.installers, key=lambda s: (not s.present, s.spec.kind, rating_order.index(s.spec.rating)))
         table.setRowCount(len(rows))
         for row, status in enumerate(rows):
             spec = status.spec
             present_text = "✔ ja" if status.present else "–"
             count = "" if status.program_count is None else str(status.program_count)
-            cells = [spec.name, spec.kind, present_text, count, spec.description]
+            cells = [spec.name, spec.kind, present_text, count, spec.rating.value, spec.description]
             for col, text in enumerate(cells):
                 item = QTableWidgetItem(text)
+                if not status.present:
+                    item.setForeground(GREY)
+                if col == 0:
+                    item.setData(Qt.ItemDataRole.UserRole, status)
                 if col == 2:
                     item.setForeground(GREEN if status.present else GREY)
                     if status.found_via:
                         item.setToolTip("Gefunden über: " + ", ".join(status.found_via))
-                if not status.present:
-                    item.setForeground(GREY)
+                if col == 4:
+                    item.setForeground(RATING_COLOR[spec.rating])
+                    item.setToolTip(spec.reason)
                 table.setItem(row, col, item)
         if table.isVisible():
             table.resizeRowsToContents()
