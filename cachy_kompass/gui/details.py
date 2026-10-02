@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from html import escape
 
-from cachy_kompass.models import SOURCE_INFO, AutoUpdate, MenuStatus, Program, UpdateStatus
+from cachy_kompass.models import SOURCE_INFO, AutoUpdate, MenuStatus, Program, Source, UpdateStatus
 
 
 def _row(label: str, value: str) -> str:
@@ -89,7 +89,14 @@ def program_html(p: Program) -> str:
     parts.append(
         "<p>Zum Entfernen diesen Befehl in ein Terminal (z. B. Konsole) kopieren:<br>"
         f"{_code(p.uninstall_command())}</p>"
-        "<p style='color:gray'>Der Software-Kompass löscht selbst keine Programme – "
+        + (
+            "<p><b>Achtung:</b> Prüfe vorher, ob du das Programm wirklich nicht mehr brauchst. "
+            "Manche von Hand installierten Programme bringen ein eigenes Deinstallationsskript "
+            "mit, das zusätzlich Einstellungen und Startmenü-Einträge aufräumt.</p>"
+            if p.source is Source.MANUAL and not p.uninstall_override
+            else ""
+        )
+        + "<p style='color:gray'>Der Software-Kompass löscht selbst keine Programme – "
         "so kann nichts aus Versehen kaputtgehen.</p>"
     )
     return "".join(parts)

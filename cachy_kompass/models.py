@@ -6,6 +6,7 @@ damit man sie leicht anpassen oder übersetzen kann.
 
 from __future__ import annotations
 
+import shlex
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -140,7 +141,7 @@ SOURCE_INFO: dict[Source, SourceInfo] = {
             "Wird NICHT automatisch aktualisiert. Lade die neue Version selbst "
             "herunter oder nutze ein Werkzeug wie Gear Lever."
         ),
-        uninstall_template="rm {path}",
+        uninstall_template="rm {qpath}",
     ),
     Source.PIPX: SourceInfo(
         label="pipx (Python)",
@@ -211,7 +212,7 @@ SOURCE_INFO: dict[Source, SourceInfo] = {
             "Wird NICHT automatisch aktualisiert. Updates musst du selbst "
             "beim Hersteller herunterladen."
         ),
-        uninstall_template="Von Hand löschen: {path}",
+        uninstall_template="{rm} {qpath}",
     ),
 }
 
@@ -275,6 +276,8 @@ class Program:
     install_date: str = ""
     # Bei Flatpak: "user" oder "system"
     installation: str = ""
+    # Eigener Deinstallationsbefehl, falls die Vorlage der Quelle nicht passt
+    uninstall_override: str = ""
     desktop_entries: list[DesktopEntry] = field(default_factory=list)
     update: UpdateResult = field(default_factory=lambda: UpdateResult(UpdateStatus.NOT_CHECKED))
 
@@ -300,10 +303,17 @@ class Program:
         return MenuStatus.NONE
 
     def uninstall_command(self) -> str:
+        if self.uninstall_override:
+            return self.uninstall_override
         template = self.info.uninstall_template
         if self.source is Source.FLATPAK and self.installation == "user":
             template = "flatpak uninstall --user {name}"
-        return template.format(name=self.name, path=self.install_path or "?")
+        path = self.install_path or "?"
+        # Außerhalb des Benutzerordners braucht man Administratorrechte;
+        # Ordner müssen mitsamt Inhalt („-r“) gelöscht werden.
+        in_home = path.startswith(str(Path.home()) + "/")
+        rm = ("rm -r" if Path(path).is_dir() else "rm") if in_home else ("sudo rm -r" if Path(path).is_dir() else "sudo rm")
+        return template.format(name=self.name, qpath=shlex.quote(path), rm=rm)
 
     def update_hint(self) -> str:
         return self.info.update_hint.format(name=self.name)

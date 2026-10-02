@@ -37,6 +37,9 @@ if ((${#missing[@]})) && command -v pacman >/dev/null 2>&1; then
     sudo pacman -S --needed "${missing[@]}"
 fi
 
+if [[ -d "$TARGET" ]]; then
+    echo "→ Eine ältere Version ist bereits installiert – sie wird ersetzt."
+fi
 echo "→ Kopiere Programm nach $TARGET"
 rm -rf "$TARGET"
 mkdir -p "$TARGET"

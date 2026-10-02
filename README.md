@@ -67,6 +67,12 @@ Das Installationsskript
 > im Dateimanager und wähle *Rechtsklick → Terminal hier öffnen*. Dort dann
 > `./install.sh` eingeben.
 
+### Auf eine neue Version aktualisieren
+
+Neue Version herunterladen (wie oben) und darin einfach wieder `./install.sh`
+ausführen. Die alte Version musst du **nicht** vorher löschen, sie wird
+automatisch ersetzt. Selbst angelegte Startmenü-Einträge bleiben erhalten.
+
 ### Ohne Installation ausprobieren
 
 ```bash

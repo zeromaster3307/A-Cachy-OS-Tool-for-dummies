@@ -6,7 +6,7 @@ import os
 import re
 from pathlib import Path
 
-from cachy_kompass import util
+from cachy_kompass import APP_ID, APP_NAME, __version__, util
 from cachy_kompass.models import Program, Source
 from cachy_kompass.sources.base import PackageSource, ScanContext
 
@@ -153,6 +153,7 @@ class ManualSource(PackageSource):
         candidates = [(p, h) for p, h in candidates if not is_pacman_owned(p, ctx.pacman_paths)]
         owned_qo = util.pacman_owners(str(p) for p, _ in candidates)
         other_names = {p.name.lower(): p for p in ctx.programs}
+        own_launcher = HOME / ".local" / "bin" / APP_ID
 
         programs = []
         for path, hint in candidates:
@@ -166,17 +167,30 @@ class ManualSource(PackageSource):
                     "dies ist eine zusätzliche, von Hand abgelegte Kopie"
                 )
             exes = [str(path)] if path.is_file() else _find_main_executable(path)
-            programs.append(
-                Program(
-                    name=path.name,
-                    version="?",
-                    source=Source.MANUAL,
-                    origin=f"{path}" + (f" ({'; '.join(notes)})" if notes else ""),
-                    executables=exes,
-                    install_path=str(path),
-                )
+            program = Program(
+                name=path.name,
+                version="?",
+                source=Source.MANUAL,
+                origin=f"{path}" + (f" ({'; '.join(notes)})" if notes else ""),
+                executables=exes,
+                install_path=str(path),
             )
+            if path == own_launcher:
+                _describe_self(program)
+            programs.append(program)
         return programs
+
+
+def _describe_self(program: Program) -> None:
+    """Der Software-Kompass findet sich selbst – das soll er auch verständlich sagen."""
+    program.display_name = APP_NAME
+    program.version = __version__
+    program.description = "Dieses Programm. Wurde mit install.sh in deinen Benutzerordner installiert."
+    program.origin = f"{program.install_path} (Startbefehl, angelegt von install.sh)"
+    apps = "${XDG_DATA_HOME:-$HOME/.local/share}/applications"
+    program.uninstall_override = (
+        f"rm -rf ~/.local/share/{APP_ID} ~/.local/bin/{APP_ID} {apps}/{APP_ID}.desktop"
+    )
 
 
 def is_pacman_owned(path: Path, pacman_paths: set[str]) -> bool:

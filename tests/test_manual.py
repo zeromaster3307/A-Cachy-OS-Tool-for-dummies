@@ -52,3 +52,31 @@ def test_symlink_to_pacman_file_is_not_manual(fake_system, tmp_path):
     ctx = ScanContext(pacman_paths={str(target)})
     names = {p.name for p in files.ManualSource().scan(ctx)}
     assert "tool-link" not in names
+
+
+def test_uninstall_commands(tmp_path, monkeypatch):
+    from cachy_kompass.models import Program, Source
+
+    monkeypatch.setattr(files.Path, "home", staticmethod(lambda: tmp_path))
+    home_file = tmp_path / "bin" / "mein skript"
+    home_file.parent.mkdir()
+    home_file.write_text("x")
+    assert Program("x", "?", Source.MANUAL, install_path=str(home_file)).uninstall_command() == f"rm '{home_file}'"
+    opt_dir = tmp_path.parent / "opt-test" / "Tool"
+    opt_dir.mkdir(parents=True)
+    assert Program("Tool", "?", Source.MANUAL, install_path=str(opt_dir)).uninstall_command() == f"sudo rm -r {opt_dir}"
+
+
+def test_finds_itself(tmp_path, monkeypatch):
+    local_bin = tmp_path / ".local" / "bin"
+    local_bin.mkdir(parents=True)
+    launcher = local_bin / "cachy-kompass"
+    launcher.write_text("#!/bin/sh\n")
+    launcher.chmod(0o755)
+    monkeypatch.setattr(files, "HOME", tmp_path)
+    monkeypatch.setattr(files, "MANUAL_BIN_DIRS", [local_bin])
+    monkeypatch.setattr(files, "OPT_DIR", tmp_path / "keins")
+    monkeypatch.setattr(files.util, "pacman_owners", lambda paths: {})
+    (me,) = files.ManualSource().scan(ScanContext())
+    assert me.display_name == "Cachy Software-Kompass"
+    assert me.uninstall_command().startswith("rm -rf ~/.local/share/cachy-kompass ")
