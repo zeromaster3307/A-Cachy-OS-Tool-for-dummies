@@ -24,6 +24,7 @@ if ((${#own[@]})); then
     read -r -p "Sollen diese auch gelöscht werden? [j/N] " answer
     if [[ "$answer" =~ ^[jJyY]$ ]]; then
         rm -f "${own[@]}"
+        rm -rf "${XDG_DATA_HOME:-$HOME/.local/share}/icons/cachy-kompass"
         echo "Einträge gelöscht."
     fi
 fi

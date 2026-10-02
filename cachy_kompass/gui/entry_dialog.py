@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import tempfile
 from pathlib import Path
 
-from PySide6.QtGui import QIcon
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon, QImage
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -53,11 +55,14 @@ class EntryDialog(QDialog):
         self.icon_edit = QLineEdit(desktop.suggest_icon(program))
         self.icon_edit.setToolTip("Name eines Symbols aus dem Symbol-Design oder Pfad zu einer Bilddatei.")
         self.icon_preview = QLabel()
-        self.icon_preview.setFixedSize(32, 32)
+        self.icon_preview.setFixedSize(48, 48)
         icon_browse = QPushButton("Bild wählen …")
+        icon_browse.setToolTip("Eigenes Bild als Symbol verwenden (am besten SVG oder PNG)")
         icon_browse.clicked.connect(self._browse_icon)
         self.icon_edit.textChanged.connect(self._update_icon_preview)
         icon_row = self._row(self.icon_preview, self.icon_edit, icon_browse)
+        self.icon_hint = QLabel()
+        self.icon_hint.setWordWrap(True)
 
         self.category = QComboBox()
         for key, label in desktop.CATEGORIES.items():
@@ -76,6 +81,7 @@ class EntryDialog(QDialog):
         form.addRow("Beschreibung:", self.comment_edit)
         form.addRow("Startbefehl:", exec_row)
         form.addRow("Symbol:", icon_row)
+        form.addRow("", self.icon_hint)
         form.addRow("Kategorie:", self.category)
         form.addRow("", self.terminal)
         form.addRow("", terminal_hint)
@@ -112,18 +118,57 @@ class EntryDialog(QDialog):
             self.exec_edit.setText(desktop.quote_exec_arg(path))
 
     def _browse_icon(self) -> None:
+        start = str(Path.home() / "Downloads") if (Path.home() / "Downloads").is_dir() else str(Path.home())
         path, _ = QFileDialog.getOpenFileName(
-            self, "Symbol auswählen", str(Path.home()), "Bilder (*.png *.svg *.xpm *.ico *.jpg)"
+            self,
+            "Bild für das Symbol auswählen",
+            start,
+            "Bilder (*.svg *.png *.xpm *.jpg *.jpeg *.ico *.webp *.bmp *.gif);;Alle Dateien (*)",
         )
         if path:
             self.icon_edit.setText(path)
 
+    def _icon_found(self, value: str) -> bool:
+        if not value:
+            return False
+        if value.startswith("/"):
+            return not QIcon(value).isNull() and Path(value).is_file()
+        return QIcon.hasThemeIcon(value)
+
     def _update_icon_preview(self) -> None:
         value = self.icon_edit.text().strip()
-        icon = QIcon(value) if value.startswith("/") else QIcon.fromTheme(value)
+        found = self._icon_found(value)
+        icon = (QIcon(value) if value.startswith("/") else QIcon.fromTheme(value)) if found else QIcon()
         if icon.isNull():
             icon = QIcon.fromTheme("application-x-executable")
-        self.icon_preview.setPixmap(icon.pixmap(32, 32))
+        self.icon_preview.setPixmap(icon.pixmap(48, 48))
+        if found and value.startswith("/"):
+            self.icon_hint.setText("✔ Eigenes Bild – es wird beim Anlegen in deinen Symbolordner kopiert.")
+            self.icon_hint.setStyleSheet("color: #2e9d4f")
+        elif found:
+            self.icon_hint.setText("✔ Passendes Symbol im Symbol-Design gefunden.")
+            self.icon_hint.setStyleSheet("color: #2e9d4f")
+        else:
+            self.icon_hint.setText(
+                "⚠ Kein Symbol mit diesem Namen gefunden. Klicke auf „Bild wählen …“ und "
+                "nimm z. B. das Logo von der Webseite des Programms (am besten SVG oder PNG)."
+            )
+            self.icon_hint.setStyleSheet("color: #d98a00")
+
+    def _prepare_icon(self) -> str:
+        """Wandelt Bilder, die das Startmenü nicht direkt versteht (JPG, ICO …), in PNG um."""
+        value = self.icon_edit.text().strip()
+        if not value.startswith("/") or Path(value).suffix.lower() in desktop.ICON_FORMATS:
+            return value
+        image = QImage(value)
+        if image.isNull():
+            raise ValueError(f"Das Bild „{value}“ konnte nicht gelesen werden.")
+        if max(image.width(), image.height()) > 256:
+            image = image.scaled(256, 256, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        converted = Path(tempfile.mkdtemp(prefix="cachy-kompass-")) / (Path(value).stem + ".png")
+        if not image.save(str(converted), "PNG"):
+            raise ValueError("Das Bild konnte nicht in PNG umgewandelt werden.")
+        return str(converted)
 
     def _create(self) -> None:
         name = self.name_edit.text().strip()
@@ -145,7 +190,7 @@ class EntryDialog(QDialog):
             self.created_path = desktop.create_entry(
                 name=name,
                 exec_line=exec_line,
-                icon=self.icon_edit.text().strip(),
+                icon=self._prepare_icon(),
                 comment=self.comment_edit.text().strip(),
                 categories=[self.category.currentData()],
                 terminal=self.terminal.isChecked(),

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from html import escape
 
+from cachy_kompass import desktop
 from cachy_kompass.models import SOURCE_INFO, AutoUpdate, MenuStatus, Program, Source, UpdateStatus
 
 
@@ -75,6 +76,8 @@ def program_html(p: Program) -> str:
                 flags.append("ausgeblendet")
             if e.created_by_us:
                 flags.append("vom Software-Kompass angelegt")
+            elif desktop.is_user_entry(e):
+                flags.append("in deinem Benutzerordner")
             flag_text = f" <i>({', '.join(flags)})</i>" if flags else ""
             items.append(f"<li>{escape(e.name)}{flag_text}<br><span style='color:gray'>{escape(str(e.path))}</span></li>")
         parts.append(f"<ul>{''.join(items)}</ul>")
@@ -130,8 +133,9 @@ richtigen Werkzeug, ✘ musst du selbst aktualisieren.</li>
 wurden. Bibliotheken und Abhängigkeiten blendest du mit dem Häkchen
 „Abhängigkeiten zeigen“ ein.</li>
 <li>Der Software-Kompass <b>verändert nichts am System</b>. Er legt höchstens
-Startmenü-Einträge in deinem Benutzerordner an
-(<code>~/.local/share/applications</code>) – und nur solche kann er auch wieder löschen.</li>
+Startmenü-Einträge (und deren Symbole) in deinem Benutzerordner an
+(<code>~/.local/share/applications</code>). Löschen kann er nur Einträge aus deinem
+Benutzerordner – nach Rückfrage, Systemeinträge nie.</li>
 <li>Updates installierst du unter CachyOS am einfachsten mit dem Befehl
 <code>paru</code> im Terminal (aktualisiert Repo- und AUR-Pakete) und
 <code>flatpak update</code> für Flatpaks.</li>

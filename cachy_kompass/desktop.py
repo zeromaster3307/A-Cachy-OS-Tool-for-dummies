@@ -13,6 +13,7 @@ import locale
 import os
 import re
 import shlex
+import shutil
 from pathlib import Path
 
 from cachy_kompass import util
@@ -44,9 +45,21 @@ CATEGORIES = {
 }
 
 
+# Bildformate, die alle Desktop-Umgebungen direkt als Symbol verstehen
+ICON_FORMATS = (".svg", ".png", ".xpm")
+
+
+def _data_home() -> Path:
+    return Path(os.environ.get("XDG_DATA_HOME") or str(util.HOME / ".local" / "share"))
+
+
 def user_applications_dir() -> Path:
-    base = os.environ.get("XDG_DATA_HOME") or str(util.HOME / ".local" / "share")
-    return Path(base) / "applications"
+    return _data_home() / "applications"
+
+
+def user_icon_dir() -> Path:
+    """Hier legen wir Kopien der ausgewählten Symbolbilder ab."""
+    return _data_home() / "icons" / "cachy-kompass"
 
 
 def applications_dirs() -> list[Path]:
@@ -277,6 +290,10 @@ def suggest_exec(prog: Program) -> str:
 
 
 def suggest_icon(prog: Program) -> str:
+    """Symbol-Vorschlag: aus einem vorhandenen (evtl. versteckten) Eintrag, sonst der Programmname."""
+    for entry in prog.desktop_entries:
+        if entry.icon:
+            return entry.icon
     if prog.source is Source.FLATPAK:
         return prog.name
     return prog.name.lower()
@@ -339,17 +356,85 @@ def create_entry(
     while path.exists():
         path = target_dir / f"{base}-{counter}.desktop"
         counter += 1
+    icon = icon.strip()
+    if icon.startswith("/") and Path(icon).is_file() and not _is_within(Path(icon), user_icon_dir()):
+        icon = str(install_icon(Path(icon), name))
     path.write_text(build_desktop_text(name, exec_line, icon, comment, categories, terminal), encoding="utf-8")
     path.chmod(0o644)
     refresh_menu_cache(target_dir)
     return path
 
 
+def install_icon(src: Path, name: str) -> Path:
+    """Kopiert ein Symbolbild in den eigenen Symbolordner.
+
+    So funktioniert der Eintrag auch dann noch, wenn die Originaldatei (z. B. in
+    „Downloads“) gelöscht wird.
+    """
+    suffix = src.suffix.lower()
+    if suffix not in ICON_FORMATS:
+        raise ValueError(f"Als Symbol gehen nur {', '.join(ICON_FORMATS)}-Dateien.")
+    target_dir = user_icon_dir()
+    target_dir.mkdir(parents=True, exist_ok=True)
+    target = target_dir / f"{_slug(name)}{suffix}"
+    counter = 2
+    while target.exists():
+        target = target_dir / f"{_slug(name)}-{counter}{suffix}"
+        counter += 1
+    shutil.copyfile(src, target)
+    target.chmod(0o644)
+    return target
+
+
+def _is_within(path: Path, folder: Path) -> bool:
+    try:
+        path.resolve().relative_to(folder.resolve())
+        return True
+    except (ValueError, OSError):
+        return False
+
+
+def is_user_entry(entry: DesktopEntry) -> bool:
+    """Liegt der Eintrag in deinem eigenen Benutzerordner (nicht im System)?"""
+    return _is_within(entry.path, user_applications_dir())
+
+
+def can_remove(entry: DesktopEntry) -> bool:
+    """Darf der Software-Kompass diesen Eintrag löschen?
+
+    Ja, wenn er ihn selbst angelegt hat oder der Eintrag in deinem
+    Benutzerordner liegt. Systemeinträge (z. B. /usr/share/applications)
+    gehören zu Paketen und werden nie angefasst.
+    """
+    return is_user_entry(entry)
+
+
+def overridden_system_entry(entry: DesktopEntry) -> Path | None:
+    """Überdeckt dieser Benutzereintrag einen gleichnamigen Systemeintrag?
+
+    Dann taucht nach dem Löschen wieder der ursprüngliche Systemeintrag auf.
+    """
+    try:
+        rel = entry.path.relative_to(user_applications_dir())
+    except ValueError:
+        return None
+    for apps_dir in applications_dirs()[1:]:
+        candidate = apps_dir / rel
+        if candidate.is_file():
+            return candidate
+    return None
+
+
 def remove_entry(entry: DesktopEntry) -> None:
-    """Löscht einen Eintrag – aber nur, wenn wir ihn selbst angelegt haben."""
-    if not entry.created_by_us:
-        raise PermissionError("Dieser Eintrag wurde nicht vom Software-Kompass angelegt und wird nicht gelöscht.")
+    """Löscht einen Eintrag aus dem Benutzerordner (niemals Systemeinträge)."""
+    if not can_remove(entry):
+        raise PermissionError(
+            "Dieser Eintrag gehört zum System bzw. zu einem Paket und wird vom Software-Kompass nicht gelöscht."
+        )
     entry.path.unlink()
+    # Ein von uns kopiertes Symbol wird mit aufgeräumt.
+    if entry.created_by_us and entry.icon.startswith("/") and _is_within(Path(entry.icon), user_icon_dir()):
+        Path(entry.icon).unlink(missing_ok=True)
     refresh_menu_cache(entry.path.parent)
 
 

@@ -1,5 +1,7 @@
 """Tests für Startmenü-Einträge: lesen, zuordnen, anlegen, löschen."""
 
+from pathlib import Path
+
 import pytest
 
 from cachy_kompass import desktop
@@ -7,9 +9,11 @@ from cachy_kompass.models import MenuStatus, Program, Source
 
 
 @pytest.fixture(autouse=True)
-def no_menu_refresh(monkeypatch):
-    """In Tests nicht wirklich das Startmenü neu aufbauen lassen."""
+def no_menu_refresh(monkeypatch, tmp_path):
+    """In Tests nicht wirklich das Startmenü neu aufbauen lassen; Benutzerordner = Testordner."""
     monkeypatch.setattr(desktop, "refresh_menu_cache", lambda _dir: None)
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
+    monkeypatch.setenv("XDG_DATA_DIRS", str(tmp_path / "system"))
     monkeypatch.setenv("LANG", "de_DE.UTF-8")
 
 
@@ -106,13 +110,60 @@ def test_create_and_remove(tmp_path):
     assert not path.exists()
 
 
-def test_refuses_to_remove_foreign_entry(tmp_path):
-    apps = tmp_path / "applications"
+def test_refuses_to_remove_system_entry(tmp_path):
+    apps = tmp_path / "system" / "applications"
     write(apps / "vlc.desktop", "[Desktop Entry]\nType=Application\nName=VLC\nExec=vlc\n")
     entry = desktop.load_entries([apps])[0]
+    assert not desktop.can_remove(entry)
     with pytest.raises(PermissionError):
         desktop.remove_entry(entry)
     assert entry.path.exists()
+
+
+def test_removes_hand_made_user_entry(tmp_path):
+    """Selbst (z. B. mit Claude) angelegte Einträge im Benutzerordner dürfen weg."""
+    user = tmp_path / "applications"
+    system = tmp_path / "system" / "applications"
+    write(user / "tailscale-tray.desktop", "[Desktop Entry]\nType=Application\nName=Tailscale Tray\nExec=tailscale-systray\n")
+    write(user / "vlc.desktop", "[Desktop Entry]\nType=Application\nName=VLC\nExec=vlc\nNoDisplay=true\n")
+    write(system / "vlc.desktop", "[Desktop Entry]\nType=Application\nName=VLC\nExec=vlc\n")
+    entries = {e.file_id: e for e in desktop.load_entries()}
+    tray = entries["tailscale-tray.desktop"]
+    assert desktop.can_remove(tray) and not tray.created_by_us
+    assert desktop.overridden_system_entry(tray) is None
+    # Benutzereintrag, der einen Systemeintrag überdeckt → Hinweis möglich
+    assert desktop.overridden_system_entry(entries["vlc.desktop"]) == system / "vlc.desktop"
+    desktop.remove_entry(tray)
+    assert not tray.path.exists()
+
+
+def test_icon_file_is_copied_and_cleaned_up(tmp_path):
+    logo = write(tmp_path / "Downloads" / "logo.svg", "<svg xmlns='http://www.w3.org/2000/svg'/>")
+    path = desktop.create_entry("Mein Tool", "/bin/true", icon=str(logo))
+    entry = next(e for e in desktop.load_entries() if e.path == path)
+    copied = Path(entry.icon)
+    assert copied.parent == desktop.user_icon_dir() and copied.suffix == ".svg"
+    logo.unlink()  # Original weg – das Symbol bleibt trotzdem erhalten
+    assert copied.is_file()
+    desktop.remove_entry(entry)
+    assert not copied.exists()  # unsere Kopie wird mit aufgeräumt
+
+
+def test_theme_icon_name_is_kept(tmp_path):
+    path = desktop.create_entry("Tool", "/bin/true", icon="utilities-terminal")
+    assert "Icon=utilities-terminal\n" in path.read_text()
+
+
+def test_unsupported_icon_format_rejected(tmp_path):
+    jpg = write(tmp_path / "bild.jpg", "x")
+    with pytest.raises(ValueError):
+        desktop.install_icon(jpg, "Tool")
+
+
+def test_suggest_icon_from_hidden_entry(tmp_path):
+    prog = Program("foo", "1", Source.REPO)
+    prog.desktop_entries = [desktop.entry_from_raw(tmp_path / "f.desktop", "f.desktop", {"Name": "Foo", "Icon": "foo-logo", "NoDisplay": "true"})]
+    assert desktop.suggest_icon(prog) == "foo-logo"
 
 
 def test_create_requires_values(tmp_path):

@@ -141,13 +141,36 @@ Ein Klick auf eine Spaltenüberschrift sortiert die Liste, zum Beispiel nach
 - **Startbefehl:** Was beim Klick auf den Eintrag ausgeführt wird. Normalerweise
   passt der Vorschlag.
 - **Symbol:** Der Name eines Symbols aus deinem Symbol-Design oder eine eigene
-  Bilddatei über „Bild wählen …“.
+  Bilddatei über **„Bild wählen …“**. Unter dem Feld steht, ob ein passendes
+  Symbol gefunden wurde. Falls nicht, lade z. B. das Logo von der Webseite des
+  Programms herunter und wähle es aus.
+  - Am besten eignen sich **SVG** oder **PNG**. JPG, ICO, WebP usw. werden
+    automatisch in PNG umgewandelt.
+  - Das Bild wird nach `~/.local/share/icons/cachy-kompass/` **kopiert**. Du
+    kannst die heruntergeladene Datei danach also ruhig löschen.
 - **In einem Terminalfenster starten:** Für Programme ohne eigenes Fenster
   (Kommandozeilenprogramme wie `yt-dlp` oder `htop`). Ohne Häkchen würde sich
   beim Klick scheinbar nichts tun.
 
-Selbst angelegte Einträge kannst du jederzeit über **„Eigenen Eintrag
-entfernen“** wieder löschen.
+### Einen Startmenü-Eintrag entfernen
+
+Über **„Eintrag entfernen …“** (oder im Reiter „Startmenü-Einträge“) lassen
+sich alle Einträge löschen, die in **deinem Benutzerordner** liegen
+(`~/.local/share/applications`):
+
+- Einträge, die der Software-Kompass angelegt hat, werden mitsamt ihrem
+  kopierten Symbol entfernt.
+- Einträge, die du selbst oder ein anderes Programm angelegt hat (z. B. von
+  Hand, mit Claude, über Steam, Gear Lever oder AppImageLauncher), lassen sich
+  ebenfalls entfernen. Vorher erscheint aber ein deutlicher Warnhinweis.
+- Ersetzt ein Benutzereintrag einen Systemeintrag gleichen Namens, weist der
+  Software-Kompass darauf hin. Nach dem Löschen erscheint dann wieder der
+  ursprüngliche Systemeintrag.
+- **Systemeinträge** (`/usr/share/applications` usw.) gehören zu Paketen und
+  werden **nie** gelöscht. Sie verschwinden, wenn man das Programm deinstalliert.
+
+Das Programm selbst bleibt dabei immer installiert, nur der Menüeintrag
+verschwindet.
 
 ### Reiter „Startmenü-Einträge“
 
@@ -225,8 +248,8 @@ Flatpak- und Snap-Einträgen) und den Programmen so zugeordnet:
 |---|---|
 | Programme einlesen | Nein, nur lesend |
 | Nach Updates suchen | Nein. Es werden nur Versionsnummern aus dem Internet abgefragt. `checkupdates` arbeitet in einem temporären Ordner und fasst die Paketdatenbank des Systems nicht an. |
-| Startmenü-Eintrag anlegen | Legt **eine** Datei `~/.local/share/applications/cachy-kompass-<name>.desktop` an |
-| Eigenen Eintrag entfernen | Löscht nur Einträge, die der Software-Kompass selbst angelegt hat (erkennbar an `X-Cachy-Kompass=true` in der Datei) |
+| Startmenü-Eintrag anlegen | Legt **eine** Datei `~/.local/share/applications/cachy-kompass-<name>.desktop` an, bei eigenem Bild zusätzlich eine Kopie in `~/.local/share/icons/cachy-kompass/` |
+| Eintrag entfernen | Löscht nur Einträge aus deinem Benutzerordner, nach Rückfrage. Bei fremden Einträgen gibt es eine zusätzliche Warnung. Systemeinträge werden nie angefasst. |
 | Programme deinstallieren | **Macht der Software-Kompass nicht.** Er zeigt dir nur den passenden Befehl, den du selbst ins Terminal kopieren kannst. |
 
 Für die Update-Prüfung werden folgende Adressen abgefragt (nur wenn du auf
@@ -259,7 +282,7 @@ Im heruntergeladenen Ordner:
 ./uninstall.sh
 ```
 
-Das Skript fragt nach, ob auch die selbst angelegten Startmenü-Einträge gelöscht
+Das Skript fragt nach, ob auch die selbst angelegten Startmenü-Einträge (und deren Symbole) gelöscht
 werden sollen. Die Pakete `pyside6` und `pacman-contrib` bleiben installiert;
 falls du sie nicht mehr brauchst: `sudo pacman -Rns pyside6 pacman-contrib`.
 
@@ -321,7 +344,7 @@ Meldungen erscheinen, und eröffne ein Issue auf GitHub.
 ### Ideen für später
 
 - Versteckte Einträge mit einem Klick wieder einblenden
-- Kaputte Startmenü-Einträge direkt aufräumen
+- Vorhandene Einträge bearbeiten (Name, Symbol, Kategorie)
 - Updates direkt aus dem Programm starten (mit Passwortabfrage)
 - Nix-Profile und Distrobox-Container einzeln auflisten
 - PKGBUILD, damit sich der Software-Kompass selbst über das AUR installieren lässt

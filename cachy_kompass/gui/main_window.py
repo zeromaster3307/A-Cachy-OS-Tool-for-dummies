@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
     QHeaderView,
+    QInputDialog,
     QLabel,
     QLineEdit,
     QMainWindow,
@@ -165,7 +166,8 @@ class MainWindow(QMainWindow):
 
         self.create_button = QPushButton(QIcon.fromTheme("list-add"), "Startmenü-Eintrag anlegen …")
         self.create_button.clicked.connect(self.create_entry)
-        self.remove_button = QPushButton(QIcon.fromTheme("list-remove"), "Eigenen Eintrag entfernen")
+        self.remove_button = QPushButton(QIcon.fromTheme("list-remove"), "Eintrag entfernen …")
+        self.remove_button.setToolTip("Entfernt einen Startmenü-Eintrag aus deinem Benutzerordner")
         self.remove_button.clicked.connect(self.remove_own_entry)
         self.copy_button = QPushButton(QIcon.fromTheme("edit-copy"), "Deinstallier-Befehl kopieren")
         self.copy_button.clicked.connect(self.copy_uninstall)
@@ -207,8 +209,11 @@ class MainWindow(QMainWindow):
             self.entries_table.setColumnWidth(col, width)
         self.entries_table.itemSelectionChanged.connect(self._entry_selected)
 
-        self.entry_remove_button = QPushButton(QIcon.fromTheme("list-remove"), "Ausgewählten eigenen Eintrag entfernen")
+        self.entry_remove_button = QPushButton(QIcon.fromTheme("list-remove"), "Ausgewählten Eintrag entfernen …")
         self.entry_remove_button.setEnabled(False)
+        self.entry_remove_button.setToolTip(
+            "Nur Einträge in deinem Benutzerordner können entfernt werden, Systemeinträge nicht."
+        )
         self.entry_remove_button.clicked.connect(self._remove_selected_entry)
 
         widget = QWidget()
@@ -323,7 +328,7 @@ class MainWindow(QMainWindow):
             return
         self.details.setHtml(details.program_html(program))
         self.create_button.setEnabled(True)
-        self.remove_button.setEnabled(any(e.created_by_us for e in program.desktop_entries))
+        self.remove_button.setEnabled(any(desktop.can_remove(e) for e in program.desktop_entries))
         self.copy_button.setEnabled(True)
 
     def create_entry(self) -> None:
@@ -347,13 +352,39 @@ class MainWindow(QMainWindow):
         program = self.current_program()
         if not program:
             return
-        own = [e for e in program.desktop_entries if e.created_by_us]
-        if own and self._confirm_remove(own[0]):
+        removable = [e for e in program.desktop_entries if desktop.can_remove(e)]
+        if not removable:
+            return
+        entry = removable[0]
+        if len(removable) > 1:
+            labels = [f"{e.name}  ({e.path.name})" for e in removable]
+            choice, ok = QInputDialog.getItem(self, "Eintrag entfernen", "Welcher Eintrag soll entfernt werden?", labels, 0, False)
+            if not ok:
+                return
+            entry = removable[labels.index(choice)]
+        if self._confirm_remove(entry):
             self._rematch()
 
     def _confirm_remove(self, entry: DesktopEntry) -> bool:
-        answer = QMessageBox.question(self, "Eintrag entfernen", f"Den Eintrag „{entry.name}“ wirklich entfernen?\n\n{entry.path}")
-        if answer != QMessageBox.StandardButton.Yes:
+        text = f"Den Eintrag „{entry.name}“ wirklich entfernen?\n\n{entry.path}"
+        if not entry.created_by_us:
+            text += (
+                "\n\nAchtung: Diesen Eintrag hat nicht der Software-Kompass angelegt, sondern du selbst "
+                "oder ein anderes Programm (z. B. Steam, Gear Lever, AppImageLauncher). "
+                "Das Programm selbst bleibt installiert – nur der Menüeintrag verschwindet."
+            )
+        system = desktop.overridden_system_entry(entry)
+        if system:
+            text += (
+                f"\n\nHinweis: Dieser Eintrag ersetzt einen Systemeintrag ({system}). "
+                "Nach dem Entfernen erscheint wieder der ursprüngliche Eintrag des Systems."
+            )
+        box = QMessageBox(QMessageBox.Icon.Question, "Eintrag entfernen", text, parent=self)
+        box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        box.setDefaultButton(QMessageBox.StandardButton.No)
+        box.button(QMessageBox.StandardButton.Yes).setText("Entfernen")
+        box.button(QMessageBox.StandardButton.No).setText("Abbrechen")
+        if box.exec() != QMessageBox.StandardButton.Yes:
             return False
         try:
             desktop.remove_entry(entry)
@@ -407,6 +438,8 @@ class MainWindow(QMainWindow):
                     item.setData(Qt.ItemDataRole.UserRole, e)
                     if e.created_by_us:
                         item.setToolTip("Vom Software-Kompass angelegt")
+                    elif desktop.is_user_entry(e):
+                        item.setToolTip("Liegt in deinem Benutzerordner (von dir oder einem Programm angelegt)")
                 if col == 3:
                     item.setToolTip(e.exec)
                 table.setItem(row, col, item)
@@ -421,7 +454,7 @@ class MainWindow(QMainWindow):
 
     def _entry_selected(self) -> None:
         entry = self._selected_entry()
-        self.entry_remove_button.setEnabled(bool(entry and entry.created_by_us))
+        self.entry_remove_button.setEnabled(bool(entry and desktop.can_remove(entry)))
 
     def _remove_selected_entry(self) -> None:
         entry = self._selected_entry()
