@@ -29,6 +29,7 @@ cachy_kompass/
 ├── installers.py        Erkennung, Einstufung und Installationsplan für
 │                        Paketverwaltungen / App-Stores
 ├── terminal.py          Befehle sichtbar in einem Terminalfenster ausführen
+├── cleanup.py           Prüfungen für den Reiter „Aufräumen“ (nur lesend)
 ├── sources/             eine Datei pro Installationsquelle
 │   ├── base.py          Basisklasse PackageSource
 │   ├── pacman.py        Repos + AUR
@@ -42,6 +43,7 @@ cachy_kompass/
     ├── table_model.py   Tabellenmodell + Filter
     ├── details.py       HTML für Detailansicht und Hilfe
     ├── entry_dialog.py  Dialog „Startmenü-Eintrag anlegen“
+    ├── cleanup_tab.py   Reiter „Aufräumen“
     └── workers.py       Hintergrund-Threads (damit die GUI nicht einfriert)
 tests/                   pytest-Tests mit Beispielausgaben der echten Befehle
 install.sh / uninstall.sh

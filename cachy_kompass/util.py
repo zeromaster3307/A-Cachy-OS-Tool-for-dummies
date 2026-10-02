@@ -96,6 +96,43 @@ def _simple_vercmp(a: str, b: str) -> int:
     return (pa > pb) - (pa < pb)
 
 
+_SIZE_UNITS = {"B": 1, "KiB": 1024, "MiB": 1024**2, "GiB": 1024**3, "TiB": 1024**4}
+
+
+def parse_size(text: str) -> int:
+    """„9.42 MiB“ (wie pacman es schreibt) → Bytes. Unbekanntes → 0."""
+    parts = text.replace(",", ".").split()
+    if len(parts) != 2 or parts[1] not in _SIZE_UNITS:
+        return 0
+    try:
+        return int(float(parts[0]) * _SIZE_UNITS[parts[1]])
+    except ValueError:
+        return 0
+
+
+def format_size(size: int) -> str:
+    """Bytes → gut lesbare Größe auf Deutsch, z. B. „1,2 GB“."""
+    value = float(size)
+    for unit in ("Bytes", "KB", "MB", "GB"):
+        if value < 1024 or unit == "GB":
+            text = f"{value:.0f}" if unit in ("Bytes", "KB") or value >= 100 else f"{value:.1f}"
+            return f"{text.replace('.', ',')} {unit}"
+        value /= 1024
+    return f"{size} Bytes"
+
+
+def folder_size(path: Path) -> int:
+    """Gesamtgröße aller Dateien in einem Ordner (unlesbare Dateien werden übersprungen)."""
+    total = 0
+    for root, _dirs, files in os.walk(path, onerror=lambda e: None):
+        for name in files:
+            try:
+                total += os.lstat(os.path.join(root, name)).st_size
+            except OSError:
+                pass
+    return total
+
+
 def pacman_owners(paths: Iterable[str]) -> dict[str, str]:
     """Welches pacman-Paket besitzt welche Datei? Nicht erfasste Pfade fehlen im Ergebnis."""
     paths = [p for p in paths]
