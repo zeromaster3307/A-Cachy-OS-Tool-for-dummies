@@ -51,6 +51,10 @@ firefox /usr/share/applications/firefox.desktop
 glibc /usr/bin/ldd
 spotify /usr/bin/spotify
 spotify /usr/share/applications/spotify.desktop
+teamspeak3 /opt/
+teamspeak3 /opt/teamspeak3/
+teamspeak3 /opt/teamspeak3/ts3client_linux_amd64
+teamspeak3 /usr/local/bin/helper
 """
 
 
@@ -71,7 +75,8 @@ def test_parse_sl_first_repo_wins():
 
 
 def test_parse_ql():
-    exes, desktops = pacman.parse_ql(PACMAN_QL)
+    exes, desktops, shared = pacman.parse_ql(PACMAN_QL)
+    assert shared == {"/opt", "/opt/teamspeak3", "/opt/teamspeak3/ts3client_linux_amd64", "/usr/local/bin/helper"}
     assert exes["firefox"] == ["/usr/bin/firefox"]
     assert desktops["spotify"] == ["/usr/share/applications/spotify.desktop"]
     assert "glibc" not in desktops

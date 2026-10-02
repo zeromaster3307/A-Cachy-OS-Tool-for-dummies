@@ -12,6 +12,10 @@ class ScanContext:
     """Was bisher gefunden wurde – damit spätere Quellen Doppelungen vermeiden."""
 
     programs: list[Program] = field(default_factory=list)
+    #: Dateien und Ordner in /opt und /usr/local, die laut pacman zu einem Paket
+    #: gehören (ohne „/“ am Ende). Damit erkennt die Suche nach manuell
+    #: installierten Programmen, was doch von pacman stammt.
+    pacman_paths: set[str] = field(default_factory=set)
 
     def known_executables(self) -> set[str]:
         return {exe for p in self.programs for exe in p.executables}

@@ -29,6 +29,7 @@ APPIMAGE_DEPTH = 2
 
 # Ordner, in denen Programme gern von Hand abgelegt werden.
 MANUAL_BIN_DIRS = [HOME / ".local" / "bin", HOME / "bin", Path("/usr/local/bin"), HOME / "go" / "bin"]
+OPT_DIR = Path("/opt")
 
 # Ziele von Verknüpfungen, die bereits eine andere Quelle verwaltet.
 MANAGED_PREFIXES = [
@@ -141,30 +142,61 @@ class ManualSource(PackageSource):
                     hint = "vermutlich über „go install“" if bin_dir.name == "bin" and bin_dir.parent.name == "go" else ""
                     candidates.append((entry, hint))
 
-        opt = Path("/opt")
-        if opt.is_dir():
-            for entry in sorted(opt.iterdir()):
+        if OPT_DIR.is_dir():
+            for entry in sorted(OPT_DIR.iterdir()):
                 if entry.is_dir() and not any(str(entry.resolve()).startswith(p) for p in MANAGED_PREFIXES):
                     candidates.append((entry, "Programmordner in /opt"))
 
-        # Alles, was doch einem pacman-Paket gehört, fliegt raus.
-        owned = util.pacman_owners(str(p) for p, _ in candidates)
+        # Alles, was doch einem pacman-Paket gehört, fliegt raus. Erste Wahl ist
+        # die Dateiliste, die die pacman-Quelle schon eingelesen hat; „pacman -Qo“
+        # dient nur als zusätzliche Absicherung.
+        candidates = [(p, h) for p, h in candidates if not is_pacman_owned(p, ctx.pacman_paths)]
+        owned_qo = util.pacman_owners(str(p) for p, _ in candidates)
+        other_names = {p.name.lower(): p for p in ctx.programs}
+
         programs = []
         for path, hint in candidates:
-            if str(path) in owned:
+            if str(path) in owned_qo:
                 continue
+            notes = [hint] if hint else []
+            namesake = other_names.get(path.name.lower())
+            if namesake:
+                notes.append(
+                    f"Achtung: Es ist auch „{namesake.name}“ als {namesake.info.label} installiert – "
+                    "dies ist eine zusätzliche, von Hand abgelegte Kopie"
+                )
             exes = [str(path)] if path.is_file() else _find_main_executable(path)
             programs.append(
                 Program(
                     name=path.name,
                     version="?",
                     source=Source.MANUAL,
-                    origin=f"{path}" + (f" ({hint})" if hint else ""),
+                    origin=f"{path}" + (f" ({'; '.join(notes)})" if notes else ""),
                     executables=exes,
                     install_path=str(path),
                 )
             )
         return programs
+
+
+def is_pacman_owned(path: Path, pacman_paths: set[str]) -> bool:
+    """Gehört die Datei bzw. der Ordner (oder ihr Ziel bei Verknüpfungen) einem pacman-Paket?
+
+    Bei Ordnern reicht es, wenn irgendeine Datei darin einem Paket gehört.
+    """
+    if not pacman_paths:
+        return False
+    paths = {str(path)}
+    try:
+        paths.add(str(path.resolve()))
+    except OSError:
+        pass
+    for p in paths:
+        if p in pacman_paths:
+            return True
+        if path.is_dir() and any(owned.startswith(p + "/") for owned in pacman_paths):
+            return True
+    return False
 
 
 def _find_main_executable(folder: Path) -> list[str]:

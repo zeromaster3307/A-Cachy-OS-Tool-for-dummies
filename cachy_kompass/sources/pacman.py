@@ -63,19 +63,27 @@ def parse_sl(text: str) -> dict[str, tuple[str, str]]:
     return result
 
 
-def parse_ql(text: str) -> tuple[dict[str, list[str]], dict[str, list[str]]]:
-    """``pacman -Ql`` → (Programmdateien je Paket, .desktop-Dateien je Paket)."""
+# Ordner, in denen auch von Hand installierte Programme liegen können
+SHARED_PREFIXES = ("/opt/", "/usr/local/")
+
+
+def parse_ql(text: str) -> tuple[dict[str, list[str]], dict[str, list[str]], set[str]]:
+    """``pacman -Ql`` → (Programmdateien je Paket, .desktop-Dateien je Paket,
+    alle Pfade in /opt und /usr/local, die einem Paket gehören)."""
     exes: dict[str, list[str]] = {}
     desktops: dict[str, list[str]] = {}
+    shared: set[str] = set()
     for line in text.splitlines():
         pkg, _, path = line.partition(" ")
+        if path.startswith(SHARED_PREFIXES):
+            shared.add(path.rstrip("/"))
         if not path or path.endswith("/"):
             continue
         if path.startswith("/usr/bin/"):
             exes.setdefault(pkg, []).append(path)
         elif path.startswith("/usr/share/applications/") and path.endswith(".desktop"):
             desktops.setdefault(pkg, []).append(path)
-    return exes, desktops
+    return exes, desktops, shared
 
 
 def parse_checkupdates(text: str) -> dict[str, str]:
@@ -123,7 +131,8 @@ class PacmanSource(PackageSource):
         info = parse_qi(util.run(["pacman", "-Qi"]) or "")
         foreign = set((util.run(["pacman", "-Qqm"], ok_codes=(0, 1)) or "").split())
         repos = parse_sl(util.run(["pacman", "-Sl"]) or "")
-        exes, desktops = parse_ql(util.run(["pacman", "-Ql"], timeout=300) or "")
+        exes, desktops, shared = parse_ql(util.run(["pacman", "-Ql"], timeout=300) or "")
+        ctx.pacman_paths.update(shared)
 
         programs = []
         for pkg in info:
