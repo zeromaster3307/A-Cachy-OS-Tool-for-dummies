@@ -294,3 +294,26 @@ def test_hidden_by_user_stays_app(tmp_path):
     assert vlc.kind is Kind.APP  # bleibt unter „Apps“ sichtbar
     assert desktop.entry_kind(vlc_entry, None) is Kind.APP
     assert desktop.entry_kind(entries["KIO"], None) is Kind.OTHER
+
+
+def test_shell_command(monkeypatch):
+    monkeypatch.setattr(desktop.util, "which", lambda c: f"/usr/bin/{c}" if c in ("vlc", "kate") else None)
+    assert desktop.shell_command("/usr/bin/vlc --started-from-file %U") == "vlc --started-from-file"
+    assert desktop.shell_command("kate -b %U") == "kate -b"
+    assert desktop.shell_command('"/home/u/My Apps/x.AppImage" %F') == "'/home/u/My Apps/x.AppImage'"
+    flatpak = "/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=vlc --file-forwarding org.videolan.VLC @@u %U @@"
+    assert desktop.shell_command(flatpak).endswith("--file-forwarding org.videolan.VLC")
+    assert desktop.shell_command("") == ""
+
+
+def test_launch_command(tmp_path, monkeypatch):
+    monkeypatch.setattr(desktop.util, "which", lambda c: "/usr/bin/vlc" if c == "vlc" else None)
+    vlc = Program("vlc", "3", Source.REPO, executables=["/usr/bin/cvlc", "/usr/bin/vlc"])
+    assert desktop.launch_command(vlc) == "vlc"  # ohne Eintrag: Programmdatei mit gleichem Namen
+    hidden = desktop.entry_from_raw(tmp_path / "vlc.desktop", "vlc.desktop", {"Name": "VLC", "Exec": "/usr/bin/vlc %U", "NoDisplay": "true"})
+    vlc.desktop_entries = [hidden]
+    assert desktop.launch_command(vlc) == "vlc"  # auch bei ausgeblendetem Eintrag
+    assert desktop.launch_command(Program("org.gimp.GIMP", "2", Source.FLATPAK)) == "flatpak run org.gimp.GIMP"
+    tool = Program("tool", "?", Source.MANUAL, executables=["/opt/my tool/run"])
+    assert desktop.launch_command(tool) == "'/opt/my tool/run'"
+    assert desktop.launch_command(Program("ttf-dejavu", "1", Source.REPO)) == ""

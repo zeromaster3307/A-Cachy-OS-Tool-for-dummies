@@ -287,7 +287,10 @@ class MainWindow(QMainWindow):
         self.remove_button.clicked.connect(self.remove_own_entry)
         self.copy_button = QPushButton(QIcon.fromTheme("edit-copy"), "Deinstallier-Befehl kopieren")
         self.copy_button.clicked.connect(self.copy_uninstall)
-        for b in (self.create_button, self.remove_button, self.copy_button):
+        self.copy_launch_button = QPushButton(QIcon.fromTheme("utilities-terminal"), "Startbefehl kopieren")
+        self.copy_launch_button.setToolTip("Befehl, mit dem das Programm im Terminal oder über Alt+F2 startet")
+        self.copy_launch_button.clicked.connect(self.copy_launch)
+        for b in (self.create_button, self.remove_button, self.copy_button, self.copy_launch_button):
             b.setEnabled(False)
 
         right = QWidget()
@@ -298,7 +301,10 @@ class MainWindow(QMainWindow):
         buttons.addWidget(self.create_button)
         buttons.addWidget(self.remove_button)
         right_layout.addLayout(buttons)
-        right_layout.addWidget(self.copy_button)
+        copy_buttons = QHBoxLayout()
+        copy_buttons.addWidget(self.copy_launch_button)
+        copy_buttons.addWidget(self.copy_button)
+        right_layout.addLayout(copy_buttons)
 
         splitter = QSplitter()
         splitter.addWidget(self.table)
@@ -310,7 +316,8 @@ class MainWindow(QMainWindow):
 
     def _build_entries_tab(self) -> QWidget:
         info = QLabel(
-            "Alle Startmenü-Einträge auf diesem System. „Programm fehlt“ bedeutet: Der Eintrag "
+            "Alle Startmenü-Einträge auf diesem System. Unter „Startbefehl“ steht, wie du das Programm "
+            "auch im Terminal oder über Alt+F2 startest. „Programm fehlt“ bedeutet: Der Eintrag "
             "zeigt auf ein Programm, das es nicht (mehr) gibt – er ist also vermutlich kaputt."
         )
         info.setWordWrap(True)
@@ -321,7 +328,7 @@ class MainWindow(QMainWindow):
         self.entries_table.setSortingEnabled(True)
         self.entries_table.verticalHeader().setVisible(False)
         self.entries_table.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
-        for col, width in enumerate([220, 80, 240, 110, 120]):
+        for col, width in enumerate([220, 90, 240, 110, 200]):
             self.entries_table.setColumnWidth(col, width)
         self.entries_table.itemSelectionChanged.connect(self._entry_selected)
 
@@ -339,10 +346,14 @@ class MainWindow(QMainWindow):
             "Nur Einträge in deinem Benutzerordner können entfernt werden, Systemeinträge nicht."
         )
         self.entry_remove_button.clicked.connect(self._remove_selected_entry)
-        for b in (self.entry_edit_button, self.entry_visible_button, self.entry_remove_button):
+        self.entry_copy_button = QPushButton(QIcon.fromTheme("utilities-terminal"), "Startbefehl kopieren")
+        self.entry_copy_button.setToolTip("Befehl, mit dem das Programm im Terminal oder über Alt+F2 startet")
+        self.entry_copy_button.clicked.connect(self._copy_entry_command)
+        for b in (self.entry_edit_button, self.entry_visible_button, self.entry_remove_button, self.entry_copy_button):
             b.setEnabled(False)
 
         buttons = QHBoxLayout()
+        buttons.addWidget(self.entry_copy_button)
         buttons.addStretch(1)
         buttons.addWidget(self.entry_edit_button)
         buttons.addWidget(self.entry_visible_button)
@@ -522,7 +533,7 @@ class MainWindow(QMainWindow):
     def _show_details(self, index: QModelIndex, _previous: QModelIndex | None = None) -> None:
         program = index.data(PROGRAM_ROLE) if index.isValid() else None
         if program is None:
-            for b in (self.create_button, self.remove_button, self.copy_button):
+            for b in (self.create_button, self.remove_button, self.copy_button, self.copy_launch_button):
                 b.setEnabled(False)
             return
         removal = self._removal_preview(program)
@@ -531,6 +542,7 @@ class MainWindow(QMainWindow):
         self.create_button.setEnabled(True)
         self.remove_button.setEnabled(any(desktop.can_remove(e) for e in program.desktop_entries))
         self.copy_button.setEnabled(True)
+        self.copy_launch_button.setEnabled(bool(desktop.launch_command(program)))
 
     def _removal_preview(self, program: Program) -> tuple[list[str], str] | None:
         """Trockenlauf von pacman: Was würde beim Deinstallieren mit entfernt? (zwischengespeichert)"""
@@ -686,6 +698,13 @@ class MainWindow(QMainWindow):
         self._status(f"Eintrag entfernt: {entry.path}")
         return True
 
+    def copy_launch(self) -> None:
+        program = self.current_program()
+        command = desktop.launch_command(program) if program else ""
+        if command:
+            QGuiApplication.clipboard().setText(command)
+            self._status(f"In die Zwischenablage kopiert: {command}")
+
     def copy_uninstall(self) -> None:
         program = self.current_program()
         if program:
@@ -722,7 +741,7 @@ class MainWindow(QMainWindow):
                  GREEN if e.visible else ORANGE if e.hidden_by_user else GREY),
                 (owner_text, None),
                 (KIND_TEXT[kind], None),
-                ("ok" if exists else "Programm fehlt", GREEN if exists else RED),
+                (desktop.shell_command(e.exec) if exists else f"✘ Programm fehlt: {missing}", None if exists else RED),
                 (str(e.path), None),
             ]
             for col, (text, color) in enumerate(cells):
@@ -741,8 +760,13 @@ class MainWindow(QMainWindow):
                     item.setData(Qt.ItemDataRole.UserRole, kind)
                     item.setToolTip(KIND_INFO[kind])
                 if col == ENTRY_COL_COMMAND:
-                    hint = f"Nicht gefunden: {missing}\n" if missing else ""
-                    item.setToolTip(f"{hint}Startbefehl: {e.exec}")
+                    if missing:
+                        item.setToolTip(f"Nicht gefunden: {missing}\nStartbefehl im Eintrag: {e.exec}")
+                    else:
+                        item.setToolTip(
+                            f"Im Terminal oder über Alt+F2 starten mit: {desktop.shell_command(e.exec)}\n"
+                            f"Startbefehl im Eintrag: {e.exec}"
+                        )
                 table.setItem(row, col, item)
         table.setSortingEnabled(True)
         self._apply_search()
@@ -760,6 +784,7 @@ class MainWindow(QMainWindow):
         self.entry_edit_button.setEnabled(entry is not None)
         self.entry_visible_button.setEnabled(entry is not None)
         self.entry_remove_button.setEnabled(bool(entry and desktop.can_remove(entry)))
+        self.entry_copy_button.setEnabled(bool(entry and desktop.shell_command(entry.exec)))
         if entry is None:
             return
         self.entry_visible_button.setText("Ausblenden" if entry.visible else "Einblenden")
@@ -787,7 +812,26 @@ class MainWindow(QMainWindow):
             return
         word = "ausgeblendet" if entry.visible else "eingeblendet"
         self._status(f"„{entry.name}“ {word} (gespeichert in {path}).")
+        command = desktop.shell_command(entry.exec)
+        if entry.visible and command:
+            QMessageBox.information(
+                self,
+                "Eintrag ausgeblendet",
+                f"„{entry.name}“ erscheint nicht mehr im Startmenü. Das Programm ist aber weiter "
+                f"installiert und lässt sich so starten:\n\n"
+                f"    {command}\n\n"
+                "– im Terminal (z. B. Konsole) oder nach Alt+F2 (KRunner) eingeben.\n\n"
+                "Wieder einblenden: hier im Reiter „Startmenü-Einträge“ den Eintrag wählen und "
+                "„Einblenden“ bzw. „Original wiederherstellen …“ klicken.",
+            )
         self._rematch()
+
+    def _copy_entry_command(self) -> None:
+        entry = self._selected_entry()
+        command = desktop.shell_command(entry.exec) if entry else ""
+        if command:
+            QGuiApplication.clipboard().setText(command)
+            self._status(f"In die Zwischenablage kopiert: {command}")
 
     def _remove_selected_entry(self) -> None:
         entry = self._selected_entry()

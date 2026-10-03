@@ -7,7 +7,7 @@ from html import escape
 
 from cachy_kompass import APP_NAME, __version__, desktop, util
 from cachy_kompass.installers import InstallerStatus, Rating
-from cachy_kompass.models import KIND_INFO, SOURCE_INFO, AutoUpdate, MenuStatus, Program, Source, UpdateStatus
+from cachy_kompass.models import KIND_INFO, SOURCE_INFO, AutoUpdate, Kind, MenuStatus, Program, Source, UpdateStatus
 
 
 def _row(label: str, value: str) -> str:
@@ -120,6 +120,15 @@ def program_html(p: Program, removal: tuple[list[str], str] | None = None, sizes
             flag_text = f" <i>({', '.join(flags)})</i>" if flags else ""
             items.append(f"<li>{escape(e.name)}{flag_text}<br><span style='color:gray'>{escape(str(e.path))}</span></li>")
         parts.append(f"<ul>{''.join(items)}</ul>")
+
+    command = desktop.launch_command(p)
+    if command and p.kind is not Kind.OTHER:
+        parts.append("<h3>Starten über das Terminal</h3>")
+        hidden = " – das klappt auch, wenn der Startmenü-Eintrag ausgeblendet ist" if p.menu_status is not MenuStatus.VISIBLE else ""
+        parts.append(
+            f"<p>Im Terminal (z. B. Konsole) oder über <b>Alt+F2</b> (KRunner) startest du es mit{hidden}:<br>"
+            f"{_code(command)}</p>"
+        )
 
     if p.required_by or p.optional_for or not p.explicit:
         parts.append("<h3>Warum ist das installiert?</h3>")

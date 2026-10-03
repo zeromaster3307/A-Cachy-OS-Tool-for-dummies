@@ -4,6 +4,14 @@ Hier steht, was sich von Version zu Version geändert hat. Die installierte
 Version siehst du im Fenstertitel, im Reiter „Hilfe“ oder mit
 `cachy-kompass --version`.
 
+## 0.5.2
+
+- **Startbefehl überall sichtbar:** Die Details zeigen, wie man ein Programm im
+  Terminal oder über Alt+F2 startet (z. B. `vlc`), mit Knopf „Startbefehl
+  kopieren“. Im Reiter „Startmenü-Einträge“ steht der Befehl in der Spalte
+  „Startbefehl“, und beim Ausblenden eines Eintrags erscheint ein Hinweis, wie
+  das Programm weiterhin startet.
+
 ## 0.5.1
 
 - **Behoben:** Wurde der Startmenü-Eintrag eines Programms (z. B. VLC)

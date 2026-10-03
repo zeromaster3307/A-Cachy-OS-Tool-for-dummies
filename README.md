@@ -141,6 +141,10 @@ es wieder deinstalliert. Außerdem:
   stattdessen, von welchem.
 - **Doppelt installiert:** ein Hinweis, falls es dasselbe Programm noch aus einer
   anderen Quelle gibt.
+- **Starten über das Terminal:** der Befehl, mit dem du das Programm im Terminal
+  oder über **Alt+F2** (KRunner) startest, z. B. `vlc`. Das klappt auch, wenn der
+  Startmenü-Eintrag ausgeblendet ist. Mit **„Startbefehl kopieren“** landet er in
+  der Zwischenablage.
 
 Ein Klick auf eine Spaltenüberschrift sortiert die Liste, zum Beispiel nach
 „Aktuell?“, dann stehen alle veralteten Programme oben.
@@ -258,7 +262,9 @@ Im Reiter **„Startmenü-Einträge“** gibt es drei Knöpfe für den ausgewäh
 - **Bearbeiten …** ändert Name, Beschreibung, Startbefehl, Symbol, Kategorie und
   „Im Terminal starten“. Geändert wird nur, was du tatsächlich anpasst.
 - **Einblenden / Ausblenden** zeigt einen versteckten Eintrag im Startmenü bzw.
-  versteckt ihn. Wählst du im Reiter „Programme“ bei einem Programm mit nur
+  versteckt ihn. Beim Ausblenden erscheint der Befehl, mit dem du das Programm
+  weiterhin im Terminal oder über Alt+F2 starten kannst. In der Spalte
+  „Sichtbar“ steht dann „nein (von dir)“. Wählst du im Reiter „Programme“ bei einem Programm mit nur
   verstecktem Eintrag „Startmenü-Eintrag anlegen …“, wird das Einblenden
   ebenfalls angeboten.
 - **Entfernen … / Original wiederherstellen …** (siehe oben).
@@ -273,7 +279,9 @@ trotzdem weiter deine Fassung, bis du sie entfernst.
 ### Reiter „Startmenü-Einträge“
 
 Listet **alle** Startmenü-Einträge des Systems und zeigt, zu welchem Programm
-sie gehören. Steht in der Spalte „Startbefehl“ **„Programm fehlt“**, zeigt der
+sie gehören. Die Spalte „Startbefehl“ zeigt, wie du das Programm auch im Terminal
+oder über Alt+F2 startest (**„Startbefehl kopieren“** kopiert ihn). Steht dort
+**„Programm fehlt“**, zeigt der
 Eintrag auf ein Programm, das es nicht mehr gibt. Der Eintrag ist dann
 vermutlich ein Überbleibsel einer Deinstallation.
 

@@ -408,6 +408,44 @@ def quote_exec_arg(arg: str) -> str:
     return f'"{escaped}"'
 
 
+_FIELD_CODES = {"%f", "%F", "%u", "%U", "%d", "%D", "%n", "%N", "%i", "%c", "%k", "%v", "%m"}
+
+
+def shell_command(exec_line: str) -> str:
+    """Startbefehl eines Eintrags so, wie man ihn im Terminal eintippt.
+
+    Entfernt Platzhalter wie „%U“ (dort setzt das Startmenü sonst Dateien ein)
+    und Flatpaks „@@u … @@“; „/usr/bin/vlc“ wird zu „vlc“, wenn das gleichwertig ist.
+    Die Anführungszeichen funktionieren in bash und fish.
+    """
+    tokens = [t for t in _split(exec_line) if t not in _FIELD_CODES and t not in ("@@", "@@u", "@@f")]
+    tokens = [t.replace("%%", "%") for t in tokens]
+    if tokens and tokens[0].startswith("/"):
+        short = Path(tokens[0]).name
+        found = util.which(short)
+        if found and os.path.realpath(found) == os.path.realpath(tokens[0]):
+            tokens[0] = short
+    return shlex.join(tokens) if tokens else ""
+
+
+def launch_command(prog: Program) -> str:
+    """Wie startet man das Programm im Terminal? (auch ohne Startmenü-Eintrag)"""
+    if prog.source is Source.FLATPAK:
+        return f"flatpak run {prog.name}"
+    for entry in sorted(prog.desktop_entries, key=lambda e: not e.visible):
+        if entry.exec:
+            command = shell_command(entry.exec)
+            if command:
+                return command
+    if not prog.executables:
+        return ""
+    exe = next((e for e in prog.executables if Path(e).name.lower() == prog.name.lower()), prog.executables[0])
+    found = util.which(Path(exe).name)
+    if found and os.path.realpath(found) == os.path.realpath(exe):
+        return Path(exe).name
+    return shlex.quote(exe)
+
+
 def suggest_exec(prog: Program) -> str:
     """Schlägt einen Startbefehl für ein Programm vor."""
     if prog.source is Source.FLATPAK:
