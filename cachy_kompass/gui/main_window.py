@@ -464,7 +464,7 @@ class MainWindow(QMainWindow):
         table.setRowCount(len(entries))
         for row, e in enumerate(entries):
             owner = self.result.owner_of(e)
-            missing = desktop.missing_program(e.exec)
+            missing = desktop.missing_program(e.exec, self.result.helper_names)
             exists = not missing
             owner_text = f"{owner.display_name} ({owner.info.label})" if owner else "–"
             cells = [

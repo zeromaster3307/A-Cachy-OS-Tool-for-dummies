@@ -4,6 +4,14 @@ Hier steht, was sich von Version zu Version geändert hat. Die installierte
 Version siehst du im Fenstertitel, im Reiter „Hilfe“ oder mit
 `cachy-kompass --version`.
 
+## 0.3.2
+
+- **Kein falsches „Programm fehlt“ mehr bei Hintergrunddiensten:** Einträge
+  wie KDEs „KIO“ (`Exec=kiod6`) rufen Programme auf, die nicht im normalen
+  Suchpfad liegen, sondern z. B. unter `/usr/lib/kf6/`. Der Software-Kompass
+  kennt jetzt alle solchen Hilfsprogramme aus den Dateilisten von pacman und
+  meldet sie nicht mehr als fehlend.
+
 ## 0.3.1
 
 - **Aufräumen → „Kaputte Startmenü-Einträge“:** Versteckte Systemeinträge
