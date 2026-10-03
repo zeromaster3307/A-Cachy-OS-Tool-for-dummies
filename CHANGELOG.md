@@ -4,6 +4,13 @@ Hier steht, was sich von Version zu Version geändert hat. Die installierte
 Version siehst du im Fenstertitel, im Reiter „Hilfe“ oder mit
 `cachy-kompass --version`.
 
+## 0.3.1
+
+- **Aufräumen → „Kaputte Startmenü-Einträge“:** Versteckte Systemeinträge
+  (z. B. KDE-Hintergrunddienste wie „KIO“) werden nicht mehr gemeldet. Man
+  sieht sie weder im Startmenü, noch kann man sie entfernen. Bei sichtbaren
+  Systemeinträgen steht jetzt dabei, welches Programm fehlt.
+
 ## 0.3.0
 
 - **Neuer Reiter „Aufräumen“:** findet verwaiste Pakete, alte Versionen im

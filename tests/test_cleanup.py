@@ -74,9 +74,14 @@ def test_broken_entries(monkeypatch, tmp_path):
     monkeypatch.setattr(cleanup.desktop, "target_exists", lambda t: t != "weg")
     user = DesktopEntry(path=tmp_path / "applications" / "alt.desktop", file_id="alt.desktop", name="Alt", exec="weg %f")
     system = DesktopEntry(path=tmp_path / "sys" / "x.desktop", file_id="x.desktop", name="X", exec="weg")
+    # versteckter Systemeintrag (z. B. KDE-Dienst „KIO“): weder sichtbar noch entfernbar → nicht melden
+    hidden_system = DesktopEntry(path=tmp_path / "sys" / "kiod.desktop", file_id="kiod.desktop", name="KIO",
+                                 exec="weg", no_display=True)
     ok = DesktopEntry(path=tmp_path / "applications" / "ok.desktop", file_id="ok.desktop", name="Ok", exec="da")
-    item = cleanup.check_broken_entries([user, system, ok])
+    item = cleanup.check_broken_entries([user, system, hidden_system, ok])
     assert item.summary == "2 Einträge"
+    assert not any("KIO" in d for d in item.details)
+    assert any("Systemeintrag, nur Hinweis" in d and "fehlt: weg" in d for d in item.details)
     assert item.entries == [user]  # nur der Benutzereintrag wird entfernt
     assert item.action is Action.REMOVE_ENTRIES
 
@@ -120,3 +125,12 @@ def test_terminal_runs_several_commands():
     out = subprocess.run(["bash", "-c", terminal.build_script([["false"], ["echo", "nie"]])],
                          input="\n", capture_output=True, text=True, timeout=10).stdout
     assert "nie\n" not in out.split("ausgeführt:")[1].split("\n\n", 2)[-1] and "✘" in out
+
+
+def test_only_hidden_system_entry_is_nothing_to_do(monkeypatch, tmp_path):
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
+    monkeypatch.setattr(cleanup.desktop, "target_exists", lambda t: False)
+    kiod = DesktopEntry(path=tmp_path / "sys" / "org.kde.kiod6.desktop", file_id="org.kde.kiod6.desktop",
+                        name="KIO", exec="/usr/lib/kf6/kiod6", no_display=True)
+    item = cleanup.check_broken_entries([kiod])
+    assert item.summary == "keine" and not item.found
