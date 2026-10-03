@@ -23,6 +23,8 @@ class ScanResult:
     unmatched_entries: list[DesktopEntry] = field(default_factory=list)
     installers: list[installers.InstallerStatus] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
+    #: siehe ``ScanContext.helper_names``
+    helper_names: set[str] = field(default_factory=set)
 
     def owner_of(self, entry: DesktopEntry) -> Program | None:
         for p in self.programs:
@@ -52,6 +54,7 @@ def scan(progress: Progress = _noop, sources: list[PackageSource] | None = None)
 
     progress("Lese Startmenü-Einträge …")
     result.programs = ctx.programs
+    result.helper_names = ctx.helper_names
     result.entries = desktop.load_entries()
     result.unmatched_entries = desktop.match_entries(result.programs, result.entries)
 

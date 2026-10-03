@@ -67,12 +67,19 @@ def parse_sl(text: str) -> dict[str, tuple[str, str]]:
 SHARED_PREFIXES = ("/opt/", "/usr/local/")
 
 
-def parse_ql(text: str) -> tuple[dict[str, list[str]], dict[str, list[str]], set[str]]:
+# Hier liegen Hilfsprogramme, die nicht im normalen Suchpfad stehen
+# (z. B. /usr/lib/kf6/kiod6 – wird von KDE über D-Bus gestartet).
+HELPER_PREFIXES = ("/usr/lib/", "/usr/libexec/")
+
+
+def parse_ql(text: str) -> tuple[dict[str, list[str]], dict[str, list[str]], set[str], set[str]]:
     """``pacman -Ql`` → (Programmdateien je Paket, .desktop-Dateien je Paket,
-    alle Pfade in /opt und /usr/local, die einem Paket gehören)."""
+    alle Pfade in /opt und /usr/local, die einem Paket gehören,
+    Namen von Hilfsprogrammen außerhalb des Suchpfads)."""
     exes: dict[str, list[str]] = {}
     desktops: dict[str, list[str]] = {}
     shared: set[str] = set()
+    helpers: set[str] = set()
     for line in text.splitlines():
         pkg, _, path = line.partition(" ")
         if path.startswith(SHARED_PREFIXES):
@@ -83,7 +90,12 @@ def parse_ql(text: str) -> tuple[dict[str, list[str]], dict[str, list[str]], set
             exes.setdefault(pkg, []).append(path)
         elif path.startswith("/usr/share/applications/") and path.endswith(".desktop"):
             desktops.setdefault(pkg, []).append(path)
-    return exes, desktops, shared
+        elif path.startswith(HELPER_PREFIXES):
+            name = path.rsplit("/", 1)[-1]
+            # Programme haben unter Linux meist keine Dateiendung (.so, .py, .json … ausschließen)
+            if "." not in name:
+                helpers.add(name)
+    return exes, desktops, shared, helpers
 
 
 def parse_checkupdates(text: str) -> dict[str, str]:
@@ -131,8 +143,9 @@ class PacmanSource(PackageSource):
         info = parse_qi(util.run(["pacman", "-Qi"]) or "")
         foreign = set((util.run(["pacman", "-Qqm"], ok_codes=(0, 1)) or "").split())
         repos = parse_sl(util.run(["pacman", "-Sl"]) or "")
-        exes, desktops, shared = parse_ql(util.run(["pacman", "-Ql"], timeout=300) or "")
+        exes, desktops, shared, helpers = parse_ql(util.run(["pacman", "-Ql"], timeout=300) or "")
         ctx.pacman_paths.update(shared)
+        ctx.helper_names.update(helpers)
 
         programs = []
         for pkg in info:

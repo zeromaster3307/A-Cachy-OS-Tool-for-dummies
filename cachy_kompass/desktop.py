@@ -14,6 +14,7 @@ import os
 import re
 import shlex
 import shutil
+from collections.abc import Collection
 from pathlib import Path
 
 from cachy_kompass import util
@@ -279,9 +280,17 @@ def real_programs(exec_line: str) -> list[str]:
     return result
 
 
-def missing_program(exec_line: str) -> str:
-    """Das erste Programm einer Exec-Zeile, das es nicht gibt – oder „“, wenn alles da ist."""
-    return next((c for c in real_programs(exec_line) if not target_exists(c)), "")
+def missing_program(exec_line: str, helper_names: Collection[str] = ()) -> str:
+    """Das erste Programm einer Exec-Zeile, das es nicht gibt – oder „“, wenn alles da ist.
+
+    ``helper_names``: Programme, die zu installierten Paketen gehören, aber nicht im
+    Suchpfad liegen (z. B. „kiod6“ unter /usr/lib/kf6). Die gelten als vorhanden.
+    """
+
+    def exists(cmd: str) -> bool:
+        return target_exists(cmd) or (not cmd.startswith("/") and cmd in helper_names)
+
+    return next((c for c in real_programs(exec_line) if not exists(c)), "")
 
 
 def main_target(exec_line: str) -> str:

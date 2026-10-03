@@ -15,7 +15,7 @@ Grundsätze wie überall im Software-Kompass:
 from __future__ import annotations
 
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Collection
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -205,8 +205,11 @@ def check_flatpak_unused() -> CleanupItem | None:
 # --- Kaputte Startmenü-Einträge -----------------------------------------------------
 
 
-def check_broken_entries(entries: list[DesktopEntry]) -> CleanupItem:
-    candidates = [e for e in entries if e.type == "Application" and e.exec and desktop.missing_program(e.exec)]
+def check_broken_entries(entries: list[DesktopEntry], helper_names: Collection[str] = ()) -> CleanupItem:
+    def missing(e: DesktopEntry) -> str:
+        return desktop.missing_program(e.exec, helper_names)
+
+    candidates = [e for e in entries if e.type == "Application" and e.exec and missing(e)]
     removable = [e for e in candidates if desktop.can_remove(e)]
     # Versteckte Systemeinträge (z. B. KDE-Hintergrunddienste wie „KIO“) sieht man
     # weder im Startmenü noch kann man sie hier entfernen – sie gehören nicht in
@@ -214,9 +217,9 @@ def check_broken_entries(entries: list[DesktopEntry]) -> CleanupItem:
     # nützlicher Hinweis (Menüpunkt, der nichts tut).
     system = [e for e in candidates if not desktop.can_remove(e) and e.visible]
     broken = removable + system
-    details = [f"{e.name}  –  fehlt: {desktop.missing_program(e.exec)}  ({e.path})" for e in removable]
+    details = [f"{e.name}  –  fehlt: {missing(e)}  ({e.path})" for e in removable]
     details += [
-        f"{e.name}  –  fehlt: {desktop.missing_program(e.exec)}  – Systemeintrag, nur Hinweis  ({e.path})"
+        f"{e.name}  –  fehlt: {missing(e)}  – Systemeintrag, nur Hinweis  ({e.path})"
         for e in system
     ]
     explanation = (
@@ -286,14 +289,19 @@ def _noop(_: str) -> None:
     pass
 
 
-def scan(programs: list[Program], entries: list[DesktopEntry], progress: Progress = _noop) -> list[CleanupItem]:
+def scan(
+    programs: list[Program],
+    entries: list[DesktopEntry],
+    helper_names: Collection[str] = (),
+    progress: Progress = _noop,
+) -> list[CleanupItem]:
     """Führt alle Prüfungen aus. Ändert nichts am System."""
     checks: list[tuple[str, Callable[[], CleanupItem | None]]] = [
         ("verwaiste Pakete", lambda: check_orphans(programs)),
         ("Paket-Zwischenspeicher", check_package_cache),
         ("AUR-Bauordner", check_aur_build_cache),
         ("Flatpak", check_flatpak_unused),
-        ("Startmenü-Einträge", lambda: check_broken_entries(entries)),
+        ("Startmenü-Einträge", lambda: check_broken_entries(entries, helper_names)),
         ("AUR (braucht Internet)", lambda: check_not_in_aur(programs)),
     ]
     items = []

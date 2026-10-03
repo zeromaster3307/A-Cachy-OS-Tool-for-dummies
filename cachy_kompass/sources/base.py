@@ -16,6 +16,10 @@ class ScanContext:
     #: gehören (ohne „/“ am Ende). Damit erkennt die Suche nach manuell
     #: installierten Programmen, was doch von pacman stammt.
     pacman_paths: set[str] = field(default_factory=set)
+    #: Namen von Hilfsprogrammen, die zu Paketen gehören, aber nicht im Suchpfad
+    #: liegen (z. B. „kiod6“ in /usr/lib/kf6). Startmenü-Einträge, die sie ohne
+    #: Pfad aufrufen, sind deshalb nicht kaputt.
+    helper_names: set[str] = field(default_factory=set)
 
     def known_executables(self) -> set[str]:
         return {exe for p in self.programs for exe in p.executables}

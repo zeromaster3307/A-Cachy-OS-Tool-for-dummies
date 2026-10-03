@@ -128,6 +128,7 @@ class CleanupTab(QWidget):
             cleanup.scan,
             result.programs,
             result.entries,
+            result.helper_names,
             on_done=self._check_done,
             on_error=self._check_failed,
             on_progress=self.main._status,

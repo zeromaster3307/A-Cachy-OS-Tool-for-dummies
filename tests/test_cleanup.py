@@ -134,3 +134,12 @@ def test_only_hidden_system_entry_is_nothing_to_do(monkeypatch, tmp_path):
                         name="KIO", exec="/usr/lib/kf6/kiod6", no_display=True)
     item = cleanup.check_broken_entries([kiod])
     assert item.summary == "keine" and not item.found
+
+
+def test_helper_outside_path_is_not_missing(monkeypatch):
+    """Echter Fall: org.kde.kiod6.desktop hat „Exec=kiod6“, die Datei liegt in /usr/lib/kf6."""
+    monkeypatch.setattr(cleanup.desktop, "target_exists", lambda t: False)  # nicht im Suchpfad
+    assert cleanup.desktop.missing_program("kiod6") == "kiod6"
+    assert cleanup.desktop.missing_program("kiod6", {"kiod6"}) == ""
+    # ein vollständiger Pfad muss wirklich existieren, der Name allein reicht dann nicht
+    assert cleanup.desktop.missing_program("/opt/weg/kiod6", {"kiod6"}) == "/opt/weg/kiod6"
