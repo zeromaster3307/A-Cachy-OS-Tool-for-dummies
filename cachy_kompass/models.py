@@ -255,11 +255,19 @@ class DesktopEntry:
     hidden: bool = False
     type: str = "Application"
     raw: dict[str, str] = field(default_factory=dict)
+    #: Überdeckt dieser Eintrag einen gleichnamigen (System-)Eintrag: War der sichtbar?
+    #: ``None`` = überdeckt nichts.
+    original_visible: bool | None = None
 
     @property
     def visible(self) -> bool:
         """Erscheint der Eintrag tatsächlich im Startmenü?"""
         return self.type == "Application" and not self.no_display and not self.hidden
+
+    @property
+    def hidden_by_user(self) -> bool:
+        """Eigentlich sichtbarer Eintrag, den der Benutzer (z. B. mit dem Software-Kompass) ausgeblendet hat."""
+        return not self.visible and self.original_visible is True
 
     @property
     def created_by_us(self) -> bool:
@@ -331,6 +339,9 @@ class Program:
     def kind(self) -> Kind:
         """App, Befehl oder Sonstiges – siehe ``Kind``."""
         if self.menu_status is MenuStatus.VISIBLE or self.source in (Source.FLATPAK, Source.APPIMAGE):
+            return Kind.APP
+        # Selbst ausgeblendet ändert nichts daran, dass es ein Programm mit Fenster ist
+        if any(e.hidden_by_user for e in self.desktop_entries):
             return Kind.APP
         if self.executables:
             return Kind.COMMAND

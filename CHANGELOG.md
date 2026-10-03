@@ -4,6 +4,14 @@ Hier steht, was sich von Version zu Version geändert hat. Die installierte
 Version siehst du im Fenstertitel, im Reiter „Hilfe“ oder mit
 `cachy-kompass --version`.
 
+## 0.5.1
+
+- **Behoben:** Wurde der Startmenü-Eintrag eines Programms (z. B. VLC)
+  ausgeblendet, galt das Programm danach als „Befehl“ und verschwand beim
+  Standard-Filter „Apps“ aus beiden Reitern. Selbst ausgeblendete Programme
+  bleiben jetzt „Apps“; im Reiter „Startmenü-Einträge“ steht bei „Sichtbar“
+  „nein (von dir)“, und die Details erklären, wie man den Eintrag wieder einblendet.
+
 ## 0.5.0
 
 - **Alles aktualisieren …:** startet System- und AUR-Update (paru), Flatpak-,

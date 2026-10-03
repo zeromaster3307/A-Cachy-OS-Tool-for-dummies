@@ -188,13 +188,20 @@ def load_entries(dirs: list[Path] | None = None) -> list[DesktopEntry]:
             continue
         for path in sorted(apps_dir.rglob("*.desktop")):
             file_id = file_id_for(path, apps_dir)
-            if file_id in entries:
-                continue
+            known = entries.get(file_id)
+            if known is not None and known.original_visible is not None:
+                continue  # schon ein wirksamer Eintrag und dessen Original bekannt
             try:
                 raw = parse_desktop_text(path.read_text(encoding="utf-8", errors="replace"))
             except OSError:
                 continue
-            if raw:
+            if not raw:
+                continue
+            if known is not None:
+                # Das überdeckte Original merken: Hat der Benutzer einen sichtbaren
+                # Systemeintrag nur ausgeblendet, bleibt das Programm eine „App“.
+                known.original_visible = entry_from_raw(path, file_id, raw).visible
+            else:
                 entries[file_id] = entry_from_raw(path, file_id, raw)
     return list(entries.values())
 
@@ -532,7 +539,7 @@ def entry_kind(entry: DesktopEntry, owner: Program | None) -> Kind:
     """
     if owner is not None:
         return owner.kind
-    return Kind.APP if entry.visible else Kind.OTHER
+    return Kind.APP if entry.visible or entry.hidden_by_user else Kind.OTHER
 
 
 def origin_note(entry: DesktopEntry) -> str:

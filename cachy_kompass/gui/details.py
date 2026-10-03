@@ -86,6 +86,12 @@ def program_html(p: Program, removal: tuple[list[str], str] | None = None, sizes
     status = p.menu_status
     if status is MenuStatus.VISIBLE:
         parts.append("<p>✔ Das Programm ist über das Startmenü erreichbar.</p>")
+    elif status is MenuStatus.HIDDEN and any(e.hidden_by_user for e in p.desktop_entries):
+        parts.append(
+            "<p>◐ Der Eintrag ist ausgeblendet – das hast du selbst so eingestellt. Wieder "
+            "einblenden: Reiter „Startmenü-Einträge“ → Eintrag wählen → „Einblenden“ bzw. "
+            "„Original wiederherstellen …“.</p>"
+        )
     elif status is MenuStatus.HIDDEN:
         parts.append(
             "<p>◐ Es gibt einen Eintrag, er ist aber absichtlich ausgeblendet "
@@ -101,7 +107,9 @@ def program_html(p: Program, removal: tuple[list[str], str] | None = None, sizes
         items = []
         for e in p.desktop_entries:
             flags = []
-            if not e.visible:
+            if e.hidden_by_user:
+                flags.append("von dir ausgeblendet")
+            elif not e.visible:
                 flags.append("ausgeblendet")
             if e.created_by_us:
                 flags.append("vom Software-Kompass angelegt")

@@ -718,7 +718,8 @@ class MainWindow(QMainWindow):
             kind = desktop.entry_kind(e, owner)
             cells = [
                 (e.name, None),
-                ("ja" if e.visible else "nein", GREEN if e.visible else GREY),
+                ("ja" if e.visible else "nein (von dir)" if e.hidden_by_user else "nein",
+                 GREEN if e.visible else ORANGE if e.hidden_by_user else GREY),
                 (owner_text, None),
                 (KIND_TEXT[kind], None),
                 ("ok" if exists else "Programm fehlt", GREEN if exists else RED),

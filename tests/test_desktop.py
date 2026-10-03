@@ -271,3 +271,26 @@ def test_edit_entry_copies_icon(tmp_path):
     desktop.edit_entry(entry, {"Icon": str(img)})
     icon = desktop.load_entries()[0].icon
     assert icon.startswith(str(desktop.user_icon_dir())) and Path(icon).is_file()
+
+
+def test_hidden_by_user_stays_app(tmp_path):
+    """Regression: Ein ausgeblendetes VLC verschwand, weil es danach als „Befehl“ galt."""
+    from cachy_kompass.models import Kind
+
+    write(tmp_path / "system" / "applications" / "vlc.desktop", "[Desktop Entry]\nType=Application\nName=VLC\nExec=vlc %U\n")
+    write(tmp_path / "system" / "applications" / "kiod.desktop", "[Desktop Entry]\nType=Application\nName=KIO\nExec=kiod6\nNoDisplay=true\n")
+    entry = next(e for e in desktop.load_entries() if e.name == "VLC")
+    assert entry.original_visible is None and not entry.hidden_by_user
+    desktop.set_visible(entry, False)
+
+    entries = {e.name: e for e in desktop.load_entries()}
+    vlc_entry = entries["VLC"]
+    assert not vlc_entry.visible and vlc_entry.hidden_by_user and vlc_entry.original_visible is True
+    assert not entries["KIO"].hidden_by_user  # vom Paket versteckt, nicht vom Benutzer
+
+    vlc = Program("vlc", "3", Source.REPO, executables=["/usr/bin/vlc"])
+    vlc.desktop_entries = [vlc_entry]
+    assert vlc.menu_status is MenuStatus.HIDDEN
+    assert vlc.kind is Kind.APP  # bleibt unter „Apps“ sichtbar
+    assert desktop.entry_kind(vlc_entry, None) is Kind.APP
+    assert desktop.entry_kind(entries["KIO"], None) is Kind.OTHER
