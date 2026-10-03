@@ -4,6 +4,15 @@ Hier steht, was sich von Version zu Version geändert hat. Die installierte
 Version siehst du im Fenstertitel, im Reiter „Hilfe“ oder mit
 `cachy-kompass --version`.
 
+## 0.4.1
+
+- **Filter „Art“ als Häkchen** (☑ Apps ☐ Befehle ☐ Sonstiges), frei
+  kombinierbar. Standard ist jetzt **nur Apps**.
+- Der Filter wirkt auch im Reiter **„Startmenü-Einträge“**, der ebenfalls eine
+  Spalte „Art“ bekommt.
+- Die Filter stehen jetzt in einer **zweiten Zeile** der Werkzeugleiste, damit
+  auf normal breiten Bildschirmen nichts mehr hinter dem »-Pfeil verschwindet.
+
 ## 0.4.0
 
 - **Neue Spalte „Art“ mit Filter:** Jedes Programm ist als 🪟 App (mit Fenster),

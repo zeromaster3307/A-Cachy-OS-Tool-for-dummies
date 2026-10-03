@@ -19,14 +19,10 @@ COL_NAME, COL_VERSION, COL_SOURCE, COL_KIND, COL_MENU, COL_AUTO, COL_UPDATE, COL
 
 KIND_TEXT = {Kind.APP: "🪟 App", Kind.COMMAND: "⌨ Befehl", Kind.OTHER: "📦 Sonstiges"}
 
-#: Auswahl im Filter „Art“: Beschriftung → erlaubte Arten
-KIND_FILTERS: list[tuple[str, frozenset[Kind]]] = [
-    ("Art: Apps + Befehle", frozenset({Kind.APP, Kind.COMMAND})),
-    ("Art: nur Apps", frozenset({Kind.APP})),
-    ("Art: nur Befehle", frozenset({Kind.COMMAND})),
-    ("Art: nur Sonstiges", frozenset({Kind.OTHER})),
-    ("Art: alles", frozenset(Kind)),
-]
+#: Beschriftung der Häkchen im Filter „Art“
+KIND_CHECKBOX_TEXT = {Kind.APP: "🪟 Apps", Kind.COMMAND: "⌨ Befehle", Kind.OTHER: "📦 Sonstiges"}
+#: Standard: nur Programme mit Fenster
+DEFAULT_KINDS = frozenset({Kind.APP})
 
 MENU_TEXT = {MenuStatus.VISIBLE: "✔ ja", MenuStatus.HIDDEN: "◐ versteckt", MenuStatus.NONE: "✘ nein"}
 MENU_COLOR = {MenuStatus.VISIBLE: GREEN, MenuStatus.HIDDEN: ORANGE, MenuStatus.NONE: GREY}
@@ -142,8 +138,7 @@ class ProgramFilterModel(QSortFilterProxyModel):
         self.only_outdated = False
         self.only_manual_update = False
         self.show_dependencies = False
-        # Standard: nur, was man als Benutzer starten kann
-        self.kinds: frozenset[Kind] = KIND_FILTERS[0][1]
+        self.kinds: frozenset[Kind] = DEFAULT_KINDS
         self.setSortRole(SORT_ROLE)
         self.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
 
