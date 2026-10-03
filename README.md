@@ -120,6 +120,7 @@ Die Hauptansicht. Jede Zeile ist ein Programm.
 | **Programm** | Name des Programms (wenn möglich so, wie er im Startmenü steht) |
 | **Version** | installierte Version |
 | **Quelle** | auf welchem Weg es installiert wurde (siehe [Begriffe](#begriffe-einfach-erklärt)) |
+| **Art** | 🪟 **App** (Programm mit Fenster) · ⌨ **Befehl** (Kommandozeilenprogramm fürs Terminal) · 📦 **Sonstiges** (nicht startbar: Schriftarten, Treiber, Firmware, Bibliotheken, Designs, Sammelpakete) |
 | **Startmenü** | ✔ sichtbar · ◐ Eintrag vorhanden, aber ausgeblendet · ✘ kein Eintrag |
 | **Auto-Update** | ✔ wird beim Systemupdate mit aktualisiert · ◐ nur mit dem richtigen Werkzeug · ✘ musst du selbst aktualisieren |
 | **Aktuell?** | erst nach Klick auf **„Nach Updates suchen“**: ✔ aktuell · ⬆ neuere Version verfügbar |
@@ -140,6 +141,7 @@ Ein Klick auf eine Spaltenüberschrift sortiert die Liste, zum Beispiel nach
 | **Nach Updates suchen** | fragt im Internet nach neueren Versionen; dabei wird **nichts** installiert |
 | **Suchen …** | filtert **alle Reiter** gleichzeitig: Namen, Beschreibungen, Namen der Startmenü-Einträge (z. B. „Claude Code“ für das Programm `claude`), Befehle und Pfade |
 | **Alle Quellen** | zeigt nur Programme aus einer bestimmten Quelle, z. B. nur Flatpaks |
+| **Art: …** | Standard ist **„Apps + Befehle“**, also alles, was du als Benutzer starten kannst. Schriftarten, Treiber usw. blendest du mit „Art: alles“ oder „nur Sonstiges“ ein. |
 | **Startmenü: …** | zeigt z. B. nur Programme **ohne** Startmenü-Eintrag |
 | **Nur veraltete** | zeigt nur Programme mit verfügbarem Update |
 | **Nur ohne Auto-Update** | zeigt nur Programme, um deren Updates du dich selbst kümmern musst |

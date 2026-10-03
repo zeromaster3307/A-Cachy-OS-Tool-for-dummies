@@ -7,7 +7,7 @@ from html import escape
 
 from cachy_kompass import APP_NAME, __version__, desktop
 from cachy_kompass.installers import InstallerStatus, Rating
-from cachy_kompass.models import SOURCE_INFO, AutoUpdate, MenuStatus, Program, Source, UpdateStatus
+from cachy_kompass.models import KIND_INFO, SOURCE_INFO, AutoUpdate, MenuStatus, Program, Source, UpdateStatus
 
 
 def _row(label: str, value: str) -> str:
@@ -27,6 +27,7 @@ def program_html(p: Program) -> str:
 
     rows = [_row("Version", escape(p.version or "?"))]
     rows.append(_row("Quelle", escape(p.info.label)))
+    rows.append(_row("Art", f"{escape(p.kind.value)} – {escape(KIND_INFO[p.kind])}"))
     if p.origin:
         rows.append(_row("Herkunft", escape(p.origin)))
     if not p.explicit:

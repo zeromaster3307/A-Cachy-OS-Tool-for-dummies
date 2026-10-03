@@ -209,7 +209,7 @@ class BrewSource(PackageSource):
                 version=version,
                 source=Source.BREW,
                 origin="Homebrew",
-                executables=[f"{prefix}/{name}"] if prefix else [],
+                executables=[f"{prefix}/{name}"] if prefix and Path(f"{prefix}/{name}").exists() else [],
                 url=f"https://formulae.brew.sh/formula/{name}",
             )
             for name, version in versions.items()

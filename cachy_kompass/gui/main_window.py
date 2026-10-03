@@ -41,6 +41,7 @@ from cachy_kompass.gui.table_model import (
     COL_NAME,
     GREEN,
     GREY,
+    KIND_FILTERS,
     ORANGE,
     PROGRAM_ROLE,
     RED,
@@ -111,6 +112,18 @@ class MainWindow(QMainWindow):
         )
         bar.addWidget(self.source_filter)
 
+        self.kind_filter = QComboBox()
+        for label, kinds in KIND_FILTERS:
+            self.kind_filter.addItem(label, kinds)
+        self.kind_filter.setToolTip(
+            "App = Programm mit Fenster · Befehl = fürs Terminal · "
+            "Sonstiges = nicht startbar (Schriftarten, Treiber, Bibliotheken …)"
+        )
+        self.kind_filter.currentIndexChanged.connect(
+            lambda: self.proxy.update_filter(kinds=self.kind_filter.currentData())
+        )
+        bar.addWidget(self.kind_filter)
+
         self.menu_filter = QComboBox()
         self.menu_filter.addItem("Startmenü: egal", None)
         self.menu_filter.addItem("Startmenü: vorhanden", MenuStatus.VISIBLE)
@@ -163,7 +176,7 @@ class MainWindow(QMainWindow):
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
         header.setSectionResizeMode(COL_DESC, QHeaderView.ResizeMode.Stretch)
-        for col, width in enumerate([200, 110, 120, 100, 100, 120]):
+        for col, width in enumerate([200, 110, 120, 95, 100, 100, 120]):
             self.table.setColumnWidth(col, width)
         header.setMinimumSectionSize(60)
         self.table.selectionModel().currentRowChanged.connect(self._show_details)

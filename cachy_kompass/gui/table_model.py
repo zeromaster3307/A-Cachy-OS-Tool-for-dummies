@@ -7,15 +7,26 @@ from typing import Any
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QColor
 
-from cachy_kompass.models import AutoUpdate, MenuStatus, Program, Source, UpdateStatus
+from cachy_kompass.models import KIND_INFO, AutoUpdate, Kind, MenuStatus, Program, Source, UpdateStatus
 
 GREEN = QColor("#2e9d4f")
 ORANGE = QColor("#d98a00")
 RED = QColor("#d64545")
 GREY = QColor("#8a8a8a")
 
-COLUMNS = ["Programm", "Version", "Quelle", "Startmenü", "Auto-Update", "Aktuell?", "Beschreibung"]
-COL_NAME, COL_VERSION, COL_SOURCE, COL_MENU, COL_AUTO, COL_UPDATE, COL_DESC = range(len(COLUMNS))
+COLUMNS = ["Programm", "Version", "Quelle", "Art", "Startmenü", "Auto-Update", "Aktuell?", "Beschreibung"]
+COL_NAME, COL_VERSION, COL_SOURCE, COL_KIND, COL_MENU, COL_AUTO, COL_UPDATE, COL_DESC = range(len(COLUMNS))
+
+KIND_TEXT = {Kind.APP: "🪟 App", Kind.COMMAND: "⌨ Befehl", Kind.OTHER: "📦 Sonstiges"}
+
+#: Auswahl im Filter „Art“: Beschriftung → erlaubte Arten
+KIND_FILTERS: list[tuple[str, frozenset[Kind]]] = [
+    ("Art: Apps + Befehle", frozenset({Kind.APP, Kind.COMMAND})),
+    ("Art: nur Apps", frozenset({Kind.APP})),
+    ("Art: nur Befehle", frozenset({Kind.COMMAND})),
+    ("Art: nur Sonstiges", frozenset({Kind.OTHER})),
+    ("Art: alles", frozenset(Kind)),
+]
 
 MENU_TEXT = {MenuStatus.VISIBLE: "✔ ja", MenuStatus.HIDDEN: "◐ versteckt", MenuStatus.NONE: "✘ nein"}
 MENU_COLOR = {MenuStatus.VISIBLE: GREEN, MenuStatus.HIDDEN: ORANGE, MenuStatus.NONE: GREY}
@@ -80,6 +91,7 @@ class ProgramTableModel(QAbstractTableModel):
                 p.display_name,
                 p.version,
                 p.info.label,
+                KIND_TEXT[p.kind],
                 MENU_TEXT[p.menu_status],
                 AUTO_TEXT[p.info.auto_update],
                 update_text(p),
@@ -88,6 +100,8 @@ class ProgramTableModel(QAbstractTableModel):
         if role == SORT_ROLE:
             if col == COL_NAME:
                 return p.display_name.lower()
+            if col == COL_KIND:
+                return list(Kind).index(p.kind)
             if col == COL_MENU:
                 return list(MenuStatus).index(p.menu_status)
             if col == COL_AUTO:
@@ -110,6 +124,8 @@ class ProgramTableModel(QAbstractTableModel):
                 return p.update.note
             if col == COL_SOURCE:
                 return p.origin
+            if col == COL_KIND:
+                return KIND_INFO[p.kind]
             if col == COL_DESC:
                 return p.description
         return None
@@ -126,6 +142,8 @@ class ProgramFilterModel(QSortFilterProxyModel):
         self.only_outdated = False
         self.only_manual_update = False
         self.show_dependencies = False
+        # Standard: nur, was man als Benutzer starten kann
+        self.kinds: frozenset[Kind] = KIND_FILTERS[0][1]
         self.setSortRole(SORT_ROLE)
         self.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
 
@@ -140,6 +158,8 @@ class ProgramFilterModel(QSortFilterProxyModel):
         if not self.show_dependencies and not p.explicit:
             return False
         if self.source is not None and p.source is not self.source:
+            return False
+        if p.kind not in self.kinds:
             return False
         if self.menu is not None and p.menu_status is not self.menu:
             return False

@@ -14,6 +14,7 @@ def _row(p: Program) -> list[str]:
         p.display_name,
         p.version,
         p.info.label,
+        p.kind.value,
         p.menu_status.value,
         p.info.auto_update.value,
         p.update.status.value + (f" ({p.update.latest})" if p.update.latest and p.update.latest != p.version else ""),
@@ -21,7 +22,7 @@ def _row(p: Program) -> list[str]:
 
 
 def print_table(programs: list[Program]) -> None:
-    header = ["Programm", "Version", "Quelle", "Startmenü", "Auto-Update", "Aktuell?"]
+    header = ["Programm", "Version", "Quelle", "Art", "Startmenü", "Auto-Update", "Aktuell?"]
     rows = [header] + [_row(p) for p in programs]
     widths = [min(max(len(r[i]) for r in rows), 40) for i in range(len(header))]
     for n, row in enumerate(rows):
@@ -38,6 +39,7 @@ def to_json(programs: list[Program]) -> str:
                 "display_name": p.display_name,
                 "version": p.version,
                 "source": p.source.value,
+                "kind": p.kind.value,
                 "origin": p.origin,
                 "explicit": p.explicit,
                 "description": p.description,
