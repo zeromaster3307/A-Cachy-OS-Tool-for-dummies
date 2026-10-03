@@ -4,6 +4,12 @@ Hier steht, was sich von Version zu Version geändert hat. Die installierte
 Version siehst du im Fenstertitel, im Reiter „Hilfe“ oder mit
 `cachy-kompass --version`.
 
+## 0.4.2
+
+- Die Häkchen für den Filter „Art“ stecken jetzt in einer **Ausklappliste**
+  („Art: 🪟 Apps“), damit die Filterzeile übersichtlicher ist. Das Menü bleibt
+  beim Anhaken offen, mehrere Arten lassen sich weiterhin kombinieren.
+
 ## 0.4.1
 
 - **Filter „Art“ als Häkchen** (☑ Apps ☐ Befehle ☐ Sonstiges), frei

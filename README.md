@@ -141,7 +141,7 @@ Ein Klick auf eine Spaltenüberschrift sortiert die Liste, zum Beispiel nach
 | **Nach Updates suchen** | fragt im Internet nach neueren Versionen; dabei wird **nichts** installiert |
 | **Suchen …** | filtert **alle Reiter** gleichzeitig: Namen, Beschreibungen, Namen der Startmenü-Einträge (z. B. „Claude Code“ für das Programm `claude`), Befehle und Pfade |
 | **Alle Quellen** | zeigt nur Programme aus einer bestimmten Quelle, z. B. nur Flatpaks |
-| **Art: ☑ Apps ☐ Befehle ☐ Sonstiges** | Häkchen, frei kombinierbar. Standard ist **nur Apps**, also Programme mit Fenster. Häkchen bei „Befehle“ zeigt zusätzlich Kommandozeilenprogramme, bei „Sonstiges“ auch Schriftarten, Treiber usw. Der Filter gilt auch im Reiter „Startmenü-Einträge“. |
+| **Art: …** | Ausklappliste mit Häkchen (☑ Apps ☐ Befehle ☐ Sonstiges), frei kombinierbar. Auf der Schaltfläche steht, was gerade ausgewählt ist. Standard ist **nur Apps**, also Programme mit Fenster. Häkchen bei „Befehle“ zeigt zusätzlich Kommandozeilenprogramme, bei „Sonstiges“ auch Schriftarten, Treiber usw. Der Filter gilt auch im Reiter „Startmenü-Einträge“. |
 | **Startmenü: …** | zeigt z. B. nur Programme **ohne** Startmenü-Eintrag |
 | **Nur veraltete** | zeigt nur Programme mit verfügbarem Update |
 | **Nur ohne Auto-Update** | zeigt nur Programme, um deren Updates du dich selbst kümmern musst |

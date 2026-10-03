@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QMainWindow,
+    QMenu,
     QMessageBox,
     QProgressBar,
     QPushButton,
@@ -28,8 +29,10 @@ from PySide6.QtWidgets import (
     QTabWidget,
     QTextBrowser,
     QToolBar,
+    QToolButton,
     QVBoxLayout,
     QWidget,
+    QWidgetAction,
 )
 
 from cachy_kompass import APP_ID, APP_NAME, __version__, desktop, scanner, terminal
@@ -125,16 +128,27 @@ class MainWindow(QMainWindow):
         )
         bar.addWidget(self.source_filter)
 
-        # Filter „Art“ als Häkchen – frei kombinierbar, gilt für Programme und Startmenü-Einträge
-        bar.addWidget(QLabel(" Art:"))
+        # Filter „Art“: Ausklappliste mit Häkchen – frei kombinierbar, gilt für Programme und Startmenü-Einträge
+        self.kind_button = QToolButton()
+        self.kind_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        self.kind_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
+        self.kind_button.setToolTip("Welche Arten von Programmen angezeigt werden – mehrere gleichzeitig möglich")
+        kind_menu = QMenu(self.kind_button)
         self.kind_boxes: dict[Kind, QCheckBox] = {}
         for kind, label in KIND_CHECKBOX_TEXT.items():
+            # Häkchen als Widget im Menü: so bleibt das Menü beim Anklicken offen
             box = QCheckBox(label)
             box.setChecked(kind in DEFAULT_KINDS)
             box.setToolTip(KIND_INFO[kind])
+            box.setContentsMargins(8, 2, 8, 2)
             box.toggled.connect(self._kinds_changed)
+            action = QWidgetAction(kind_menu)
+            action.setDefaultWidget(box)
+            kind_menu.addAction(action)
             self.kind_boxes[kind] = box
-            bar.addWidget(box)
+        self.kind_button.setMenu(kind_menu)
+        self._update_kind_button()
+        bar.addWidget(self.kind_button)
         bar.addSeparator()
 
         self.menu_filter = QComboBox()
@@ -389,7 +403,18 @@ class MainWindow(QMainWindow):
     def selected_kinds(self) -> frozenset[Kind]:
         return frozenset(kind for kind, box in self.kind_boxes.items() if box.isChecked())
 
+    def _update_kind_button(self) -> None:
+        kinds = self.selected_kinds()
+        if not kinds:
+            text = "Art: keine"
+        elif len(kinds) == len(self.kind_boxes):
+            text = "Art: alle"
+        else:
+            text = "Art: " + ", ".join(KIND_CHECKBOX_TEXT[k] for k in self.kind_boxes if k in kinds)
+        self.kind_button.setText(text)
+
     def _kinds_changed(self, _checked: bool = False) -> None:
+        self._update_kind_button()
         self.proxy.update_filter(kinds=self.selected_kinds())
         self._apply_search()
 
