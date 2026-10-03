@@ -7,7 +7,7 @@ from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 
-from cachy_kompass import desktop, installers
+from cachy_kompass import desktop, duplicates, history, installers, sizes
 from cachy_kompass.models import DesktopEntry, Program, Source, UpdateResult, UpdateStatus
 from cachy_kompass.sources import PackageSource, ScanContext, all_sources
 
@@ -25,6 +25,10 @@ class ScanResult:
     warnings: list[str] = field(default_factory=list)
     #: siehe ``ScanContext.helper_names``
     helper_names: set[str] = field(default_factory=set)
+    #: Programme, die doppelt (aus verschiedenen Quellen) installiert sind
+    duplicate_groups: list[list[Program]] = field(default_factory=list)
+    #: Ist ein Neustart fällig (z. B. nach einem Kernel-Update)?
+    reboot: history.RebootInfo = field(default_factory=history.RebootInfo)
 
     def owner_of(self, entry: DesktopEntry) -> Program | None:
         for p in self.programs:
@@ -57,6 +61,15 @@ def scan(progress: Progress = _noop, sources: list[PackageSource] | None = None)
     result.helper_names = ctx.helper_names
     result.entries = desktop.load_entries()
     result.unmatched_entries = desktop.match_entries(result.programs, result.entries)
+
+    progress("Lese Installationsdaten …")
+    events = history.read_log()
+    history.fill_install_dates(result.programs, events)
+    result.reboot = history.check_reboot(events, history.boot_time())
+
+    progress("Berechne Größen …")
+    sizes.fill_sizes(result.programs)
+    result.duplicate_groups = duplicates.find_duplicates(result.programs)
 
     progress("Suche Paketverwaltungen …")
     result.installers = installers.detect(result.programs)

@@ -282,6 +282,33 @@ def check_not_in_aur(programs: list[Program]) -> CleanupItem | None:
     )
 
 
+# --- Doppelt installiert -----------------------------------------------------------
+
+
+def check_duplicates(groups: list[list[Program]]) -> CleanupItem:
+    details = []
+    for group in groups:
+        variants = "  +  ".join(f"{p.display_name} ({p.info.label})" for p in group)
+        commands = "   |   ".join(p.uninstall_command() for p in group)
+        details.append(f"{variants}  –  entfernen mit: {commands}")
+    return CleanupItem(
+        key="duplicates",
+        title="Doppelt installiert",
+        explanation=(
+            "Diese Programme sind mehrfach installiert – aus verschiedenen Quellen, z. B. aus dem "
+            "Repo und zusätzlich als Flatpak. Das passiert leicht, wenn man verschiedenen "
+            "Anleitungen folgt. Es kostet Platz, und im Startmenü stehen dann oft zwei Einträge, "
+            "die unterschiedliche Versionen und Einstellungen haben. Meist ist die Fassung aus dem "
+            "offiziellen Repo die beste Wahl (wird mit dem Systemupdate aktuell gehalten). "
+            "Die Erkennung läuft über den Namen – prüfe also selbst, ob es wirklich dasselbe "
+            "Programm ist. Deshalb gibt es hier keinen Aufräum-Knopf. Die Befehle zum Entfernen "
+            "findest du auch im Reiter „Programme“ beim jeweiligen Programm."
+        ),
+        summary=count(len(groups), "Programm", "Programme"),
+        details=details,
+    )
+
+
 # --- Alles zusammen ----------------------------------------------------------------
 
 
@@ -294,6 +321,7 @@ def scan(
     entries: list[DesktopEntry],
     helper_names: Collection[str] = (),
     progress: Progress = _noop,
+    duplicate_groups: list[list[Program]] | None = None,
 ) -> list[CleanupItem]:
     """Führt alle Prüfungen aus. Ändert nichts am System."""
     checks: list[tuple[str, Callable[[], CleanupItem | None]]] = [
@@ -302,6 +330,7 @@ def scan(
         ("AUR-Bauordner", check_aur_build_cache),
         ("Flatpak", check_flatpak_unused),
         ("Startmenü-Einträge", lambda: check_broken_entries(entries, helper_names)),
+        ("doppelte Programme", lambda: check_duplicates(duplicate_groups or [])),
         ("AUR (braucht Internet)", lambda: check_not_in_aur(programs)),
     ]
     items = []

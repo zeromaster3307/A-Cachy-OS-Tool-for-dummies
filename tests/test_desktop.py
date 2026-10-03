@@ -211,3 +211,63 @@ def test_entry_kind(tmp_path):
     assert desktop.entry_kind(hidden, git) is Kind.COMMAND  # Art des zugehörigen Programms
     assert desktop.entry_kind(visible, None) is Kind.APP    # ohne Programm: sichtbar → App
     assert desktop.entry_kind(hidden, None) is Kind.OTHER   # ohne Programm: versteckt → Sonstiges
+
+
+SYSTEM_ENTRY = """\
+# Kommentar bleibt erhalten
+[Desktop Entry]
+Type=Application
+Name=Text Editor
+Name[de]=Texteditor
+Exec=kate %U
+DBusActivatable=true
+NoDisplay=true
+
+[Desktop Action new-window]
+Name=New Window
+Exec=kate --new
+"""
+
+
+def test_set_keys_keeps_rest_and_drops_translations():
+    text = desktop.set_keys(SYSTEM_ENTRY, {"Name": "Mein Editor", "NoDisplay": None})
+    raw = desktop.parse_desktop_text(text)
+    assert raw["Name"] == "Mein Editor" and "Name[de]" not in raw and "NoDisplay" not in raw
+    assert "# Kommentar bleibt erhalten" in text
+    assert "[Desktop Action new-window]\nName=New Window" in text  # Schnellaktion unverändert
+    assert desktop.set_keys("", {"Name": "x"}).startswith("[Desktop Entry]\nName=x")
+
+
+def test_edit_system_entry_creates_user_copy(tmp_path):
+    system = write(tmp_path / "system" / "applications" / "kde" / "kate.desktop", SYSTEM_ENTRY)
+    entry = desktop.load_entries()[0]
+    assert not entry.visible and not desktop.can_remove(entry)
+
+    path = desktop.set_visible(entry, True)
+    assert path == tmp_path / "applications" / "kde" / "kate.desktop"  # gleicher relativer Pfad überdeckt das Original
+    assert system.read_text() == SYSTEM_ENTRY  # Systemdatei unangetastet
+    entries = desktop.load_entries()
+    assert len(entries) == 1 and entries[0].visible and entries[0].name == "Texteditor"
+    assert desktop.overridden_system_entry(entries[0]) == system
+
+    # Erneut bearbeiten ändert die eigene Kopie; neuer Startbefehl schaltet D-Bus-Start ab
+    desktop.edit_entry(entries[0], {"Name": "Notizen", "Exec": "kate --notes"})
+    edited = desktop.load_entries()[0]
+    assert edited.name == "Notizen" and edited.exec == "kate --notes"
+    assert "DBusActivatable" not in edited.raw
+
+    # Ausblenden und „Entfernen“ = zurück zum Original
+    desktop.set_visible(edited, False)
+    hidden = desktop.load_entries()[0]
+    assert not hidden.visible
+    desktop.remove_entry(hidden)
+    assert desktop.load_entries()[0].path == system
+
+
+def test_edit_entry_copies_icon(tmp_path):
+    write(tmp_path / "system" / "applications" / "x.desktop", "[Desktop Entry]\nType=Application\nName=X\nExec=x\n")
+    img = write(tmp_path / "Downloads" / "logo.png", "png")
+    entry = desktop.load_entries()[0]
+    desktop.edit_entry(entry, {"Icon": str(img)})
+    icon = desktop.load_entries()[0].icon
+    assert icon.startswith(str(desktop.user_icon_dir())) and Path(icon).is_file()

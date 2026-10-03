@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import sys
 
-from cachy_kompass import scanner
+from cachy_kompass import scanner, util
 from cachy_kompass.models import Program
 
 
@@ -18,11 +18,13 @@ def _row(p: Program) -> list[str]:
         p.menu_status.value,
         p.info.auto_update.value,
         p.update.status.value + (f" ({p.update.latest})" if p.update.latest and p.update.latest != p.version else ""),
+        util.format_size(p.size_bytes) if p.size_bytes else "",
+        p.installed_at.strftime("%d.%m.%Y") if p.installed_at else "",
     ]
 
 
 def print_table(programs: list[Program]) -> None:
-    header = ["Programm", "Version", "Quelle", "Art", "Startmenü", "Auto-Update", "Aktuell?"]
+    header = ["Programm", "Version", "Quelle", "Art", "Startmenü", "Auto-Update", "Aktuell?", "Größe", "Installiert"]
     rows = [header] + [_row(p) for p in programs]
     widths = [min(max(len(r[i]) for r in rows), 40) for i in range(len(header))]
     for n, row in enumerate(rows):
@@ -49,6 +51,11 @@ def to_json(programs: list[Program]) -> str:
                 "update_status": p.update.status.value,
                 "latest_version": p.update.latest,
                 "executables": p.executables,
+                "size_bytes": p.size_bytes,
+                "installed_at": p.installed_at.isoformat() if p.installed_at else None,
+                "installed_approx": p.installed_approx,
+                "required_by": p.required_by,
+                "duplicates": [d.key for d in p.duplicates],
                 "uninstall": p.uninstall_command(),
             }
             for p in programs
@@ -80,6 +87,8 @@ def run_cli(show_all: bool, updates: bool, as_json: bool, show_installers: bool)
         print()
 
     print_table(programs)
+    if result.reboot.needed:
+        print(f"\nNeustart empfohlen: {result.reboot.message()}")
     for w in result.warnings:
         print(f"Warnung: {w}", file=sys.stderr)
     return 0

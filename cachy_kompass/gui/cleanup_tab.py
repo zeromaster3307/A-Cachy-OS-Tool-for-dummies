@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from functools import partial
 from html import escape
 from typing import TYPE_CHECKING
 
@@ -125,7 +126,7 @@ class CleanupTab(QWidget):
         self.check_button.setEnabled(False)
         self.main._set_busy(True)
         self.main.runner.start(
-            cleanup.scan,
+            partial(cleanup.scan, duplicate_groups=result.duplicate_groups),
             result.programs,
             result.entries,
             result.helper_names,

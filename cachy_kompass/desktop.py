@@ -583,9 +583,87 @@ def remove_entry(entry: DesktopEntry) -> None:
         )
     entry.path.unlink()
     # Ein von uns kopiertes Symbol wird mit aufgeräumt.
-    if entry.created_by_us and entry.icon.startswith("/") and _is_within(Path(entry.icon), user_icon_dir()):
+    if entry.icon.startswith("/") and _is_within(Path(entry.icon), user_icon_dir()):
         Path(entry.icon).unlink(missing_ok=True)
     refresh_menu_cache(entry.path.parent)
+
+
+# --- Einträge bearbeiten / ein- und ausblenden ------------------------------------
+
+
+def set_keys(text: str, changes: dict[str, str | None]) -> str:
+    """Ändert Schlüssel in der Gruppe ``[Desktop Entry]`` einer .desktop-Datei.
+
+    ``None`` entfernt einen Schlüssel. Übersetzungen (z. B. ``Name[de]``) werden
+    mit entfernt, sonst würde im deutschen Startmenü weiter der alte Name stehen.
+    Alles andere (Kommentare, weitere Gruppen wie Schnellaktionen) bleibt erhalten.
+    """
+    lines = text.splitlines()
+    start = next((i for i, line in enumerate(lines) if line.strip() == "[Desktop Entry]"), None)
+    if start is None:
+        lines = ["[Desktop Entry]", *lines]
+        start = 0
+    end = next((i for i in range(start + 1, len(lines)) if lines[i].strip().startswith("[")), len(lines))
+
+    def touched(line: str) -> bool:
+        key = line.split("=", 1)[0].strip() if "=" in line else ""
+        return any(key == k or key.startswith(f"{k}[") for k in changes)
+
+    group = [line for line in lines[start + 1 : end] if not touched(line)]
+    while group and not group[-1].strip():
+        group.pop()
+    group += [f"{k}={_clean(v)}" for k, v in changes.items() if v is not None]
+    tail = lines[end:]
+    return "\n".join([*lines[: start + 1], *group, *([""] if tail else []), *tail]) + "\n"
+
+
+def _relative_path(entry: DesktopEntry) -> Path:
+    """Pfad des Eintrags relativ zu seinem applications-Ordner."""
+    for apps_dir in applications_dirs():
+        try:
+            return entry.path.relative_to(apps_dir)
+        except ValueError:
+            continue
+    return Path(entry.path.name)
+
+
+def user_copy_path(entry: DesktopEntry) -> Path:
+    """Wohin eine bearbeitete Fassung gehört: der Benutzerordner, unter gleichem Namen.
+
+    Eine Datei dort überdeckt den Systemeintrag; löscht man sie, gilt wieder das Original.
+    """
+    if is_user_entry(entry):
+        return entry.path
+    return user_applications_dir() / _relative_path(entry)
+
+
+def edit_entry(entry: DesktopEntry, changes: dict[str, str | None]) -> Path:
+    """Ändert einen Eintrag und gibt den Pfad der geänderten Datei zurück.
+
+    Einträge im Benutzerordner werden direkt geändert. Systemeinträge werden nie
+    angefasst: Stattdessen entsteht eine geänderte Kopie im Benutzerordner.
+    """
+    changes = dict(changes)
+    icon = changes.get("Icon")
+    if icon and icon.startswith("/") and Path(icon).is_file() and not _is_within(Path(icon), user_icon_dir()):
+        changes["Icon"] = str(install_icon(Path(icon), changes.get("Name") or entry.name))
+    if "Exec" in changes:
+        # Solche Einträge startet KDE über D-Bus und ignoriert „Exec“ – also abschalten.
+        changes.setdefault("DBusActivatable", None)
+    text = entry.path.read_text(encoding="utf-8", errors="replace")
+    target = user_copy_path(entry)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(set_keys(text, changes), encoding="utf-8")
+    target.chmod(0o644)
+    refresh_menu_cache(target.parent)
+    return target
+
+
+def set_visible(entry: DesktopEntry, visible: bool) -> Path:
+    """Einen Eintrag im Startmenü ein- oder ausblenden."""
+    if visible:
+        return edit_entry(entry, {"NoDisplay": "false", "Hidden": None})
+    return edit_entry(entry, {"NoDisplay": "true"})
 
 
 def refresh_menu_cache(apps_dir: Path) -> None:

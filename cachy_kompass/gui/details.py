@@ -5,7 +5,7 @@ from __future__ import annotations
 import shlex
 from html import escape
 
-from cachy_kompass import APP_NAME, __version__, desktop
+from cachy_kompass import APP_NAME, __version__, desktop, util
 from cachy_kompass.installers import InstallerStatus, Rating
 from cachy_kompass.models import KIND_INFO, SOURCE_INFO, AutoUpdate, MenuStatus, Program, Source, UpdateStatus
 
@@ -18,12 +18,30 @@ def _code(text: str) -> str:
     return f"<code style='background-color:rgba(127,127,127,0.18)'>&nbsp;{escape(text)}&nbsp;</code>"
 
 
-def program_html(p: Program) -> str:
+def _names(names: list[str], limit: int = 15) -> str:
+    shown = ", ".join(escape(n) for n in names[:limit])
+    return shown + (f" … und {len(names) - limit} weitere" if len(names) > limit else "")
+
+
+def program_html(p: Program, removal: tuple[list[str], str] | None = None, sizes: dict[str, int] | None = None) -> str:
+    """Detailansicht. ``removal``: Ergebnis von ``pacman.removal_preview`` (nur bei pacman-Paketen),
+    ``sizes``: Paketgrößen, um den Platzgewinn beim Deinstallieren zu zeigen."""
     parts = [f"<h2>{escape(p.display_name)}</h2>"]
     if p.display_name != p.name:
         parts.append(f"<p style='color:gray'>Technischer Name: {escape(p.name)}</p>")
     if p.description:
         parts.append(f"<p>{escape(p.description)}</p>")
+    if p.duplicates:
+        others = "".join(
+            f"<li>{escape(d.display_name)} – {escape(d.info.label)}, Version {escape(d.version or '?')}</li>"
+            for d in p.duplicates
+        )
+        parts.append(
+            "<p style='color:#d98a00'><b>⚠ Doppelt installiert.</b> Dasselbe Programm gibt es zusätzlich als:</p>"
+            f"<ul>{others}</ul><p style='color:gray'>Meist reicht eine Fassung – am besten die aus dem "
+            "offiziellen Repo, weil sie mit dem Systemupdate aktuell bleibt. Prüfe aber vorher, ob es "
+            "wirklich dasselbe Programm ist (die Erkennung geht nach dem Namen).</p>"
+        )
 
     rows = [_row("Version", escape(p.version or "?"))]
     rows.append(_row("Quelle", escape(p.info.label)))
@@ -31,9 +49,17 @@ def program_html(p: Program) -> str:
     if p.origin:
         rows.append(_row("Herkunft", escape(p.origin)))
     if not p.explicit:
-        rows.append(_row("Art", "Abhängigkeit – wurde automatisch für ein anderes Programm mitinstalliert"))
-    if p.install_date:
+        rows.append(_row("Grund", "Abhängigkeit – wurde automatisch für ein anderes Programm mitinstalliert"))
+    if p.installed_at:
+        when = p.installed_at.strftime("%d.%m.%Y, %H:%M Uhr")
+        if p.installed_approx:
+            rows.append(_row("Installiert", f"ca. {escape(when)} <span style='color:gray'>(Datum der Dateien)</span>"))
+        else:
+            rows.append(_row("Installiert am", escape(when)))
+    elif p.install_date:
         rows.append(_row("Installiert am", escape(p.install_date)))
+    if p.size_bytes:
+        rows.append(_row("Größe", escape(util.format_size(p.size_bytes))))
     if p.url:
         rows.append(_row("Webseite", f"<a href='{escape(p.url)}'>{escape(p.url)}</a>"))
     parts.append(f"<table>{''.join(rows)}</table>")
@@ -87,6 +113,19 @@ def program_html(p: Program) -> str:
             items.append(f"<li>{escape(e.name)}{flag_text}<br><span style='color:gray'>{escape(str(e.path))}</span></li>")
         parts.append(f"<ul>{''.join(items)}</ul>")
 
+    if p.required_by or p.optional_for or not p.explicit:
+        parts.append("<h3>Warum ist das installiert?</h3>")
+        if p.required_by:
+            intro = "Wird gebraucht von" if p.explicit else "Mitgebracht von bzw. gebraucht für"
+            parts.append(f"<p>{intro}: <b>{_names(p.required_by)}</b></p>")
+        elif not p.explicit:
+            parts.append(
+                "<p>Kein installiertes Paket braucht es mehr – es ist <b>verwaist</b> und kann vermutlich "
+                "weg (siehe Reiter „Aufräumen“).</p>"
+            )
+        if p.optional_for:
+            parts.append(f"<p style='color:gray'>Optional genutzt von: {_names(p.optional_for)}</p>")
+
     if p.executables:
         shown = p.executables[:8]
         more = f"<li>… und {len(p.executables) - len(shown)} weitere</li>" if len(p.executables) > len(shown) else ""
@@ -94,6 +133,17 @@ def program_html(p: Program) -> str:
         parts.append("<ul>" + "".join(f"<li>{escape(x)}</li>" for x in shown) + more + "</ul>")
 
     parts.append("<h3>Deinstallieren</h3>")
+    if removal is not None:
+        names, error = removal
+        if error:
+            parts.append(f"<p style='color:#d64545'><b>✘ Nicht ohne Weiteres entfernbar.</b> {escape(error)}</p>")
+        elif names:
+            others = [n for n in names if n != p.name]
+            freed = sum((sizes or {}).get(n, 0) for n in names)
+            text = "Würde zusammen mit diesen nicht mehr benötigten Abhängigkeiten entfernt: " if others else "Würde allein entfernt – keine weiteren Pakete betroffen."
+            parts.append(f"<p>{text}{_names(others)}</p>")
+            if freed:
+                parts.append(f"<p>Platzgewinn: ca. <b>{escape(util.format_size(freed))}</b></p>")
     parts.append(
         "<p>Zum Entfernen diesen Befehl in ein Terminal (z. B. Konsole) kopieren:<br>"
         f"{_code(p.uninstall_command())}</p>"
@@ -131,6 +181,11 @@ stammen</b>, ob sie im <b>Startmenü</b> auftauchen und ob sie beim normalen
 richtigen Werkzeug, ✘ musst du selbst aktualisieren.</li>
 <li><b>Aktuell?</b> – erst nach Klick auf „Nach Updates suchen“: ✔ aktuell,
 ⬆ neuere Version verfügbar.</li>
+<li><b>Größe</b> – belegter Speicherplatz.</li>
+<li><b>Installiert</b> – wann das Programm installiert wurde. „ca.“ heißt: Datum der
+Programmdateien (bei Flatpak, AppImage usw. gibt es kein Protokoll).</li>
+<li><b>(2×)</b> hinter dem Namen – das Programm ist doppelt installiert, z. B. aus dem
+Repo und als Flatpak.</li>
 </ul>
 
 <h3>Wichtig zu wissen</h3>
@@ -144,9 +199,14 @@ Startmenü-Einträge (und deren Symbole) in deinem Benutzerordner an
 Benutzerordner – nach Rückfrage, Systemeinträge nie.</li>
 <li>Im Reiter <b>„Aufräumen“</b> findest du verwaiste Pakete, alte Paketversionen
 und andere Platzfresser – aufgeräumt wird nur nach Rückfrage, sichtbar im Terminal.</li>
-<li>Updates installierst du unter CachyOS am einfachsten mit dem Befehl
-<code>paru</code> im Terminal (aktualisiert Repo- und AUR-Pakete) und
-<code>flatpak update</code> für Flatpaks.</li>
+<li><b>„Alles aktualisieren …“</b> startet das Systemupdate (Repo und AUR),
+Flatpak-Updates usw. sichtbar in einem Terminalfenster. Erscheint danach oben der
+Hinweis <b>„Neustart empfohlen“</b>, wurden z. B. Kernel oder Grafiktreiber erneuert.</li>
+<li><b>„Liste sichern …“</b> speichert alle installierten Programme als Skript. Damit
+spielst du sie nach einer Neuinstallation mit <code>bash programme-….sh</code> wieder ein.</li>
+<li>Im Reiter <b>„Startmenü-Einträge“</b> kannst du Einträge bearbeiten sowie ein- und
+ausblenden. Systemeinträge bleiben dabei unverändert – deine Fassung landet im
+Benutzerordner und lässt sich mit „Original wiederherstellen“ rückgängig machen.</li>
 </ul>
 
 <h3>Die Installationsquellen</h3>

@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import shlex
+import shutil
+import socket
 import sys
+from pathlib import Path
 
 from PySide6.QtCore import QModelIndex, Qt
 from PySide6.QtGui import QAction, QGuiApplication, QIcon, QKeySequence
@@ -12,6 +15,7 @@ from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
     QComboBox,
+    QFileDialog,
     QHBoxLayout,
     QHeaderView,
     QInputDialog,
@@ -35,7 +39,7 @@ from PySide6.QtWidgets import (
     QWidgetAction,
 )
 
-from cachy_kompass import APP_ID, APP_NAME, __version__, desktop, scanner, terminal
+from cachy_kompass import APP_ID, APP_NAME, __version__, backup, desktop, scanner, terminal
 from cachy_kompass.gui import details
 from cachy_kompass.gui.cleanup_tab import CleanupTab
 from cachy_kompass.gui.entry_dialog import EntryDialog
@@ -53,9 +57,11 @@ from cachy_kompass.gui.table_model import (
     ProgramFilterModel,
     ProgramTableModel,
 )
+from cachy_kompass.gui.update_dialog import UpdateAllDialog
 from cachy_kompass.gui.workers import TaskRunner
 from cachy_kompass.installers import InstallerStatus, Rating
-from cachy_kompass.models import KIND_INFO, SOURCE_INFO, DesktopEntry, Kind, MenuStatus, Program, UpdateStatus
+from cachy_kompass.models import KIND_INFO, SOURCE_INFO, DesktopEntry, Kind, MenuStatus, Program, Source, UpdateStatus
+from cachy_kompass.sources import pacman
 
 # Spalten im Reiter „Startmenü-Einträge“
 ENTRY_COL_KIND, ENTRY_COL_COMMAND = 3, 4
@@ -72,6 +78,8 @@ class MainWindow(QMainWindow):
 
         self.runner = TaskRunner()
         self.result: scanner.ScanResult | None = None
+        #: Ergebnisse von „pacman -Rsp“ (Was ginge beim Deinstallieren mit weg?)
+        self._removal_cache: dict[str, tuple[list[str], str]] = {}
         self.model = ProgramTableModel()
         self.proxy = ProgramFilterModel()
         self.proxy.setSourceModel(self.model)
@@ -101,6 +109,19 @@ class MainWindow(QMainWindow):
         )
         self.update_action.triggered.connect(self.start_update_check)
         bar.addAction(self.update_action)
+
+        self.upgrade_action = QAction(QIcon.fromTheme("system-upgrade", QIcon.fromTheme("go-up")), "Alles aktualisieren …", self)
+        self.upgrade_action.setToolTip("Systemupdate, Flatpaks usw. sichtbar in einem Terminalfenster installieren")
+        self.upgrade_action.triggered.connect(self.update_everything)
+        bar.addAction(self.upgrade_action)
+
+        self.backup_action = QAction(QIcon.fromTheme("document-save"), "Liste sichern …", self)
+        self.backup_action.setToolTip(
+            "Speichert alle installierten Programme als Skript – damit lässt sich nach einer "
+            "Neuinstallation alles wieder einspielen"
+        )
+        self.backup_action.triggered.connect(self.save_backup)
+        bar.addAction(self.backup_action)
         bar.addSeparator()
 
         self.search = QLineEdit()
@@ -161,19 +182,53 @@ class MainWindow(QMainWindow):
         )
         bar.addWidget(self.menu_filter)
 
-        self.outdated_box = QCheckBox("Nur veraltete")
-        self.outdated_box.toggled.connect(lambda on: self.proxy.update_filter(only_outdated=on))
-        bar.addWidget(self.outdated_box)
+        self.date_filter = QComboBox()
+        self.date_filter.setToolTip("Nur kürzlich installierte Programme zeigen")
+        for label, days in [("Installiert: egal", None), ("Installiert: letzte 7 Tage", 7),
+                            ("Installiert: letzte 30 Tage", 30), ("Installiert: letztes Jahr", 365)]:
+            self.date_filter.addItem(label, days)
+        self.date_filter.currentIndexChanged.connect(
+            lambda: self.proxy.update_filter(installed_within_days=self.date_filter.currentData())
+        )
+        bar.addWidget(self.date_filter)
 
-        self.manual_box = QCheckBox("Nur ohne Auto-Update")
-        self.manual_box.setToolTip("Programme, die beim normalen Systemupdate nicht (sicher) mitaktualisiert werden")
-        self.manual_box.toggled.connect(lambda on: self.proxy.update_filter(only_manual_update=on))
-        bar.addWidget(self.manual_box)
+        # Seltener gebrauchte Filter als Häkchen in einer Ausklappliste
+        self.more_button = QToolButton()
+        self.more_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        self.more_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
+        more_menu = QMenu(self.more_button)
 
-        self.deps_box = QCheckBox("Abhängigkeiten zeigen")
-        self.deps_box.setToolTip("Auch Bibliotheken und automatisch mitinstallierte Pakete anzeigen")
-        self.deps_box.toggled.connect(self._toggle_dependencies)
-        bar.addWidget(self.deps_box)
+        def add_box(text: str, tooltip: str, handler) -> QCheckBox:
+            box = QCheckBox(text)
+            box.setToolTip(tooltip)
+            box.setContentsMargins(8, 2, 8, 2)
+            box.toggled.connect(handler)
+            box.toggled.connect(self._update_more_button)
+            action = QWidgetAction(more_menu)
+            action.setDefaultWidget(box)
+            more_menu.addAction(action)
+            return box
+
+        self.outdated_box = add_box(
+            "Nur veraltete", "Nur Programme mit neuerer Version (erst nach „Nach Updates suchen“)",
+            lambda on: self.proxy.update_filter(only_outdated=on),
+        )
+        self.manual_box = add_box(
+            "Nur ohne Auto-Update", "Programme, die beim normalen Systemupdate nicht (sicher) mitaktualisiert werden",
+            lambda on: self.proxy.update_filter(only_manual_update=on),
+        )
+        self.duplicates_box = add_box(
+            "Nur doppelt installierte", "Programme, die aus mehreren Quellen installiert sind (z. B. Repo und Flatpak)",
+            lambda on: self.proxy.update_filter(only_duplicates=on),
+        )
+        self.deps_box = add_box(
+            "Abhängigkeiten zeigen", "Auch Bibliotheken und automatisch mitinstallierte Pakete anzeigen",
+            self._toggle_dependencies,
+        )
+        self.more_boxes = [self.outdated_box, self.manual_box, self.duplicates_box, self.deps_box]
+        self.more_button.setMenu(more_menu)
+        self._update_more_button()
+        bar.addWidget(self.more_button)
 
     def _build_tabs(self) -> None:
         self.tabs = QTabWidget()
@@ -188,7 +243,19 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(help_view, "Hilfe")
         # Zeilenhöhen erst berechnen, wenn die Tabelle sichtbar ist und ihre echte Breite kennt
         self.tabs.currentChanged.connect(lambda _: self.installer_table.resizeRowsToContents())
-        self.setCentralWidget(self.tabs)
+
+        self.reboot_banner = QLabel()
+        self.reboot_banner.setWordWrap(True)
+        self.reboot_banner.setStyleSheet(
+            "background-color: rgba(217,138,0,0.18); border: 1px solid #d98a00; border-radius: 4px; padding: 6px"
+        )
+        self.reboot_banner.hide()
+        central = QWidget()
+        layout = QVBoxLayout(central)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.reboot_banner)
+        layout.addWidget(self.tabs, 1)
+        self.setCentralWidget(central)
 
     def _build_programs_tab(self) -> QWidget:
         self.table = QTableView()
@@ -203,7 +270,7 @@ class MainWindow(QMainWindow):
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
         header.setSectionResizeMode(COL_DESC, QHeaderView.ResizeMode.Stretch)
-        for col, width in enumerate([200, 110, 120, 95, 100, 100, 120]):
+        for col, width in enumerate([180, 90, 110, 80, 85, 95, 105, 70, 90]):
             self.table.setColumnWidth(col, width)
         header.setMinimumSectionSize(60)
         self.table.selectionModel().currentRowChanged.connect(self._show_details)
@@ -238,7 +305,7 @@ class MainWindow(QMainWindow):
         splitter.addWidget(right)
         splitter.setStretchFactor(0, 3)
         splitter.setStretchFactor(1, 2)
-        splitter.setSizes([900, 420])
+        splitter.setSizes([980, 400])
         return splitter
 
     def _build_entries_tab(self) -> QWidget:
@@ -258,18 +325,34 @@ class MainWindow(QMainWindow):
             self.entries_table.setColumnWidth(col, width)
         self.entries_table.itemSelectionChanged.connect(self._entry_selected)
 
-        self.entry_remove_button = QPushButton(QIcon.fromTheme("list-remove"), "Ausgewählten Eintrag entfernen …")
-        self.entry_remove_button.setEnabled(False)
+        self.entry_edit_button = QPushButton(QIcon.fromTheme("document-edit"), "Bearbeiten …")
+        self.entry_edit_button.setToolTip(
+            "Name, Symbol, Startbefehl usw. ändern. Systemeinträge bleiben unverändert – "
+            "die Änderung wird als eigene Fassung in deinem Benutzerordner gespeichert."
+        )
+        self.entry_edit_button.clicked.connect(self._edit_selected_entry)
+        self.entry_visible_button = QPushButton(QIcon.fromTheme("view-visible"), "Einblenden")
+        self.entry_visible_button.setToolTip("Den Eintrag im Startmenü zeigen bzw. verstecken")
+        self.entry_visible_button.clicked.connect(self._toggle_selected_entry)
+        self.entry_remove_button = QPushButton(QIcon.fromTheme("list-remove"), "Entfernen …")
         self.entry_remove_button.setToolTip(
             "Nur Einträge in deinem Benutzerordner können entfernt werden, Systemeinträge nicht."
         )
         self.entry_remove_button.clicked.connect(self._remove_selected_entry)
+        for b in (self.entry_edit_button, self.entry_visible_button, self.entry_remove_button):
+            b.setEnabled(False)
+
+        buttons = QHBoxLayout()
+        buttons.addStretch(1)
+        buttons.addWidget(self.entry_edit_button)
+        buttons.addWidget(self.entry_visible_button)
+        buttons.addWidget(self.entry_remove_button)
 
         widget = QWidget()
         layout = QVBoxLayout(widget)
         layout.addWidget(info)
         layout.addWidget(self.entries_table)
-        layout.addWidget(self.entry_remove_button, alignment=Qt.AlignmentFlag.AlignRight)
+        layout.addLayout(buttons)
         return widget
 
     def _build_installers_tab(self) -> QWidget:
@@ -331,6 +414,8 @@ class MainWindow(QMainWindow):
         self.busy.setVisible(busy)
         self.scan_action.setEnabled(not busy)
         self.update_action.setEnabled(not busy and self.result is not None)
+        self.upgrade_action.setEnabled(not busy and self.result is not None)
+        self.backup_action.setEnabled(not busy and self.result is not None)
         self.cleanup_tab.check_button.setEnabled(not busy and self.result is not None)
 
     def _status(self, text: str) -> None:
@@ -351,6 +436,8 @@ class MainWindow(QMainWindow):
 
     def _scan_done(self, result: scanner.ScanResult) -> None:
         self.result = result
+        self._removal_cache.clear()
+        self._show_reboot_hint()
         self.model.set_programs(result.programs)
         self._fill_entries_table()
         self._fill_installer_table()
@@ -418,6 +505,11 @@ class MainWindow(QMainWindow):
         self.proxy.update_filter(kinds=self.selected_kinds())
         self._apply_search()
 
+    def _update_more_button(self, _checked: bool = False) -> None:
+        active = [b.text() for b in self.more_boxes if b.isChecked()]
+        self.more_button.setText(f"Weitere Filter ({len(active)})" if active else "Weitere Filter")
+        self.more_button.setToolTip("Aktiv: " + ", ".join(active) if active else "Weitere Filter")
+
     def _toggle_dependencies(self, on: bool) -> None:
         self.proxy.update_filter(show_dependencies=on)
 
@@ -433,10 +525,73 @@ class MainWindow(QMainWindow):
             for b in (self.create_button, self.remove_button, self.copy_button):
                 b.setEnabled(False)
             return
-        self.details.setHtml(details.program_html(program))
+        removal = self._removal_preview(program)
+        sizes = {p.name: p.size_bytes for p in self.result.programs} if removal and self.result else None
+        self.details.setHtml(details.program_html(program, removal, sizes))
         self.create_button.setEnabled(True)
         self.remove_button.setEnabled(any(desktop.can_remove(e) for e in program.desktop_entries))
         self.copy_button.setEnabled(True)
+
+    def _removal_preview(self, program: Program) -> tuple[list[str], str] | None:
+        """Trockenlauf von pacman: Was würde beim Deinstallieren mit entfernt? (zwischengespeichert)"""
+        if program.source not in (Source.REPO, Source.AUR) or not shutil.which("pacman"):
+            return None
+        if program.name not in self._removal_cache:
+            self._removal_cache[program.name] = pacman.removal_preview(program.name)
+        return self._removal_cache[program.name]
+
+    def _show_reboot_hint(self) -> None:
+        assert self.result is not None
+        info = self.result.reboot
+        if info.needed:
+            self.reboot_banner.setText(
+                f"<b>🔄 Neustart empfohlen.</b> {info.message()} Erst nach einem Neustart läuft "
+                "alles mit den neuen Versionen."
+            )
+        self.reboot_banner.setVisible(info.needed)
+
+    # --- Alles aktualisieren / Liste sichern -----------------------------------
+
+    def update_everything(self) -> None:
+        if not self.result:
+            return
+        dialog = UpdateAllDialog(self.result.programs, self)
+        if not dialog.exec():
+            return
+        commands = dialog.selected_commands()
+        if terminal.run_in_terminal(commands):
+            self._status("Terminal geöffnet. Wenn die Updates fertig sind, auf „Neu einlesen“ klicken.")
+        else:
+            QGuiApplication.clipboard().setText(terminal.describe(commands))
+            QMessageBox.information(
+                self,
+                "Kein Terminal gefunden",
+                "Es wurde kein Terminalprogramm gefunden. Die Befehle wurden in die Zwischenablage kopiert:\n\n"
+                f"{terminal.describe(commands)}",
+            )
+
+    def save_backup(self) -> None:
+        if not self.result:
+            return
+        start = Path.home() / backup.default_filename()
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Programmliste sichern", str(start), "Shell-Skript (*.sh);;Alle Dateien (*)"
+        )
+        if not path:
+            return
+        try:
+            Path(path).write_text(backup.build_script(self.result.programs, hostname=socket.gethostname()), encoding="utf-8")
+        except OSError as exc:
+            QMessageBox.critical(self, "Fehler", f"Die Datei konnte nicht gespeichert werden:\n{exc}")
+            return
+        QMessageBox.information(
+            self,
+            "Programmliste gesichert",
+            f"Gespeichert in:\n{path}\n\nDie Datei ist gleichzeitig eine lesbare Liste und ein Skript. "
+            "Kopiere sie am besten auf einen USB-Stick oder in die Cloud. Nach einer Neuinstallation "
+            f"stellst du die Programme im Terminal wieder her mit:\n\n    bash {Path(path).name}\n\n"
+            "Vor jeder Installation wird nachgefragt.",
+        )
 
     def create_entry(self) -> None:
         program = self.current_program()
@@ -450,10 +605,39 @@ class MainWindow(QMainWindow):
             )
             if answer != QMessageBox.StandardButton.Yes:
                 return
+        elif program.menu_status is MenuStatus.HIDDEN and self._offer_unhide(program):
+            return
         dialog = EntryDialog(program, self)
         if dialog.exec() and dialog.created_path:
             self._status(f"Eintrag angelegt: {dialog.created_path}")
             self._rematch()
+
+    def _offer_unhide(self, program: Program) -> bool:
+        """Versteckten Eintrag einblenden statt einen neuen anzulegen? ``True`` = erledigt bzw. abgebrochen."""
+        entry = program.desktop_entries[0]
+        box = QMessageBox(
+            QMessageBox.Icon.Question,
+            "Versteckter Eintrag vorhanden",
+            f"„{program.display_name}“ hat schon einen Startmenü-Eintrag („{entry.name}“), er ist aber "
+            "ausgeblendet. Oft ist das Absicht (z. B. bei Hilfsprogrammen).\n\n"
+            "Soll der vorhandene Eintrag eingeblendet werden, oder möchtest du einen neuen anlegen?",
+            parent=self,
+        )
+        unhide = box.addButton("Einblenden", QMessageBox.ButtonRole.AcceptRole)
+        new = box.addButton("Neuen anlegen …", QMessageBox.ButtonRole.ActionRole)
+        box.addButton("Abbrechen", QMessageBox.ButtonRole.RejectRole)
+        box.exec()
+        if box.clickedButton() is new:
+            return False
+        if box.clickedButton() is unhide:
+            try:
+                desktop.set_visible(entry, True)
+            except OSError as exc:
+                QMessageBox.critical(self, "Fehler", str(exc))
+                return True
+            self._status(f"„{entry.name}“ eingeblendet.")
+            self._rematch()
+        return True
 
     def remove_own_entry(self) -> None:
         program = self.current_program()
@@ -473,23 +657,24 @@ class MainWindow(QMainWindow):
             self._rematch()
 
     def _confirm_remove(self, entry: DesktopEntry) -> bool:
-        text = f"Den Eintrag „{entry.name}“ wirklich entfernen?\n\n{entry.path}"
-        if not entry.created_by_us:
+        system = desktop.overridden_system_entry(entry)
+        if system:
+            text = (
+                f"Deine eigene Fassung von „{entry.name}“ entfernen und das Original wiederherstellen?\n\n"
+                f"Entfernt wird: {entry.path}\nDanach gilt wieder: {system}"
+            )
+        else:
+            text = f"Den Eintrag „{entry.name}“ wirklich entfernen?\n\n{entry.path}"
+        if not system and not entry.created_by_us:
             text += (
                 "\n\nAchtung: Diesen Eintrag hat nicht der Software-Kompass angelegt, sondern du selbst "
                 "oder ein anderes Programm (z. B. Steam, Gear Lever, AppImageLauncher). "
                 "Das Programm selbst bleibt installiert – nur der Menüeintrag verschwindet."
             )
-        system = desktop.overridden_system_entry(entry)
-        if system:
-            text += (
-                f"\n\nHinweis: Dieser Eintrag ersetzt einen Systemeintrag ({system}). "
-                "Nach dem Entfernen erscheint wieder der ursprüngliche Eintrag des Systems."
-            )
         box = QMessageBox(QMessageBox.Icon.Question, "Eintrag entfernen", text, parent=self)
         box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         box.setDefaultButton(QMessageBox.StandardButton.No)
-        box.button(QMessageBox.StandardButton.Yes).setText("Entfernen")
+        box.button(QMessageBox.StandardButton.Yes).setText("Wiederherstellen" if system else "Entfernen")
         box.button(QMessageBox.StandardButton.No).setText("Abbrechen")
         if box.exec() != QMessageBox.StandardButton.Yes:
             return False
@@ -560,6 +745,7 @@ class MainWindow(QMainWindow):
                 table.setItem(row, col, item)
         table.setSortingEnabled(True)
         self._apply_search()
+        self._entry_selected()  # Knöpfe passend zum (neu eingelesenen) ausgewählten Eintrag
 
     def _selected_entry(self) -> DesktopEntry | None:
         rows = self.entries_table.selectionModel().selectedRows()
@@ -570,7 +756,37 @@ class MainWindow(QMainWindow):
 
     def _entry_selected(self) -> None:
         entry = self._selected_entry()
+        self.entry_edit_button.setEnabled(entry is not None)
+        self.entry_visible_button.setEnabled(entry is not None)
         self.entry_remove_button.setEnabled(bool(entry and desktop.can_remove(entry)))
+        if entry is None:
+            return
+        self.entry_visible_button.setText("Ausblenden" if entry.visible else "Einblenden")
+        self.entry_visible_button.setIcon(QIcon.fromTheme("view-hidden" if entry.visible else "view-visible"))
+        restores = desktop.can_remove(entry) and desktop.overridden_system_entry(entry) is not None
+        self.entry_remove_button.setText("Original wiederherstellen …" if restores else "Entfernen …")
+
+    def _edit_selected_entry(self) -> None:
+        entry = self._selected_entry()
+        if entry is None or self.result is None:
+            return
+        dialog = EntryDialog(self.result.owner_of(entry), self, entry=entry)
+        if dialog.exec() and dialog.created_path:
+            self._status(f"Eintrag gespeichert: {dialog.created_path}")
+            self._rematch()
+
+    def _toggle_selected_entry(self) -> None:
+        entry = self._selected_entry()
+        if entry is None:
+            return
+        try:
+            path = desktop.set_visible(entry, not entry.visible)
+        except OSError as exc:
+            QMessageBox.critical(self, "Fehler", str(exc))
+            return
+        word = "ausgeblendet" if entry.visible else "eingeblendet"
+        self._status(f"„{entry.name}“ {word} (gespeichert in {path}).")
+        self._rematch()
 
     def _remove_selected_entry(self) -> None:
         entry = self._selected_entry()

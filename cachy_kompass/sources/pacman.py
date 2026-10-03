@@ -9,7 +9,9 @@ Woher wir was wissen:
 
 from __future__ import annotations
 
+import os
 import re
+import subprocess
 from concurrent.futures import ThreadPoolExecutor
 
 from cachy_kompass import util
@@ -98,6 +100,48 @@ def parse_ql(text: str) -> tuple[dict[str, list[str]], dict[str, list[str]], set
     return exes, desktops, shared, helpers
 
 
+def name_list(value: str) -> list[str]:
+    """Feld wie „Required By : firefox vlc“ → Namen; „None“ → leer."""
+    return [] if value.strip() in ("", "None") else value.split()
+
+
+def parse_removal_preview(text: str) -> list[str]:
+    """Ausgabe von ``pacman -Rsp --print-format %n`` → Paketnamen."""
+    return [line.strip() for line in text.splitlines() if line.strip() and " " not in line.strip()]
+
+
+def removal_preview(name: str) -> tuple[list[str], str]:
+    """Was würde „sudo pacman -Rns <name>“ alles entfernen?
+
+    Läuft als Trockenlauf („-p“ = nur anzeigen) ohne Administratorrechte und
+    ändert nichts. Liefert (Paketnamen, Fehlermeldung). Die Fehlermeldung ist
+    gesetzt, wenn das Entfernen nicht ginge, z. B. weil ein anderes Paket es braucht.
+    """
+    cmd = ["pacman", "-Rsp", "--print-format", "%n", name]
+    try:
+        # Nicht util.run: hier brauchen wir bei einem Fehler auch die Meldung von pacman.
+        proc = subprocess.run(
+            cmd, capture_output=True, text=True, errors="replace", timeout=30,
+            env=dict(os.environ, LC_ALL="C", LANG="C"), stdin=subprocess.DEVNULL,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return [], str(exc)
+    if proc.returncode != 0:
+        return [], parse_removal_error(proc.stderr)
+    return parse_removal_preview(proc.stdout), ""
+
+
+_BREAKS_RE = re.compile(r"removing (\S+) breaks dependency '([^']+)' required by (\S+)")
+
+
+def parse_removal_error(stderr: str) -> str:
+    """Fehlermeldung von pacman verständlich auf Deutsch."""
+    needed_by = sorted({m.group(3) for m in _BREAKS_RE.finditer(stderr)})
+    if needed_by:
+        return "Wird noch gebraucht von: " + ", ".join(needed_by)
+    return stderr.strip().splitlines()[-1] if stderr.strip() else "pacman meldet einen Fehler."
+
+
 def parse_checkupdates(text: str) -> dict[str, str]:
     """``checkupdates`` → {Paket: neue Version}. Zeilenformat: ``foo 1.0-1 -> 1.1-1``."""
     result: dict[str, str] = {}
@@ -167,6 +211,8 @@ class PacmanSource(PackageSource):
                     url=pkg.get("URL", ""),
                     install_date=pkg.get("Install Date", ""),
                     size_bytes=util.parse_size(pkg.get("Installed Size", "")),
+                    required_by=name_list(pkg.get("Required By", "")),
+                    optional_for=name_list(pkg.get("Optional For", "")),
                 )
             )
         return programs

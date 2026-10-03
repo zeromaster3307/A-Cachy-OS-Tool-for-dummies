@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import shlex
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
 
@@ -295,14 +296,23 @@ class Program:
     install_path: str = ""
     url: str = ""
     install_date: str = ""
+    # Wann installiert? Bei pacman laut Protokoll, sonst Datum der Datei/des Ordners
+    installed_at: datetime | None = None
+    # True = nur ungefähr (Änderungsdatum einer Datei statt echtem Installationsdatum)
+    installed_approx: bool = False
     # Belegter Speicherplatz in Bytes (0 = unbekannt)
     size_bytes: int = 0
+    # pacman: Pakete, die dieses Paket brauchen bzw. optional nutzen
+    required_by: list[str] = field(default_factory=list)
+    optional_for: list[str] = field(default_factory=list)
     # Bei Flatpak: "user" oder "system"
     installation: str = ""
     # Eigener Deinstallationsbefehl, falls die Vorlage der Quelle nicht passt
     uninstall_override: str = ""
     desktop_entries: list[DesktopEntry] = field(default_factory=list)
     update: UpdateResult = field(default_factory=lambda: UpdateResult(UpdateStatus.NOT_CHECKED))
+    # Dasselbe Programm aus anderen Quellen (siehe duplicates.py)
+    duplicates: list[Program] = field(default_factory=list, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         if not self.display_name:
