@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from cachy_kompass import util
+from cachy_kompass import sizes, util
 from cachy_kompass.models import Program, Source, UpdateResult, UpdateStatus
 from cachy_kompass.sources.base import PackageSource, ScanContext
 
-COLUMNS = "application,name,version,branch,origin,installation"
+COLUMNS = "application,name,version,branch,origin,installation,size"
 
 
 def parse_list(text: str) -> list[dict[str, str]]:
@@ -52,6 +52,7 @@ class FlatpakSource(PackageSource):
                     source=Source.FLATPAK,
                     origin=f"Flatpak-Quelle „{row.get('origin') or '?'}“ ({row.get('installation') or 'system'})",
                     installation=row.get("installation", ""),
+                    size_bytes=sizes.parse_decimal_size(row.get("size", "")),
                     url=f"https://flathub.org/apps/{app_id}" if row.get("origin") == "flathub" else "",
                 )
             )

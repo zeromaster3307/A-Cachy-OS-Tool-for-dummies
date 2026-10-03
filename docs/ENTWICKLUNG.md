@@ -23,13 +23,19 @@ cachy_kompass/
 ├── models.py            Datenklassen (Program, DesktopEntry …) und ALLE
 │                        erklärenden Texte zu den Quellen (SOURCE_INFO)
 ├── util.py              Befehle ausführen, HTTP-Abfragen, Versionsvergleich
-├── scanner.py           Ablaufsteuerung: Quellen → Startmenü → Paketverwaltungen;
+├── scanner.py           Ablaufsteuerung: Quellen → Startmenü → Datum/Größe/Doppelte →
+│                        Paketverwaltungen;
 │                        Update-Prüfung
 ├── desktop.py           .desktop-Dateien lesen, zuordnen, anlegen, löschen
 ├── installers.py        Erkennung, Einstufung und Installationsplan für
 │                        Paketverwaltungen / App-Stores
 ├── terminal.py          Befehle sichtbar in einem Terminalfenster ausführen
 ├── cleanup.py           Prüfungen für den Reiter „Aufräumen“ (nur lesend)
+├── history.py           pacman-Protokoll: Installationsdatum, Neustart-Hinweis
+├── sizes.py             belegter Speicherplatz je Programm
+├── duplicates.py        doppelt installierte Programme erkennen
+├── update_all.py        Update-Schritte für „Alles aktualisieren“
+├── backup.py            Programmliste als Wiederherstellungs-Skript
 ├── sources/             eine Datei pro Installationsquelle
 │   ├── base.py          Basisklasse PackageSource
 │   ├── pacman.py        Repos + AUR
@@ -42,7 +48,8 @@ cachy_kompass/
     ├── main_window.py   Hauptfenster mit Reitern
     ├── table_model.py   Tabellenmodell + Filter
     ├── details.py       HTML für Detailansicht und Hilfe
-    ├── entry_dialog.py  Dialog „Startmenü-Eintrag anlegen“
+    ├── entry_dialog.py  Dialog „Startmenü-Eintrag anlegen / bearbeiten“
+    ├── update_dialog.py Dialog „Alles aktualisieren“
     ├── cleanup_tab.py   Reiter „Aufräumen“
     └── workers.py       Hintergrund-Threads (damit die GUI nicht einfriert)
 tests/                   pytest-Tests mit Beispielausgaben der echten Befehle

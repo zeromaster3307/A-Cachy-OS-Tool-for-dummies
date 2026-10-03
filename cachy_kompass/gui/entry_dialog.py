@@ -1,4 +1,4 @@
-"""Dialog zum Anlegen eines eigenen Startmenü-Eintrags."""
+"""Dialog zum Anlegen eines eigenen Startmenü-Eintrags – oder zum Bearbeiten eines vorhandenen."""
 
 from __future__ import annotations
 
@@ -24,35 +24,63 @@ from PySide6.QtWidgets import (
 )
 
 from cachy_kompass import desktop
-from cachy_kompass.models import Program
+from cachy_kompass.models import DesktopEntry, Program
 
 
 class EntryDialog(QDialog):
-    def __init__(self, program: Program, parent: QWidget | None = None) -> None:
+    """Neuen Eintrag für ``program`` anlegen – oder, mit ``entry``, einen vorhandenen bearbeiten."""
+
+    def __init__(
+        self,
+        program: Program | None,
+        parent: QWidget | None = None,
+        entry: DesktopEntry | None = None,
+    ) -> None:
         super().__init__(parent)
         self.program = program
+        self.entry = entry
         self.created_path: Path | None = None
-        self.setWindowTitle(f"Startmenü-Eintrag für „{program.display_name}“")
         self.setMinimumWidth(560)
 
-        intro = QLabel(
-            "Hier legst du einen Eintrag an, über den du das Programm im Startmenü findest. "
-            "Der Eintrag wird nur für deinen Benutzer gespeichert und kann jederzeit wieder "
-            "entfernt werden."
-        )
+        if entry is not None:
+            self.setWindowTitle(f"Startmenü-Eintrag „{entry.name}“ bearbeiten")
+            if desktop.is_user_entry(entry):
+                text = "Der Eintrag liegt in deinem Benutzerordner und wird direkt geändert."
+            else:
+                text = (
+                    "Dies ist ein Eintrag des Systems. Er selbst bleibt unverändert – deine Änderungen "
+                    "werden als eigene Fassung in deinem Benutzerordner gespeichert, die ihn im "
+                    "Startmenü ersetzt. Mit „Entfernen“ bzw. „Original wiederherstellen“ kommst du "
+                    "jederzeit zum Original zurück. Hinweis: Ändert ein Update später den "
+                    "Systemeintrag, gilt trotzdem weiter deine Fassung."
+                )
+            name, comment, exec_line, icon = entry.name, entry.comment, entry.exec, entry.icon
+            terminal_default = entry.terminal
+        else:
+            assert program is not None
+            self.setWindowTitle(f"Startmenü-Eintrag für „{program.display_name}“")
+            text = (
+                "Hier legst du einen Eintrag an, über den du das Programm im Startmenü findest. "
+                "Der Eintrag wird nur für deinen Benutzer gespeichert und kann jederzeit wieder "
+                "entfernt werden."
+            )
+            name, comment = program.display_name, program.description
+            exec_line, icon = desktop.suggest_exec(program), desktop.suggest_icon(program)
+            terminal_default = program.info.cli_by_default
+        intro = QLabel(text)
         intro.setWordWrap(True)
 
-        self.name_edit = QLineEdit(program.display_name)
-        self.comment_edit = QLineEdit(program.description)
+        self.name_edit = QLineEdit(name)
+        self.comment_edit = QLineEdit(comment)
         self.comment_edit.setPlaceholderText("Optional: kurze Beschreibung")
 
-        self.exec_edit = QLineEdit(desktop.suggest_exec(program))
+        self.exec_edit = QLineEdit(exec_line)
         self.exec_edit.setToolTip("Der Befehl, der beim Klick auf den Eintrag ausgeführt wird.")
         exec_browse = QPushButton("Durchsuchen …")
         exec_browse.clicked.connect(self._browse_exec)
         exec_row = self._row(self.exec_edit, exec_browse)
 
-        self.icon_edit = QLineEdit(desktop.suggest_icon(program))
+        self.icon_edit = QLineEdit(icon)
         self.icon_edit.setToolTip("Name eines Symbols aus dem Symbol-Design oder Pfad zu einer Bilddatei.")
         self.icon_preview = QLabel()
         self.icon_preview.setFixedSize(48, 48)
@@ -65,11 +93,13 @@ class EntryDialog(QDialog):
         self.icon_hint.setWordWrap(True)
 
         self.category = QComboBox()
+        if entry is not None:
+            self.category.addItem("(unverändert lassen)", None)
         for key, label in desktop.CATEGORIES.items():
             self.category.addItem(label, key)
 
         self.terminal = QCheckBox("In einem Terminalfenster starten")
-        self.terminal.setChecked(program.info.cli_by_default)
+        self.terminal.setChecked(terminal_default)
         terminal_hint = QLabel(
             "Häkchen setzen bei Kommandozeilenprogrammen, also Programmen ohne eigenes Fenster."
         )
@@ -86,12 +116,13 @@ class EntryDialog(QDialog):
         form.addRow("", self.terminal)
         form.addRow("", terminal_hint)
 
-        target = QLabel(f"Wird gespeichert in: {desktop.user_applications_dir()}")
+        where = desktop.user_copy_path(entry) if entry is not None else desktop.user_applications_dir()
+        target = QLabel(f"Wird gespeichert in: {where}")
         target.setStyleSheet("color: gray")
         target.setWordWrap(True)
 
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-        buttons.button(QDialogButtonBox.StandardButton.Ok).setText("Eintrag anlegen")
+        buttons.button(QDialogButtonBox.StandardButton.Ok).setText("Speichern" if entry is not None else "Eintrag anlegen")
         buttons.button(QDialogButtonBox.StandardButton.Cancel).setText("Abbrechen")
         buttons.accepted.connect(self._create)
         buttons.rejected.connect(self.reject)
@@ -176,29 +207,58 @@ class EntryDialog(QDialog):
         if not name or not exec_line:
             QMessageBox.warning(self, "Angaben fehlen", "Bitte einen Namen und einen Startbefehl eintragen.")
             return
-        target = desktop.missing_program(exec_line)
+        # Beim Bearbeiten nur prüfen, wenn der Startbefehl geändert wurde
+        unchanged = self.entry is not None and exec_line == self.entry.exec
+        target = "" if unchanged else desktop.missing_program(exec_line)
         if target:
             answer = QMessageBox.question(
                 self,
                 "Programm nicht gefunden",
                 f"Das Programm „{target}“ wurde nicht gefunden. Der Eintrag würde "
-                "vermutlich nicht funktionieren.\n\nTrotzdem anlegen?",
+                "vermutlich nicht funktionieren.\n\nTrotzdem speichern?",
             )
             if answer != QMessageBox.StandardButton.Yes:
                 return
         try:
-            self.created_path = desktop.create_entry(
-                name=name,
-                exec_line=exec_line,
-                icon=self._prepare_icon(),
-                comment=self.comment_edit.text().strip(),
-                categories=[self.category.currentData()],
-                terminal=self.terminal.isChecked(),
-            )
+            if self.entry is not None:
+                self.created_path = desktop.edit_entry(self.entry, self._changes(name, exec_line))
+            else:
+                self.created_path = self._create_new(name, exec_line)
         except (OSError, ValueError) as exc:
-            QMessageBox.critical(self, "Fehler", f"Der Eintrag konnte nicht angelegt werden:\n{exc}")
+            QMessageBox.critical(self, "Fehler", f"Der Eintrag konnte nicht gespeichert werden:\n{exc}")
             return
         problems = desktop.validate(self.created_path)
         if problems:
-            QMessageBox.information(self, "Hinweis", f"Der Eintrag wurde angelegt, die Prüfung meldet aber:\n\n{problems}")
+            QMessageBox.information(self, "Hinweis", f"Der Eintrag wurde gespeichert, die Prüfung meldet aber:\n\n{problems}")
         self.accept()
+
+    def _changes(self, name: str, exec_line: str) -> dict[str, str | None]:
+        """Nur, was wirklich geändert wurde – sonst gingen z. B. Übersetzungen des Namens verloren."""
+        assert self.entry is not None
+        e = self.entry
+        changes: dict[str, str | None] = {}
+        if name != e.name:
+            changes["Name"] = name
+        comment = self.comment_edit.text().strip()
+        if comment != e.comment:
+            changes["Comment"] = comment or None
+        if exec_line != e.exec:
+            changes["Exec"] = exec_line
+        icon = self._prepare_icon()
+        if icon != e.icon:
+            changes["Icon"] = icon or None
+        if self.category.currentData():
+            changes["Categories"] = f"{self.category.currentData()};"
+        if self.terminal.isChecked() != e.terminal:
+            changes["Terminal"] = "true" if self.terminal.isChecked() else "false"
+        return changes
+
+    def _create_new(self, name: str, exec_line: str) -> Path:
+        return desktop.create_entry(
+            name=name,
+            exec_line=exec_line,
+            icon=self._prepare_icon(),
+            comment=self.comment_edit.text().strip(),
+            categories=[self.category.currentData()],
+            terminal=self.terminal.isChecked(),
+        )

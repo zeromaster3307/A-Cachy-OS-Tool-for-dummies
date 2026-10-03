@@ -4,6 +4,29 @@ Hier steht, was sich von Version zu Version geändert hat. Die installierte
 Version siehst du im Fenstertitel, im Reiter „Hilfe“ oder mit
 `cachy-kompass --version`.
 
+## 0.5.0
+
+- **Alles aktualisieren …:** startet System- und AUR-Update (paru), Flatpak-,
+  pipx- und uv-Updates usw. sichtbar in einem Terminalfenster – jeder Schritt
+  einzeln abwählbar.
+- **Neustart-Hinweis:** Wurden seit dem Start Kernel, Grafiktreiber, systemd,
+  glibc oder Firmware aktualisiert, erscheint oben „Neustart empfohlen“.
+- **Liste sichern …:** speichert alle installierten Programme als lesbares
+  Skript, das sie nach einer Neuinstallation wieder einspielt.
+- **Neue Spalten „Größe“ und „Installiert“**, sortierbar. Neuer Filter
+  „Installiert: letzte 7 Tage / 30 Tage / Jahr“.
+- **Doppelt installierte Programme** (z. B. Repo + Flatpak) werden erkannt:
+  „(2×)“ hinter dem Namen, Hinweis in den Details, eigener Filter und Fund im
+  Reiter „Aufräumen“.
+- **Warum ist das installiert?** Die Details zeigen, welche Pakete ein Paket
+  brauchen, und was beim Deinstallieren mit entfernt würde (inkl. Platzgewinn).
+- **Startmenü-Einträge bearbeiten, ein- und ausblenden.** Systemeinträge
+  bleiben unverändert, die eigene Fassung landet im Benutzerordner und lässt
+  sich mit „Original wiederherstellen“ rückgängig machen.
+- Seltener gebrauchte Filter (Nur veraltete, Nur ohne Auto-Update, Nur doppelt
+  installierte, Abhängigkeiten zeigen) stecken jetzt in der Ausklappliste
+  „Weitere Filter“.
+
 ## 0.4.2
 
 - Die Häkchen für den Filter „Art“ stecken jetzt in einer **Ausklappliste**

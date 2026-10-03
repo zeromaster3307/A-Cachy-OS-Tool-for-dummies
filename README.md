@@ -117,18 +117,30 @@ Die Hauptansicht. Jede Zeile ist ein Programm.
 
 | Spalte | Bedeutung |
 |---|---|
-| **Programm** | Name des Programms (wenn möglich so, wie er im Startmenü steht) |
+| **Programm** | Name des Programms (wenn möglich so, wie er im Startmenü steht). **(2×)** dahinter heißt: doppelt installiert, z. B. aus dem Repo und zusätzlich als Flatpak |
 | **Version** | installierte Version |
 | **Quelle** | auf welchem Weg es installiert wurde (siehe [Begriffe](#begriffe-einfach-erklärt)) |
 | **Art** | 🪟 **App** (Programm mit Fenster) · ⌨ **Befehl** (Kommandozeilenprogramm fürs Terminal) · 📦 **Sonstiges** (nicht startbar: Schriftarten, Treiber, Firmware, Bibliotheken, Designs, Sammelpakete) |
 | **Startmenü** | ✔ sichtbar · ◐ Eintrag vorhanden, aber ausgeblendet · ✘ kein Eintrag |
 | **Auto-Update** | ✔ wird beim Systemupdate mit aktualisiert · ◐ nur mit dem richtigen Werkzeug · ✘ musst du selbst aktualisieren |
 | **Aktuell?** | erst nach Klick auf **„Nach Updates suchen“**: ✔ aktuell · ⬆ neuere Version verfügbar |
+| **Größe** | belegter Speicherplatz. Bei Flatpaks nur die App selbst, gemeinsam genutzte Laufzeiten kommen hinzu |
+| **Installiert** | wann das Programm installiert wurde. Bei Repo- und AUR-Paketen genau (aus dem Protokoll von pacman). **„ca.“** heißt: Datum der Programmdateien, denn bei Flatpak, AppImage usw. gibt es kein Protokoll (nach einem Update steht dort evtl. das Update-Datum) |
 | **Beschreibung** | Kurzbeschreibung des Pakets |
 
 Ein Klick auf ein Programm zeigt rechts alle Details: woher es kommt, wie es
 aktualisiert wird, welche Startmenü-Einträge es hat und mit welchem Befehl man
-es wieder deinstalliert.
+es wieder deinstalliert. Außerdem:
+
+- **Warum ist das installiert?** Bei Repo- und AUR-Paketen steht dort, welche
+  Programme es brauchen. So erfährst du bei einer Abhängigkeit, wer sie
+  mitgebracht hat.
+- **Was ginge beim Deinstallieren mit weg?** Ein Trockenlauf von pacman zeigt,
+  welche nicht mehr benötigten Abhängigkeiten mit entfernt würden und wie viel
+  Platz das bringt. Wird das Paket noch von einem anderen gebraucht, steht dort
+  stattdessen, von welchem.
+- **Doppelt installiert:** ein Hinweis, falls es dasselbe Programm noch aus einer
+  anderen Quelle gibt.
 
 Ein Klick auf eine Spaltenüberschrift sortiert die Liste, zum Beispiel nach
 „Aktuell?“, dann stehen alle veralteten Programme oben.
@@ -139,13 +151,63 @@ Ein Klick auf eine Spaltenüberschrift sortiert die Liste, zum Beispiel nach
 |---|---|
 | **Neu einlesen** (F5) | sucht alle Programme erneut |
 | **Nach Updates suchen** | fragt im Internet nach neueren Versionen; dabei wird **nichts** installiert |
+| **Alles aktualisieren …** | installiert alle Updates, siehe [unten](#alles-aktualisieren) |
+| **Liste sichern …** | speichert alle installierten Programme als Skript, siehe [unten](#programmliste-sichern) |
 | **Suchen …** | filtert **alle Reiter** gleichzeitig: Namen, Beschreibungen, Namen der Startmenü-Einträge (z. B. „Claude Code“ für das Programm `claude`), Befehle und Pfade |
 | **Alle Quellen** | zeigt nur Programme aus einer bestimmten Quelle, z. B. nur Flatpaks |
 | **Art: …** | Ausklappliste mit Häkchen (☑ Apps ☐ Befehle ☐ Sonstiges), frei kombinierbar. Auf der Schaltfläche steht, was gerade ausgewählt ist. Standard ist **nur Apps**, also Programme mit Fenster. Häkchen bei „Befehle“ zeigt zusätzlich Kommandozeilenprogramme, bei „Sonstiges“ auch Schriftarten, Treiber usw. Der Filter gilt auch im Reiter „Startmenü-Einträge“. |
 | **Startmenü: …** | zeigt z. B. nur Programme **ohne** Startmenü-Eintrag |
-| **Nur veraltete** | zeigt nur Programme mit verfügbarem Update |
-| **Nur ohne Auto-Update** | zeigt nur Programme, um deren Updates du dich selbst kümmern musst |
-| **Abhängigkeiten zeigen** | blendet auch Bibliotheken und automatisch mitinstallierte Pakete ein (das sind oft über 1000) |
+| **Installiert: …** | nur Programme, die in den letzten 7 Tagen, 30 Tagen oder im letzten Jahr installiert wurden. Praktisch für die Frage „Was habe ich letzte Woche nach dieser Anleitung installiert?“ |
+| **Weitere Filter** | Ausklappliste mit Häkchen. In Klammern steht, wie viele davon aktiv sind: |
+| &nbsp;&nbsp;↳ **Nur veraltete** | zeigt nur Programme mit verfügbarem Update |
+| &nbsp;&nbsp;↳ **Nur ohne Auto-Update** | zeigt nur Programme, um deren Updates du dich selbst kümmern musst |
+| &nbsp;&nbsp;↳ **Nur doppelt installierte** | zeigt nur Programme, die es aus mehreren Quellen gibt |
+| &nbsp;&nbsp;↳ **Abhängigkeiten zeigen** | blendet auch Bibliotheken und automatisch mitinstallierte Pakete ein (das sind oft über 1000) |
+
+### Alles aktualisieren
+
+**„Alles aktualisieren …“** zeigt, welche Updates auf deinem System anstehen
+können, mit je einem Häkchen:
+
+- **System + AUR** mit `paru -Syu` (ohne paru: `yay -Syu` bzw. `sudo pacman -Syu`)
+- **Flatpak-Apps** mit `flatpak update`
+- falls vorhanden: **pipx**, **uv**, **cargo** (nur mit `cargo-update`) und **Homebrew**
+
+Nach **„Terminal öffnen“** laufen die Befehle nacheinander sichtbar in einem
+Terminalfenster. Dort gibst du dein Passwort ein und bestätigst die
+Installation. Geht ein Schritt schief oder brichst du ab, werden die folgenden
+nicht mehr ausgeführt. Was nicht automatisch aktualisiert werden kann (z. B.
+AppImages), steht im Dialog unter „Nicht dabei“.
+
+**Neustart-Hinweis:** Wurden seit dem letzten Start der Kernel, der
+Grafiktreiber (NVIDIA, Mesa), systemd, glibc oder die Firmware aktualisiert,
+erscheint oben im Fenster ein orangefarbener Hinweis **„Neustart empfohlen“**.
+Diese Updates wirken erst nach einem Neustart. Nach dem Update also auf
+**„Neu einlesen“** klicken.
+
+### Programmliste sichern
+
+**„Liste sichern …“** speichert alle bewusst installierten Programme in eine
+Datei, z. B. `programme-2026-10-03.sh`. Die Datei ist beides:
+
+- eine **lesbare Liste**, was du alles installiert hast (einfach mit einem
+  Texteditor öffnen), und
+- ein **Skript**, das nach einer Neuinstallation von CachyOS alles wieder
+  einspielt: Repo-Pakete, AUR-Pakete, Flatpaks, Snaps, pipx, uv, cargo, npm und
+  Homebrew.
+
+So stellst du die Programme wieder her:
+
+1. Die Datei vor der Neuinstallation auf einen USB-Stick oder in die Cloud kopieren.
+2. Auf dem neuen System im Terminal `bash programme-2026-10-03.sh` ausführen.
+   Wichtig: ausdrücklich `bash` davor schreiben, denn CachyOS nutzt die fish-Shell.
+3. Vor jedem Abschnitt (z. B. „23 Pakete aus den offiziellen Repos installieren?“)
+   wird nachgefragt. Mit `n` überspringst du ihn.
+
+AppImages und von Hand installierte Programme kann das Skript nicht
+herunterladen. Sie stehen als Merkliste am Ende. **Einstellungen und eigene
+Dateien sind nicht enthalten**, die liegen in deinem Benutzerordner (z. B.
+`~/.config`) und gehören in eine normale Datensicherung.
 
 ### Einen Startmenü-Eintrag anlegen
 
@@ -188,6 +250,25 @@ sich alle Einträge löschen, die in **deinem Benutzerordner** liegen
 
 Das Programm selbst bleibt dabei immer installiert, nur der Menüeintrag
 verschwindet.
+
+### Einträge bearbeiten, ein- und ausblenden
+
+Im Reiter **„Startmenü-Einträge“** gibt es drei Knöpfe für den ausgewählten Eintrag:
+
+- **Bearbeiten …** ändert Name, Beschreibung, Startbefehl, Symbol, Kategorie und
+  „Im Terminal starten“. Geändert wird nur, was du tatsächlich anpasst.
+- **Einblenden / Ausblenden** zeigt einen versteckten Eintrag im Startmenü bzw.
+  versteckt ihn. Wählst du im Reiter „Programme“ bei einem Programm mit nur
+  verstecktem Eintrag „Startmenü-Eintrag anlegen …“, wird das Einblenden
+  ebenfalls angeboten.
+- **Entfernen … / Original wiederherstellen …** (siehe oben).
+
+**Systemeinträge bleiben dabei immer unverändert.** Stattdessen speichert der
+Software-Kompass deine Fassung unter gleichem Namen in deinem Benutzerordner.
+Sie ersetzt den Systemeintrag im Startmenü. Mit **„Original
+wiederherstellen …“** löschst du deine Fassung, und der ursprüngliche Eintrag
+gilt wieder. Hinweis: Ändert ein späteres Update den Systemeintrag, gilt
+trotzdem weiter deine Fassung, bis du sie entfernst.
 
 ### Reiter „Startmenü-Einträge“
 
@@ -248,6 +329,7 @@ oder kaputt sind. Das Prüfen selbst verändert nichts.
 | **AUR-Bauordner** | Reste vom Bauen aus dem AUR (paru/yay) in `~/.cache` | Ordner löschen, werden beim nächsten Update neu angelegt |
 | **Unbenutzte Flatpak-Laufzeiten** | Laufzeiten, die keine App mehr braucht | `flatpak uninstall --unused`, Flatpak zeigt vorher die Liste |
 | **Kaputte Startmenü-Einträge** | Einträge, deren Programm fehlt | Einträge in deinem Benutzerordner werden direkt entfernt |
+| **Doppelt installiert** | dasselbe Programm aus mehreren Quellen, z. B. Repo und Flatpak (erkannt am Namen) | **kein Knopf**, nur Erklärung und die Befehle zum Entfernen, denn du entscheidest, welche Fassung bleibt |
 | **Nicht mehr im AUR** | AUR-Pakete, die dort nicht mehr stehen und keine Updates mehr bekommen | **kein Knopf**, nur Erklärung und Befehl, denn du entscheidest selbst |
 
 Oben steht, wie viel Platz sich insgesamt gewinnen lässt. Mit **„Aufräumen …“**
@@ -319,6 +401,10 @@ Flatpak- und Snap-Einträgen) und den Programmen so zugeordnet:
 | Nach Updates suchen | Nein. Es werden nur Versionsnummern aus dem Internet abgefragt. `checkupdates` arbeitet in einem temporären Ordner und fasst die Paketdatenbank des Systems nicht an. |
 | Startmenü-Eintrag anlegen | Legt **eine** Datei `~/.local/share/applications/cachy-kompass-<name>.desktop` an, bei eigenem Bild zusätzlich eine Kopie in `~/.local/share/icons/cachy-kompass/` |
 | Eintrag entfernen | Löscht nur Einträge aus deinem Benutzerordner, nach Rückfrage. Bei fremden Einträgen gibt es eine zusätzliche Warnung. Systemeinträge werden nie angefasst. |
+| Eintrag bearbeiten, ein-/ausblenden | Ändert Einträge in deinem Benutzerordner. Bei Systemeinträgen entsteht dort eine geänderte Kopie, das Original bleibt unverändert. |
+| Alles aktualisieren | Nur nach Rückfrage, sichtbar in einem Terminalfenster, in dem du selbst dein Passwort eingibst und die Installation bestätigst |
+| Liste sichern | Speichert eine Datei dort, wo du es auswählst. Ändert sonst nichts. |
+| Details anzeigen | „Was ginge beim Deinstallieren mit weg?“ nutzt `pacman -Rsp`, einen reinen Trockenlauf ohne Administratorrechte |
 | Aufräumen | Prüfen ändert nichts. Aufgeräumt wird nur nach Rückfrage, sichtbar in einem Terminalfenster; pacman, paccache und flatpak fragen dort zusätzlich nach. Nur kaputte Startmenü-Einträge im Benutzerordner löscht der Software-Kompass selbst. |
 | Paketverwaltung installieren | Nur nach Rückfrage, nur aus den offiziellen Paketquellen, sichtbar in einem Terminalfenster, in dem du selbst dein Passwort eingibst |
 | Programme deinstallieren | **Macht der Software-Kompass nicht.** Er zeigt dir nur den passenden Befehl, den du selbst ins Terminal kopieren kannst. |
@@ -411,12 +497,13 @@ Meldungen erscheinen, und eröffne ein Issue auf GitHub.
 - Die Zuordnung von Startmenü-Einträgen über den Startbefehl ist eine gute
   Schätzung, aber nicht in jedem Sonderfall perfekt.
 - Dass ein Programm „aktuell“ ist, bezieht sich auf den Zeitpunkt der Prüfung.
+- **Doppelte** werden am Namen erkannt. Ganz selten sind zwei gleichnamige
+  Programme aber verschiedene Dinge. Deshalb gibt es dafür keinen Aufräum-Knopf.
+- Das **Installationsdatum** stammt bei Repo- und AUR-Paketen aus
+  `/var/log/pacman.log`. Wurde das Protokoll gelöscht, fehlt das Datum.
 
 ### Ideen für später
 
-- Versteckte Einträge mit einem Klick wieder einblenden
-- Vorhandene Einträge bearbeiten (Name, Symbol, Kategorie)
-- Updates direkt aus dem Programm starten (mit Passwortabfrage)
 - Nix-Profile und Distrobox-Container einzeln auflisten
 - PKGBUILD, damit sich der Software-Kompass selbst über das AUR installieren lässt
 - Englische Übersetzung

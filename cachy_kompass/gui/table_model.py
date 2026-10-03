@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta
 from typing import Any
 
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QColor
 
+from cachy_kompass import util
 from cachy_kompass.models import KIND_INFO, AutoUpdate, Kind, MenuStatus, Program, Source, UpdateStatus
 
 GREEN = QColor("#2e9d4f")
@@ -14,8 +16,12 @@ ORANGE = QColor("#d98a00")
 RED = QColor("#d64545")
 GREY = QColor("#8a8a8a")
 
-COLUMNS = ["Programm", "Version", "Quelle", "Art", "Startmenü", "Auto-Update", "Aktuell?", "Beschreibung"]
-COL_NAME, COL_VERSION, COL_SOURCE, COL_KIND, COL_MENU, COL_AUTO, COL_UPDATE, COL_DESC = range(len(COLUMNS))
+COLUMNS = [
+    "Programm", "Version", "Quelle", "Art", "Startmenü", "Auto-Update", "Aktuell?", "Größe", "Installiert", "Beschreibung",
+]
+(
+    COL_NAME, COL_VERSION, COL_SOURCE, COL_KIND, COL_MENU, COL_AUTO, COL_UPDATE, COL_SIZE, COL_DATE, COL_DESC,
+) = range(len(COLUMNS))
 
 KIND_TEXT = {Kind.APP: "🪟 App", Kind.COMMAND: "⌨ Befehl", Kind.OTHER: "📦 Sonstiges"}
 
@@ -38,6 +44,21 @@ UPDATE_COLOR = {
 
 SORT_ROLE = Qt.ItemDataRole.UserRole + 1
 PROGRAM_ROLE = Qt.ItemDataRole.UserRole + 2
+
+
+def date_text(p: Program) -> str:
+    if p.installed_at is None:
+        return ""
+    return ("ca. " if p.installed_approx else "") + p.installed_at.strftime("%d.%m.%Y")
+
+
+def date_tooltip(p: Program) -> str:
+    if p.installed_at is None:
+        return "Installationsdatum unbekannt"
+    when = p.installed_at.strftime("%d.%m.%Y um %H:%M")
+    if p.installed_approx:
+        return f"Ungefähr: {when} – Änderungsdatum der Programmdateien (bei Updates evtl. später)"
+    return f"Installiert am {when} (laut pacman-Protokoll)"
 
 
 def update_text(p: Program) -> str:
@@ -84,13 +105,15 @@ class ProgramTableModel(QAbstractTableModel):
             return p
         if role == Qt.ItemDataRole.DisplayRole:
             return [
-                p.display_name,
+                f"{p.display_name}  ({len(p.duplicates) + 1}×)" if p.duplicates else p.display_name,
                 p.version,
                 p.info.label,
                 KIND_TEXT[p.kind],
                 MENU_TEXT[p.menu_status],
                 AUTO_TEXT[p.info.auto_update],
                 update_text(p),
+                util.format_size(p.size_bytes) if p.size_bytes else "",
+                date_text(p),
                 p.description,
             ][col]
         if role == SORT_ROLE:
@@ -102,11 +125,19 @@ class ProgramTableModel(QAbstractTableModel):
                 return list(MenuStatus).index(p.menu_status)
             if col == COL_AUTO:
                 return list(AutoUpdate).index(p.info.auto_update)
+            if col == COL_SIZE:
+                return p.size_bytes
+            if col == COL_DATE:
+                return p.installed_at.timestamp() if p.installed_at else 0.0
             if col == COL_UPDATE:
                 return [UpdateStatus.OUTDATED, UpdateStatus.UNKNOWN, UpdateStatus.CURRENT,
                         UpdateStatus.NOT_CHECKABLE, UpdateStatus.NOT_CHECKED].index(p.update.status)
             return str(self.data(index)).lower()
+        if role == Qt.ItemDataRole.TextAlignmentRole and col == COL_SIZE:
+            return int(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         if role == Qt.ItemDataRole.ForegroundRole:
+            if col == COL_DATE and p.installed_approx:
+                return GREY
             if col == COL_MENU:
                 return MENU_COLOR[p.menu_status]
             if col == COL_AUTO:
@@ -122,6 +153,12 @@ class ProgramTableModel(QAbstractTableModel):
                 return p.origin
             if col == COL_KIND:
                 return KIND_INFO[p.kind]
+            if col == COL_DATE:
+                return date_tooltip(p)
+            if col == COL_SIZE and p.source is Source.FLATPAK:
+                return "Nur die App selbst – gemeinsam genutzte Laufzeiten kommen hinzu."
+            if col == COL_NAME and p.duplicates:
+                return "Auch installiert als: " + ", ".join(f"{d.display_name} ({d.info.label})" for d in p.duplicates)
             if col == COL_DESC:
                 return p.description
         return None
@@ -139,6 +176,9 @@ class ProgramFilterModel(QSortFilterProxyModel):
         self.only_manual_update = False
         self.show_dependencies = False
         self.kinds: frozenset[Kind] = DEFAULT_KINDS
+        #: Nur Programme, die in den letzten N Tagen installiert wurden (None = egal)
+        self.installed_within_days: int | None = None
+        self.only_duplicates = False
         self.setSortRole(SORT_ROLE)
         self.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
 
@@ -162,6 +202,14 @@ class ProgramFilterModel(QSortFilterProxyModel):
             return False
         if self.only_manual_update and p.info.auto_update is AutoUpdate.YES:
             return False
+        if self.only_duplicates and not p.duplicates:
+            return False
+        if self.installed_within_days is not None:
+            if p.installed_at is None:
+                return False
+            limit = datetime.now(p.installed_at.tzinfo) - timedelta(days=self.installed_within_days)
+            if p.installed_at < limit:
+                return False
         if self.search:
             haystack = p.search_text()
             return all(word in haystack for word in self.search.lower().split())
