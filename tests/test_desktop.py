@@ -200,3 +200,14 @@ def test_kde_userapp_entry_matches_real_path(tmp_path):
     desktop.match_entries([tb], desktop.load_entries([apps]))
     assert tb.menu_status is MenuStatus.HIDDEN
     assert "Öffnen mit" in desktop.origin_note(tb.desktop_entries[0])
+
+
+def test_entry_kind(tmp_path):
+    from cachy_kompass.models import Kind
+
+    visible = desktop.entry_from_raw(tmp_path / "a.desktop", "a.desktop", {"Name": "A", "Exec": "a"})
+    hidden = desktop.entry_from_raw(tmp_path / "b.desktop", "b.desktop", {"Name": "B", "Exec": "b", "NoDisplay": "true"})
+    git = Program("git", "2", Source.REPO, executables=["/usr/bin/git"])
+    assert desktop.entry_kind(hidden, git) is Kind.COMMAND  # Art des zugehörigen Programms
+    assert desktop.entry_kind(visible, None) is Kind.APP    # ohne Programm: sichtbar → App
+    assert desktop.entry_kind(hidden, None) is Kind.OTHER   # ohne Programm: versteckt → Sonstiges

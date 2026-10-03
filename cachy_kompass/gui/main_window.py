@@ -39,9 +39,11 @@ from cachy_kompass.gui.entry_dialog import EntryDialog
 from cachy_kompass.gui.table_model import (
     COL_DESC,
     COL_NAME,
+    DEFAULT_KINDS,
     GREEN,
     GREY,
-    KIND_FILTERS,
+    KIND_CHECKBOX_TEXT,
+    KIND_TEXT,
     ORANGE,
     PROGRAM_ROLE,
     RED,
@@ -50,7 +52,10 @@ from cachy_kompass.gui.table_model import (
 )
 from cachy_kompass.gui.workers import TaskRunner
 from cachy_kompass.installers import InstallerStatus, Rating
-from cachy_kompass.models import SOURCE_INFO, DesktopEntry, MenuStatus, Program, UpdateStatus
+from cachy_kompass.models import KIND_INFO, SOURCE_INFO, DesktopEntry, Kind, MenuStatus, Program, UpdateStatus
+
+# Spalten im Reiter „Startmenü-Einträge“
+ENTRY_COL_KIND, ENTRY_COL_COMMAND = 3, 4
 
 RATING_COLOR = {Rating.BASE: GREY, Rating.RECOMMENDED: GREEN, Rating.OPTIONAL: ORANGE, Rating.DISCOURAGED: RED}
 
@@ -99,9 +104,17 @@ class MainWindow(QMainWindow):
         self.search.setPlaceholderText("Suchen (in allen Reitern) …")
         self.search.setToolTip("Durchsucht Namen, Beschreibungen, Startmenü-Einträge, Befehle und Pfade")
         self.search.setClearButtonEnabled(True)
+        self.search.setMinimumWidth(200)
         self.search.setMaximumWidth(260)
         self.search.textChanged.connect(self._apply_search)
         bar.addWidget(self.search)
+
+        # Zweite Zeile: alle Filter (eine Zeile allein ist auf normalen Bildschirmen zu schmal)
+        self.addToolBarBreak()
+        bar = QToolBar("Filter")
+        bar.setMovable(False)
+        self.addToolBar(bar)
+        bar.addWidget(QLabel(" Filter: "))
 
         self.source_filter = QComboBox()
         self.source_filter.addItem("Alle Quellen", None)
@@ -112,17 +125,17 @@ class MainWindow(QMainWindow):
         )
         bar.addWidget(self.source_filter)
 
-        self.kind_filter = QComboBox()
-        for label, kinds in KIND_FILTERS:
-            self.kind_filter.addItem(label, kinds)
-        self.kind_filter.setToolTip(
-            "App = Programm mit Fenster · Befehl = fürs Terminal · "
-            "Sonstiges = nicht startbar (Schriftarten, Treiber, Bibliotheken …)"
-        )
-        self.kind_filter.currentIndexChanged.connect(
-            lambda: self.proxy.update_filter(kinds=self.kind_filter.currentData())
-        )
-        bar.addWidget(self.kind_filter)
+        # Filter „Art“ als Häkchen – frei kombinierbar, gilt für Programme und Startmenü-Einträge
+        bar.addWidget(QLabel(" Art:"))
+        self.kind_boxes: dict[Kind, QCheckBox] = {}
+        for kind, label in KIND_CHECKBOX_TEXT.items():
+            box = QCheckBox(label)
+            box.setChecked(kind in DEFAULT_KINDS)
+            box.setToolTip(KIND_INFO[kind])
+            box.toggled.connect(self._kinds_changed)
+            self.kind_boxes[kind] = box
+            bar.addWidget(box)
+        bar.addSeparator()
 
         self.menu_filter = QComboBox()
         self.menu_filter.addItem("Startmenü: egal", None)
@@ -220,14 +233,14 @@ class MainWindow(QMainWindow):
             "zeigt auf ein Programm, das es nicht (mehr) gibt – er ist also vermutlich kaputt."
         )
         info.setWordWrap(True)
-        self.entries_table = QTableWidget(0, 5)
-        self.entries_table.setHorizontalHeaderLabels(["Name", "Sichtbar", "Gehört zu", "Startbefehl", "Datei"])
+        self.entries_table = QTableWidget(0, 6)
+        self.entries_table.setHorizontalHeaderLabels(["Name", "Sichtbar", "Gehört zu", "Art", "Startbefehl", "Datei"])
         self.entries_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.entries_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.entries_table.setSortingEnabled(True)
         self.entries_table.verticalHeader().setVisible(False)
-        self.entries_table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
-        for col, width in enumerate([220, 80, 240, 120]):
+        self.entries_table.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
+        for col, width in enumerate([220, 80, 240, 110, 120]):
             self.entries_table.setColumnWidth(col, width)
         self.entries_table.itemSelectionChanged.connect(self._entry_selected)
 
@@ -361,12 +374,24 @@ class MainWindow(QMainWindow):
         text = self.search.text()
         self.proxy.update_filter(search=text)
         words = text.lower().split()
+        kinds = self.selected_kinds()
         for table in (self.entries_table, self.installer_table):
             for row in range(table.rowCount()):
                 cells = (table.item(row, col) for col in range(table.columnCount()))
                 # Tooltips mit durchsuchen – dort steht z. B. der vollständige Startbefehl
                 row_text = " ".join(f"{c.text()} {c.toolTip()}" for c in cells if c is not None).lower()
-                table.setRowHidden(row, not all(w in row_text for w in words))
+                visible = all(w in row_text for w in words)
+                if table is self.entries_table:
+                    kind_item = table.item(row, ENTRY_COL_KIND)
+                    visible = visible and (kind_item is None or kind_item.data(Qt.ItemDataRole.UserRole) in kinds)
+                table.setRowHidden(row, not visible)
+
+    def selected_kinds(self) -> frozenset[Kind]:
+        return frozenset(kind for kind, box in self.kind_boxes.items() if box.isChecked())
+
+    def _kinds_changed(self, _checked: bool = False) -> None:
+        self.proxy.update_filter(kinds=self.selected_kinds())
+        self._apply_search()
 
     def _toggle_dependencies(self, on: bool) -> None:
         self.proxy.update_filter(show_dependencies=on)
@@ -480,10 +505,12 @@ class MainWindow(QMainWindow):
             missing = desktop.missing_program(e.exec, self.result.helper_names)
             exists = not missing
             owner_text = f"{owner.display_name} ({owner.info.label})" if owner else "–"
+            kind = desktop.entry_kind(e, owner)
             cells = [
                 (e.name, None),
                 ("ja" if e.visible else "nein", GREEN if e.visible else GREY),
                 (owner_text, None),
+                (KIND_TEXT[kind], None),
                 ("ok" if exists else "Programm fehlt", GREEN if exists else RED),
                 (str(e.path), None),
             ]
@@ -499,7 +526,10 @@ class MainWindow(QMainWindow):
                         item.setToolTip(desktop.origin_note(e))
                     elif desktop.is_user_entry(e):
                         item.setToolTip("Liegt in deinem Benutzerordner (von dir oder einem Programm angelegt)")
-                if col == 3:
+                if col == ENTRY_COL_KIND:
+                    item.setData(Qt.ItemDataRole.UserRole, kind)
+                    item.setToolTip(KIND_INFO[kind])
+                if col == ENTRY_COL_COMMAND:
                     hint = f"Nicht gefunden: {missing}\n" if missing else ""
                     item.setToolTip(f"{hint}Startbefehl: {e.exec}")
                 table.setItem(row, col, item)

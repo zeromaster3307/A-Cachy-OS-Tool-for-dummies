@@ -18,7 +18,7 @@ from collections.abc import Collection
 from pathlib import Path
 
 from cachy_kompass import util
-from cachy_kompass.models import DesktopEntry, Program, Source
+from cachy_kompass.models import DesktopEntry, Kind, Program, Source
 
 OUR_PREFIX = "cachy-kompass-"
 
@@ -522,6 +522,17 @@ def _is_within(path: Path, folder: Path) -> bool:
 def is_user_entry(entry: DesktopEntry) -> bool:
     """Liegt der Eintrag in deinem eigenen Benutzerordner (nicht im System)?"""
     return _is_within(entry.path, user_applications_dir())
+
+
+def entry_kind(entry: DesktopEntry, owner: Program | None) -> Kind:
+    """Art eines Startmenü-Eintrags – dieselbe wie die seines Programms.
+
+    Einträge ohne erkanntes Programm gelten als App, wenn sie im Startmenü
+    sichtbar sind, sonst als „Sonstiges“ (versteckte Hilfseinträge).
+    """
+    if owner is not None:
+        return owner.kind
+    return Kind.APP if entry.visible else Kind.OTHER
 
 
 def origin_note(entry: DesktopEntry) -> str:

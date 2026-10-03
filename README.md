@@ -133,7 +133,7 @@ es wieder deinstalliert.
 Ein Klick auf eine Spaltenüberschrift sortiert die Liste, zum Beispiel nach
 „Aktuell?“, dann stehen alle veralteten Programme oben.
 
-**Werkzeugleiste oben:**
+**Werkzeugleiste oben** (erste Zeile: Aktionen und Suche, zweite Zeile: Filter):
 
 | Element | Funktion |
 |---|---|
@@ -141,7 +141,7 @@ Ein Klick auf eine Spaltenüberschrift sortiert die Liste, zum Beispiel nach
 | **Nach Updates suchen** | fragt im Internet nach neueren Versionen; dabei wird **nichts** installiert |
 | **Suchen …** | filtert **alle Reiter** gleichzeitig: Namen, Beschreibungen, Namen der Startmenü-Einträge (z. B. „Claude Code“ für das Programm `claude`), Befehle und Pfade |
 | **Alle Quellen** | zeigt nur Programme aus einer bestimmten Quelle, z. B. nur Flatpaks |
-| **Art: …** | Standard ist **„Apps + Befehle“**, also alles, was du als Benutzer starten kannst. Schriftarten, Treiber usw. blendest du mit „Art: alles“ oder „nur Sonstiges“ ein. |
+| **Art: ☑ Apps ☐ Befehle ☐ Sonstiges** | Häkchen, frei kombinierbar. Standard ist **nur Apps**, also Programme mit Fenster. Häkchen bei „Befehle“ zeigt zusätzlich Kommandozeilenprogramme, bei „Sonstiges“ auch Schriftarten, Treiber usw. Der Filter gilt auch im Reiter „Startmenü-Einträge“. |
 | **Startmenü: …** | zeigt z. B. nur Programme **ohne** Startmenü-Eintrag |
 | **Nur veraltete** | zeigt nur Programme mit verfügbarem Update |
 | **Nur ohne Auto-Update** | zeigt nur Programme, um deren Updates du dich selbst kümmern musst |
@@ -195,6 +195,8 @@ Listet **alle** Startmenü-Einträge des Systems und zeigt, zu welchem Programm
 sie gehören. Steht in der Spalte „Startbefehl“ **„Programm fehlt“**, zeigt der
 Eintrag auf ein Programm, das es nicht mehr gibt. Der Eintrag ist dann
 vermutlich ein Überbleibsel einer Deinstallation.
+
+Auch hier gibt es die Spalte **„Art“** (die Art des zugehörigen Programms), und es gilt derselbe Filter „Art“ wie in der Programmliste.
 
 ### Reiter „Paketverwaltungen“
 
