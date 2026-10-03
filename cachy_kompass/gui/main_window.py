@@ -34,6 +34,7 @@ from PySide6.QtWidgets import (
 
 from cachy_kompass import APP_ID, APP_NAME, __version__, desktop, scanner, terminal
 from cachy_kompass.gui import details
+from cachy_kompass.gui.cleanup_tab import CleanupTab
 from cachy_kompass.gui.entry_dialog import EntryDialog
 from cachy_kompass.gui.table_model import (
     COL_DESC,
@@ -139,6 +140,8 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self._build_programs_tab(), "Programme")
         self.tabs.addTab(self._build_entries_tab(), "Startmenü-Einträge")
         self.tabs.addTab(self._build_installers_tab(), "Paketverwaltungen")
+        self.cleanup_tab = CleanupTab(self)
+        self.tabs.addTab(self.cleanup_tab, "Aufräumen")
         help_view = QTextBrowser()
         help_view.setOpenExternalLinks(True)
         help_view.setHtml(details.help_html())
@@ -288,6 +291,7 @@ class MainWindow(QMainWindow):
         self.busy.setVisible(busy)
         self.scan_action.setEnabled(not busy)
         self.update_action.setEnabled(not busy and self.result is not None)
+        self.cleanup_tab.check_button.setEnabled(not busy and self.result is not None)
 
     def _status(self, text: str) -> None:
         self.statusBar().showMessage(text)

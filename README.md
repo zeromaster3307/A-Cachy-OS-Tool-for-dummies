@@ -229,6 +229,28 @@ kannst du es mit **„Installieren …“** nachinstallieren. Dabei gilt:
   wurden. Die Detailansicht zeigt dazu die Anzahl der betroffenen Programme und
   den Befehl.
 
+### Reiter „Aufräumen“
+
+![Reiter Aufräumen](docs/screenshot-aufraeumen.png)
+<sub>(Screenshot mit Beispieldaten)</sub>
+
+Ein Klick auf **„Jetzt prüfen“** sucht nach Dingen, die unnötig Platz belegen
+oder kaputt sind. Das Prüfen selbst verändert nichts.
+
+| Fund | Was ist das? | Aufräumen |
+|---|---|---|
+| **Verwaiste Pakete** | Abhängigkeiten, die kein Programm mehr braucht | `sudo pacman -Rns …`, pacman zeigt vorher die Liste |
+| **Paket-Zwischenspeicher** | alte Paketversionen in `/var/cache/pacman/pkg`, oft mehrere GB | `paccache` behält die 2 neuesten Versionen jedes Pakets (für den Notfall-Rückweg) |
+| **AUR-Bauordner** | Reste vom Bauen aus dem AUR (paru/yay) in `~/.cache` | Ordner löschen, werden beim nächsten Update neu angelegt |
+| **Unbenutzte Flatpak-Laufzeiten** | Laufzeiten, die keine App mehr braucht | `flatpak uninstall --unused`, Flatpak zeigt vorher die Liste |
+| **Kaputte Startmenü-Einträge** | Einträge, deren Programm fehlt | Einträge in deinem Benutzerordner werden direkt entfernt |
+| **Nicht mehr im AUR** | AUR-Pakete, die dort nicht mehr stehen und keine Updates mehr bekommen | **kein Knopf**, nur Erklärung und Befehl, denn du entscheidest selbst |
+
+Oben steht, wie viel Platz sich insgesamt gewinnen lässt. Mit **„Aufräumen …“**
+öffnet sich nach einer Rückfrage ein Terminalfenster mit den angezeigten
+Befehlen. Dort siehst du alles und bestätigst selbst. Danach erneut auf
+„Jetzt prüfen“ klicken.
+
 ### Reiter „Hilfe“
 
 Eine Kurzfassung dieser Anleitung direkt im Programm.
@@ -293,6 +315,7 @@ Flatpak- und Snap-Einträgen) und den Programmen so zugeordnet:
 | Nach Updates suchen | Nein. Es werden nur Versionsnummern aus dem Internet abgefragt. `checkupdates` arbeitet in einem temporären Ordner und fasst die Paketdatenbank des Systems nicht an. |
 | Startmenü-Eintrag anlegen | Legt **eine** Datei `~/.local/share/applications/cachy-kompass-<name>.desktop` an, bei eigenem Bild zusätzlich eine Kopie in `~/.local/share/icons/cachy-kompass/` |
 | Eintrag entfernen | Löscht nur Einträge aus deinem Benutzerordner, nach Rückfrage. Bei fremden Einträgen gibt es eine zusätzliche Warnung. Systemeinträge werden nie angefasst. |
+| Aufräumen | Prüfen ändert nichts. Aufgeräumt wird nur nach Rückfrage, sichtbar in einem Terminalfenster; pacman, paccache und flatpak fragen dort zusätzlich nach. Nur kaputte Startmenü-Einträge im Benutzerordner löscht der Software-Kompass selbst. |
 | Paketverwaltung installieren | Nur nach Rückfrage, nur aus den offiziellen Paketquellen, sichtbar in einem Terminalfenster, in dem du selbst dein Passwort eingibst |
 | Programme deinstallieren | **Macht der Software-Kompass nicht.** Er zeigt dir nur den passenden Befehl, den du selbst ins Terminal kopieren kannst. |
 

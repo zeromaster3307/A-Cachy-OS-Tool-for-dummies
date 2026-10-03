@@ -153,6 +153,7 @@ class PacmanSource(PackageSource):
                     owned_desktop_files=desktops.get(name, []),
                     url=pkg.get("URL", ""),
                     install_date=pkg.get("Install Date", ""),
+                    size_bytes=util.parse_size(pkg.get("Installed Size", "")),
                 )
             )
         return programs

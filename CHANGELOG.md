@@ -4,6 +4,16 @@ Hier steht, was sich von Version zu Version geändert hat. Die installierte
 Version siehst du im Fenstertitel, im Reiter „Hilfe“ oder mit
 `cachy-kompass --version`.
 
+## 0.3.0
+
+- **Neuer Reiter „Aufräumen“:** findet verwaiste Pakete, alte Versionen im
+  Paket-Zwischenspeicher, AUR-Bauordner, unbenutzte Flatpak-Laufzeiten, kaputte
+  Startmenü-Einträge und Pakete, die nicht mehr im AUR stehen. Zeigt an, wie
+  viel Platz sich gewinnen lässt. Aufgeräumt wird nur nach Rückfrage und
+  sichtbar in einem Terminalfenster. Bei Paketen, die nicht mehr im AUR stehen,
+  gibt es bewusst keinen Knopf.
+- Die Paketgröße aus pacman wird jetzt mit eingelesen.
+
 ## 0.2.2
 
 - **KDE-Hilfseinträge werden zugeordnet und erklärt:** Einträge wie

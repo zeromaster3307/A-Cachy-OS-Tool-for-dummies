@@ -274,6 +274,8 @@ class Program:
     install_path: str = ""
     url: str = ""
     install_date: str = ""
+    # Belegter Speicherplatz in Bytes (0 = unbekannt)
+    size_bytes: int = 0
     # Bei Flatpak: "user" oder "system"
     installation: str = ""
     # Eigener Deinstallationsbefehl, falls die Vorlage der Quelle nicht passt

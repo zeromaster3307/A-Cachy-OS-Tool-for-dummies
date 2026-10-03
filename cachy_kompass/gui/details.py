@@ -141,6 +141,8 @@ wurden. Bibliotheken und Abhängigkeiten blendest du mit dem Häkchen
 Startmenü-Einträge (und deren Symbole) in deinem Benutzerordner an
 (<code>~/.local/share/applications</code>). Löschen kann er nur Einträge aus deinem
 Benutzerordner – nach Rückfrage, Systemeinträge nie.</li>
+<li>Im Reiter <b>„Aufräumen“</b> findest du verwaiste Pakete, alte Paketversionen
+und andere Platzfresser – aufgeräumt wird nur nach Rückfrage, sichtbar im Terminal.</li>
 <li>Updates installierst du unter CachyOS am einfachsten mit dem Befehl
 <code>paru</code> im Terminal (aktualisiert Repo- und AUR-Pakete) und
 <code>flatpak update</code> für Flatpaks.</li>
