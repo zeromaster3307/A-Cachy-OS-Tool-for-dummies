@@ -4,6 +4,17 @@ Hier steht, was sich von Version zu Version geändert hat. Die installierte
 Version siehst du im Fenstertitel, im Reiter „Hilfe“ oder mit
 `cachy-kompass --version`.
 
+## 0.4.0
+
+- **Neue Spalte „Art“ mit Filter:** Jedes Programm ist als 🪟 App (mit Fenster),
+  ⌨ Befehl (fürs Terminal) oder 📦 Sonstiges (nicht startbar: Schriftarten,
+  Treiber, Firmware, Bibliotheken, Designs, Sammelpakete) eingeordnet.
+  Standardmäßig zeigt die Liste nur **Apps + Befehle**, also alles, was man als
+  Benutzer starten kann. Die Art steht auch in der Detailansicht und in der
+  Textausgabe (`--cli`, `--json`).
+- Homebrew-Formeln ohne eigenes Programm (Bibliotheken) gelten nicht mehr
+  fälschlich als Befehl.
+
 ## 0.3.2
 
 - **Kein falsches „Programm fehlt“ mehr bei Hintergrunddiensten:** Einträge

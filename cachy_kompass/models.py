@@ -46,6 +46,27 @@ class UpdateStatus(Enum):
     NOT_CHECKABLE = "nicht prüfbar"
 
 
+class Kind(Enum):
+    """Was für eine Art von Software ist das – kann man es als Benutzer starten?"""
+
+    APP = "App"            # hat ein Fenster, startet aus dem Startmenü
+    COMMAND = "Befehl"     # Kommandozeilenprogramm fürs Terminal
+    OTHER = "Sonstiges"    # nicht startbar: Bibliothek, Schriftart, Treiber, Design …
+
+
+KIND_INFO: dict[Kind, str] = {
+    Kind.APP: "Ein Programm mit eigenem Fenster, das du aus dem Startmenü starten kannst.",
+    Kind.COMMAND: (
+        "Ein Kommandozeilenprogramm: Es wird im Terminal über seinen Befehl gestartet "
+        "und hat kein eigenes Fenster."
+    ),
+    Kind.OTHER: (
+        "Nichts zum Starten: z. B. eine Bibliothek, Schriftart, ein Treiber, Firmware, "
+        "ein Design oder ein Sammelpaket, das andere Pakete mitbringt."
+    ),
+}
+
+
 class MenuStatus(Enum):
     """Ist das Programm über das Startmenü erreichbar?"""
 
@@ -295,6 +316,15 @@ class Program:
     @property
     def info(self) -> SourceInfo:
         return SOURCE_INFO[self.source]
+
+    @property
+    def kind(self) -> Kind:
+        """App, Befehl oder Sonstiges – siehe ``Kind``."""
+        if self.menu_status is MenuStatus.VISIBLE or self.source in (Source.FLATPAK, Source.APPIMAGE):
+            return Kind.APP
+        if self.executables:
+            return Kind.COMMAND
+        return Kind.OTHER
 
     @property
     def menu_status(self) -> MenuStatus:
