@@ -206,11 +206,19 @@ def check_flatpak_unused() -> CleanupItem | None:
 
 
 def check_broken_entries(entries: list[DesktopEntry]) -> CleanupItem:
-    broken = [e for e in entries if e.type == "Application" and e.exec and desktop.missing_program(e.exec)]
-    removable = [e for e in broken if desktop.can_remove(e)]
-    system = [e for e in broken if not desktop.can_remove(e)]
+    candidates = [e for e in entries if e.type == "Application" and e.exec and desktop.missing_program(e.exec)]
+    removable = [e for e in candidates if desktop.can_remove(e)]
+    # Versteckte Systemeinträge (z. B. KDE-Hintergrunddienste wie „KIO“) sieht man
+    # weder im Startmenü noch kann man sie hier entfernen – sie gehören nicht in
+    # die Aufräum-Liste. Sichtbare kaputte Systemeinträge sind dagegen ein
+    # nützlicher Hinweis (Menüpunkt, der nichts tut).
+    system = [e for e in candidates if not desktop.can_remove(e) and e.visible]
+    broken = removable + system
     details = [f"{e.name}  –  fehlt: {desktop.missing_program(e.exec)}  ({e.path})" for e in removable]
-    details += [f"{e.name}  –  Systemeintrag, gehört zu einem Paket  ({e.path})" for e in system]
+    details += [
+        f"{e.name}  –  fehlt: {desktop.missing_program(e.exec)}  – Systemeintrag, nur Hinweis  ({e.path})"
+        for e in system
+    ]
     explanation = (
         "Diese Einträge zeigen auf ein Programm, das es nicht (mehr) gibt – meist Reste von "
         "deinstallierten Programmen oder AppImages, die verschoben wurden. Einträge in deinem "
@@ -218,8 +226,9 @@ def check_broken_entries(entries: list[DesktopEntry]) -> CleanupItem:
     )
     if system:
         explanation += (
-            " Systemeinträge gehören zu einem installierten Paket und werden nicht angefasst; "
-            "dort fehlt meist nur ein optionales Zusatzprogramm."
+            " Systemeinträge gehören zu einem installierten Paket und werden nicht angefasst – "
+            "dort fehlt meist nur ein optionales Zusatzprogramm, oder das Paket ist fehlerhaft "
+            "und wird mit dem nächsten Update repariert."
         )
     return CleanupItem(
         key="entries",
