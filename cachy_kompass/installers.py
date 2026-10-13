@@ -21,15 +21,16 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 from cachy_kompass import util
+from cachy_kompass.i18n import _
 from cachy_kompass.models import Program, Source
 from cachy_kompass.sources.devtools import find_brew
 
 
 class Rating(Enum):
-    BASE = "Grundausstattung"
-    RECOMMENDED = "✔ empfohlen"
-    OPTIONAL = "◐ bei Bedarf"
-    DISCOURAGED = "✘ nicht empfohlen"
+    BASE = _("Grundausstattung")
+    RECOMMENDED = _("✔ empfohlen")
+    OPTIONAL = _("◐ bei Bedarf")
+    DISCOURAGED = _("✘ nicht empfohlen")
 
 
 @dataclass(frozen=True)
@@ -69,101 +70,101 @@ class InstallerStatus:
         return f"sudo pacman -Rns {' '.join(pkgs)}" if pkgs else ""
 
 
-KIND_PM = "Paketverwaltung"
-KIND_GUI = "Grafischer App-Store"
-KIND_UPDATE = "Update-Werkzeug"
-KIND_APPIMAGE = "AppImage-Helfer"
+KIND_PM = _("Paketverwaltung")
+KIND_GUI = _("Grafischer App-Store")
+KIND_UPDATE = _("Update-Werkzeug")
+KIND_APPIMAGE = _("AppImage-Helfer")
 
 SPECS: list[InstallerSpec] = [
-    InstallerSpec("pacman", KIND_PM, "Die Paketverwaltung von Arch Linux und CachyOS. Immer vorhanden.",
-                  Rating.BASE, "Das Herzstück des Systems.", binaries=("pacman",), source=Source.REPO),
-    InstallerSpec("paru", KIND_PM, "AUR-Helfer, bei CachyOS vorinstalliert. Installiert Programme aus dem AUR und aktualisiert Repo- und AUR-Pakete gemeinsam.",
-                  Rating.RECOMMENDED, "Der AUR-Helfer, den CachyOS selbst mitbringt. Einer reicht.",
+    InstallerSpec("pacman", KIND_PM, _("Die Paketverwaltung von Arch Linux und CachyOS. Immer vorhanden."),
+                  Rating.BASE, _("Das Herzstück des Systems."), binaries=("pacman",), source=Source.REPO),
+    InstallerSpec("paru", KIND_PM, _("AUR-Helfer, bei CachyOS vorinstalliert. Installiert Programme aus dem AUR und aktualisiert Repo- und AUR-Pakete gemeinsam."),
+                  Rating.RECOMMENDED, _("Der AUR-Helfer, den CachyOS selbst mitbringt. Einer reicht."),
                   binaries=("paru",), source=Source.AUR, install_packages=("paru",)),
-    InstallerSpec("yay", KIND_PM, "Weit verbreiteter AUR-Helfer, wird in vielen Anleitungen nachinstalliert.",
-                  Rating.DISCOURAGED, "Macht dasselbe wie paru, das bei CachyOS schon dabei ist. Zwei AUR-Helfer stiften nur Verwirrung. "
-                     "Wenn eine Anleitung „yay -S …“ sagt, nimm einfach „paru -S …“.",
+    InstallerSpec("yay", KIND_PM, _("Weit verbreiteter AUR-Helfer, wird in vielen Anleitungen nachinstalliert."),
+                  Rating.DISCOURAGED, _("Macht dasselbe wie paru, das bei CachyOS schon dabei ist. Zwei AUR-Helfer stiften nur Verwirrung. "
+                     "Wenn eine Anleitung „yay -S …“ sagt, nimm einfach „paru -S …“."),
                   binaries=("yay",), source=Source.AUR),
-    InstallerSpec("pikaur / trizen", KIND_PM, "Weitere AUR-Helfer.",
-                  Rating.DISCOURAGED, "Wie bei yay: paru ist schon da und reicht völlig.",
+    InstallerSpec("pikaur / trizen", KIND_PM, _("Weitere AUR-Helfer."),
+                  Rating.DISCOURAGED, _("Wie bei yay: paru ist schon da und reicht völlig."),
                   binaries=("pikaur", "trizen"), source=Source.AUR),
-    InstallerSpec("Flatpak", KIND_PM, "Abgeschottete Apps aus Flathub. Unabhängig von pacman.",
-                  Rating.RECOMMENDED, "Riesige Auswahl an Programmen (Flathub), sauber vom System getrennt und in Discover eingebunden. "
-                     "Gute Ergänzung, wenn ein Programm nicht in den Repos ist – besser als das AUR für Einsteiger.",
+    InstallerSpec("Flatpak", KIND_PM, _("Abgeschottete Apps aus Flathub. Unabhängig von pacman."),
+                  Rating.RECOMMENDED, _("Riesige Auswahl an Programmen (Flathub), sauber vom System getrennt und in Discover eingebunden. "
+                     "Gute Ergänzung, wenn ein Programm nicht in den Repos ist – besser als das AUR für Einsteiger."),
                   binaries=("flatpak",), source=Source.FLATPAK, install_packages=("flatpak",),
-                  after_install="Einmal ab- und wieder anmelden, damit Flatpak-Programme im Startmenü erscheinen. "
-                                "Flathub ist unter Arch/CachyOS automatisch eingerichtet."),
-    InstallerSpec("Snap (snapd)", KIND_PM, "Paketsystem von Ubuntu. Unter CachyOS nicht vorgesehen, meist aus dem AUR nachinstalliert.",
-                  Rating.DISCOURAGED, "Nur über das AUR erhältlich und unter Arch schlecht eingebunden. Fast alles, was es als Snap gibt, "
-                     "gibt es auch als Flatpak oder in den Repos.",
+                  after_install=_("Einmal ab- und wieder anmelden, damit Flatpak-Programme im Startmenü erscheinen. "
+                                "Flathub ist unter Arch/CachyOS automatisch eingerichtet.")),
+    InstallerSpec("Snap (snapd)", KIND_PM, _("Paketsystem von Ubuntu. Unter CachyOS nicht vorgesehen, meist aus dem AUR nachinstalliert."),
+                  Rating.DISCOURAGED, _("Nur über das AUR erhältlich und unter Arch schlecht eingebunden. Fast alles, was es als Snap gibt, "
+                     "gibt es auch als Flatpak oder in den Repos."),
                   binaries=("snap",), source=Source.SNAP),
-    InstallerSpec("pipx", KIND_PM, "Installiert Python-Programme in eigene Umgebungen.",
-                  Rating.OPTIONAL, "Der saubere Weg für Python-Programme, die es nicht in den Repos gibt (statt „pip install“).",
+    InstallerSpec("pipx", KIND_PM, _("Installiert Python-Programme in eigene Umgebungen."),
+                  Rating.OPTIONAL, _("Der saubere Weg für Python-Programme, die es nicht in den Repos gibt (statt „pip install“)."),
                   binaries=("pipx",), source=Source.PIPX, install_packages=("python-pipx",)),
-    InstallerSpec("uv", KIND_PM, "Schneller Python-Paketmanager, kann mit „uv tool“ Programme installieren.",
-                  Rating.OPTIONAL, "Moderne, schnelle Alternative zu pipx. Eins von beiden reicht.",
+    InstallerSpec("uv", KIND_PM, _("Schneller Python-Paketmanager, kann mit „uv tool“ Programme installieren."),
+                  Rating.OPTIONAL, _("Moderne, schnelle Alternative zu pipx. Eins von beiden reicht."),
                   binaries=("uv",), source=Source.UV, install_packages=("uv",)),
-    InstallerSpec("pip (Python)", KIND_PM, "Python-Paketinstaller.",
-                  Rating.DISCOURAGED, "„pip install“ am System vorbei kann Python-Programme des Systems beschädigen und wird unter "
-                     "Arch/CachyOS deshalb blockiert. Für Programme: pipx oder uv nehmen.",
+    InstallerSpec("pip (Python)", KIND_PM, _("Python-Paketinstaller."),
+                  Rating.DISCOURAGED, _("„pip install“ am System vorbei kann Python-Programme des Systems beschädigen und wird unter "
+                     "Arch/CachyOS deshalb blockiert. Für Programme: pipx oder uv nehmen."),
                   binaries=("pip", "pip3")),
-    InstallerSpec("cargo (Rust)", KIND_PM, "Baut Rust-Programme aus dem Quellcode.",
-                  Rating.OPTIONAL, "Nur nötig, wenn du Rust-Programme selbst bauen willst. Die meisten gibt es fertig in den Repos.",
+    InstallerSpec("cargo (Rust)", KIND_PM, _("Baut Rust-Programme aus dem Quellcode."),
+                  Rating.OPTIONAL, _("Nur nötig, wenn du Rust-Programme selbst bauen willst. Die meisten gibt es fertig in den Repos."),
                   binaries=("cargo",), source=Source.CARGO, install_packages=("rust",)),
-    InstallerSpec("npm (Node.js)", KIND_PM, "Paketverwaltung für JavaScript/Node.js.",
-                  Rating.OPTIONAL, "Nur nötig, wenn eine Anleitung ein Programm per „npm install -g“ verlangt.",
+    InstallerSpec("npm (Node.js)", KIND_PM, _("Paketverwaltung für JavaScript/Node.js."),
+                  Rating.OPTIONAL, _("Nur nötig, wenn eine Anleitung ein Programm per „npm install -g“ verlangt."),
                   binaries=("npm",), source=Source.NPM, install_packages=("npm",)),
-    InstallerSpec("Homebrew", KIND_PM, "Paketverwaltung aus der macOS-Welt, gibt es auch für Linux.",
-                  Rating.DISCOURAGED, "Wird per Skript aus dem Internet installiert und legt eine zweite, komplette Software-Welt neben "
-                     "pacman an. Unter CachyOS gibt es fast alles in den Repos oder im AUR.",
+    InstallerSpec("Homebrew", KIND_PM, _("Paketverwaltung aus der macOS-Welt, gibt es auch für Linux."),
+                  Rating.DISCOURAGED, _("Wird per Skript aus dem Internet installiert und legt eine zweite, komplette Software-Welt neben "
+                     "pacman an. Unter CachyOS gibt es fast alles in den Repos oder im AUR."),
                   source=Source.BREW),
-    InstallerSpec("Nix", KIND_PM, "Eigenständige Paketverwaltung mit eigenem Paketbestand. (Programme daraus werden noch nicht einzeln aufgelistet.)",
-                  Rating.DISCOURAGED, "Mächtig, aber ein eigenes Universum mit eigener Denkweise – nichts für Einsteiger.",
+    InstallerSpec("Nix", KIND_PM, _("Eigenständige Paketverwaltung mit eigenem Paketbestand. (Programme daraus werden noch nicht einzeln aufgelistet.)"),
+                  Rating.DISCOURAGED, _("Mächtig, aber ein eigenes Universum mit eigener Denkweise – nichts für Einsteiger."),
                   binaries=("nix", "nix-env")),
-    InstallerSpec("Distrobox", KIND_PM, "Startet andere Linux-Systeme (z. B. Ubuntu) im Container. Programme darin werden hier nicht erfasst.",
-                  Rating.OPTIONAL, "Praktisch, wenn ein Programm nur für Ubuntu/Fedora angeboten wird. Braucht zusätzlich Podman.",
+    InstallerSpec("Distrobox", KIND_PM, _("Startet andere Linux-Systeme (z. B. Ubuntu) im Container. Programme darin werden hier nicht erfasst."),
+                  Rating.OPTIONAL, _("Praktisch, wenn ein Programm nur für Ubuntu/Fedora angeboten wird. Braucht zusätzlich Podman."),
                   binaries=("distrobox",), install_packages=("distrobox", "podman")),
-    InstallerSpec("go", KIND_PM, "Programmiersprache Go; „go install“ legt Programme in ~/go/bin ab.",
-                  Rating.OPTIONAL, "Nur für Entwickler bzw. wenn eine Anleitung „go install“ verlangt.",
+    InstallerSpec("go", KIND_PM, _("Programmiersprache Go; „go install“ legt Programme in ~/go/bin ab."),
+                  Rating.OPTIONAL, _("Nur für Entwickler bzw. wenn eine Anleitung „go install“ verlangt."),
                   binaries=("go",), install_packages=("go",)),
-    InstallerSpec("CachyOS Package Installer", KIND_GUI, "Grafisches Programm von CachyOS zum Installieren beliebter Software aus den Repos.",
-                  Rating.RECOMMENDED, "Das offizielle, einsteigerfreundliche Installationsprogramm von CachyOS.",
+    InstallerSpec("CachyOS Package Installer", KIND_GUI, _("Grafisches Programm von CachyOS zum Installieren beliebter Software aus den Repos."),
+                  Rating.RECOMMENDED, _("Das offizielle, einsteigerfreundliche Installationsprogramm von CachyOS."),
                   pacman_packages=("cachyos-packageinstaller",), source=Source.REPO,
                   install_packages=("cachyos-packageinstaller",)),
-    InstallerSpec("CachyOS Hello", KIND_GUI, "Willkommens-App von CachyOS mit Abkürzungen zu Software und Einstellungen.",
-                  Rating.RECOMMENDED, "Offizielles CachyOS-Werkzeug mit nützlichen Abkürzungen.",
+    InstallerSpec("CachyOS Hello", KIND_GUI, _("Willkommens-App von CachyOS mit Abkürzungen zu Software und Einstellungen."),
+                  Rating.RECOMMENDED, _("Offizielles CachyOS-Werkzeug mit nützlichen Abkürzungen."),
                   pacman_packages=("cachyos-hello",), install_packages=("cachyos-hello",)),
-    InstallerSpec("Octopi", KIND_GUI, "Grafische Oberfläche für pacman (und AUR).",
-                  Rating.OPTIONAL, "Für alle, die Pakete lieber per Maus als im Terminal verwalten.",
+    InstallerSpec("Octopi", KIND_GUI, _("Grafische Oberfläche für pacman (und AUR)."),
+                  Rating.OPTIONAL, _("Für alle, die Pakete lieber per Maus als im Terminal verwalten."),
                   pacman_packages=("octopi",), install_packages=("octopi",)),
-    InstallerSpec("Pamac", KIND_GUI, "App-Store von Manjaro, oft aus dem AUR nachinstalliert. Kann Repo, AUR und Flatpak.",
-                  Rating.DISCOURAGED, "Für Manjaro gebaut und unter CachyOS nur aus dem AUR zu bekommen. "
-                     "Besser: CachyOS Package Installer, Octopi oder Discover.",
+    InstallerSpec("Pamac", KIND_GUI, _("App-Store von Manjaro, oft aus dem AUR nachinstalliert. Kann Repo, AUR und Flatpak."),
+                  Rating.DISCOURAGED, _("Für Manjaro gebaut und unter CachyOS nur aus dem AUR zu bekommen. "
+                     "Besser: CachyOS Package Installer, Octopi oder Discover."),
                   pacman_packages=("pamac-aur", "pamac-all", "pamac-gtk", "pamac-gtk3", "pamac-cli")),
-    InstallerSpec("Discover", KIND_GUI, "App-Store von KDE Plasma. Kann Repo-Pakete und Flatpaks installieren und aktualisieren.",
-                  Rating.OPTIONAL, "Bequemer App-Store unter KDE, besonders für Flatpaks.",
+    InstallerSpec("Discover", KIND_GUI, _("App-Store von KDE Plasma. Kann Repo-Pakete und Flatpaks installieren und aktualisieren."),
+                  Rating.OPTIONAL, _("Bequemer App-Store unter KDE, besonders für Flatpaks."),
                   pacman_packages=("discover",), install_packages=("discover",)),
-    InstallerSpec("GNOME Software", KIND_GUI, "App-Store von GNOME. Kann Repo-Pakete und Flatpaks installieren.",
-                  Rating.OPTIONAL, "Nur unter dem GNOME-Desktop sinnvoll – unter KDE ist Discover die passende Wahl.",
+    InstallerSpec("GNOME Software", KIND_GUI, _("App-Store von GNOME. Kann Repo-Pakete und Flatpaks installieren."),
+                  Rating.OPTIONAL, _("Nur unter dem GNOME-Desktop sinnvoll – unter KDE ist Discover die passende Wahl."),
                   pacman_packages=("gnome-software",), install_packages=("gnome-software",)),
-    InstallerSpec("Bauh", KIND_GUI, "Grafische Oberfläche für AUR, Flatpak, Snap und AppImage.",
-                  Rating.DISCOURAGED, "Nur aus dem AUR und kaum noch gepflegt. Besser: Discover für Flatpaks, Octopi für Pakete.",
+    InstallerSpec("Bauh", KIND_GUI, _("Grafische Oberfläche für AUR, Flatpak, Snap und AppImage."),
+                  Rating.DISCOURAGED, _("Nur aus dem AUR und kaum noch gepflegt. Besser: Discover für Flatpaks, Octopi für Pakete."),
                   pacman_packages=("bauh",)),
-    InstallerSpec("cachy-update", KIND_UPDATE, "Update-Benachrichtigung von CachyOS im Infobereich der Taskleiste.",
-                  Rating.RECOMMENDED, "Erinnert dich an Updates und spielt sie mit einem Klick ein.",
+    InstallerSpec("cachy-update", KIND_UPDATE, _("Update-Benachrichtigung von CachyOS im Infobereich der Taskleiste."),
+                  Rating.RECOMMENDED, _("Erinnert dich an Updates und spielt sie mit einem Klick ein."),
                   pacman_packages=("cachy-update",), install_packages=("cachy-update",)),
-    InstallerSpec("arch-update", KIND_UPDATE, "Update-Benachrichtigung, Vorlage für cachy-update.",
-                  Rating.DISCOURAGED, "cachy-update ist die an CachyOS angepasste Variante – beides gleichzeitig ist doppelt.",
+    InstallerSpec("arch-update", KIND_UPDATE, _("Update-Benachrichtigung, Vorlage für cachy-update."),
+                  Rating.DISCOURAGED, _("cachy-update ist die an CachyOS angepasste Variante – beides gleichzeitig ist doppelt."),
                   pacman_packages=("arch-update",)),
-    InstallerSpec("Topgrade", KIND_UPDATE, "Aktualisiert mit einem Befehl alles: pacman, AUR, Flatpak, pipx, cargo, npm …",
-                  Rating.OPTIONAL, "Praktisch, wenn du viele verschiedene Paketverwaltungen nutzt.",
+    InstallerSpec("Topgrade", KIND_UPDATE, _("Aktualisiert mit einem Befehl alles: pacman, AUR, Flatpak, pipx, cargo, npm …"),
+                  Rating.OPTIONAL, _("Praktisch, wenn du viele verschiedene Paketverwaltungen nutzt."),
                   binaries=("topgrade",), install_packages=("topgrade",)),
-    InstallerSpec("Gear Lever", KIND_APPIMAGE, "Verwaltet AppImages und legt Startmenü-Einträge an.",
-                  Rating.OPTIONAL, "Empfehlenswert, wenn du AppImages nutzt: hält sie an einem Ort, legt Menüeinträge an und kann sie aktualisieren.",
+    InstallerSpec("Gear Lever", KIND_APPIMAGE, _("Verwaltet AppImages und legt Startmenü-Einträge an."),
+                  Rating.OPTIONAL, _("Empfehlenswert, wenn du AppImages nutzt: hält sie an einem Ort, legt Menüeinträge an und kann sie aktualisieren."),
                   pacman_packages=("gearlever",), flatpak_ids=("it.mijorus.gearlever",),
                   install_packages=("gearlever",), install_flatpak="it.mijorus.gearlever"),
-    InstallerSpec("AppImageLauncher", KIND_APPIMAGE, "Integriert AppImages beim ersten Start ins Startmenü.",
-                  Rating.DISCOURAGED, "Nur aus dem AUR und kaum noch weiterentwickelt. Gear Lever ist die modernere Alternative.",
+    InstallerSpec("AppImageLauncher", KIND_APPIMAGE, _("Integriert AppImages beim ersten Start ins Startmenü."),
+                  Rating.DISCOURAGED, _("Nur aus dem AUR und kaum noch weiterentwickelt. Gear Lever ist die modernere Alternative."),
                   binaries=("AppImageLauncher",), pacman_packages=("appimagelauncher",)),
 ]
 
@@ -188,15 +189,15 @@ def repo_available(packages: set[str]) -> set[str]:
 def plan_install(spec: InstallerSpec, available: set[str], flatpak_present: bool) -> tuple[list[str] | None, str]:
     """Entscheidet, ob und wie ein Werkzeug installiert werden darf."""
     if spec.rating is Rating.DISCOURAGED:
-        return None, "Wird bewusst nicht zur Installation angeboten (siehe Begründung)."
+        return None, _("Wird bewusst nicht zur Installation angeboten (siehe Begründung).")
     if spec.rating is Rating.BASE:
         return None, ""
     if spec.install_packages and all(p in available for p in spec.install_packages):
-        return ["sudo", "pacman", "-S", "--needed", *spec.install_packages], "Aus den offiziellen Paketquellen."
+        return ["sudo", "pacman", "-S", "--needed", *spec.install_packages], _("Aus den offiziellen Paketquellen.")
     if spec.install_flatpak and flatpak_present:
-        return ["flatpak", "install", "flathub", spec.install_flatpak], "Als Flatpak von Flathub."
+        return ["flatpak", "install", "flathub", spec.install_flatpak], _("Als Flatpak von Flathub.")
     if spec.install_packages:
-        return None, (
+        return None, _(
             "Nicht in deinen offiziellen Paketquellen gefunden – wird deshalb nicht angeboten "
             "(der Software-Kompass installiert nichts aus dem AUR oder aus dem Internet)."
         )
@@ -214,7 +215,7 @@ def detect(programs: list[Program]) -> list[InstallerStatus]:
     statuses = []
     for spec in SPECS:
         found = [b for b in spec.binaries if util.which(b)]
-        found += [f"Paket {p}" for p in spec.pacman_packages if p in pacman_names]
+        found += [_("Paket {name}").format(name=p) for p in spec.pacman_packages if p in pacman_names]
         found += [f"Flatpak {f}" for f in spec.flatpak_ids if f in flatpak_ids]
         if spec.source is Source.BREW and find_brew():
             found.append("brew")

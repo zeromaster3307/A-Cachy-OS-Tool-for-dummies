@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from cachy_kompass import sizes, util
+from cachy_kompass.i18n import _
 from cachy_kompass.models import Program, Source, UpdateResult, UpdateStatus
 from cachy_kompass.sources.base import PackageSource, ScanContext
 
@@ -50,7 +51,9 @@ class FlatpakSource(PackageSource):
                     display_name=row.get("name") or app_id,
                     version=row.get("version") or row.get("branch") or "",
                     source=Source.FLATPAK,
-                    origin=f"Flatpak-Quelle „{row.get('origin') or '?'}“ ({row.get('installation') or 'system'})",
+                    origin=_("Flatpak-Quelle „{remote}“ ({installation})").format(
+                        remote=row.get("origin") or "?", installation=row.get("installation") or "system"
+                    ),
                     installation=row.get("installation", ""),
                     size_bytes=sizes.parse_decimal_size(row.get("size", "")),
                     url=f"https://flathub.org/apps/{app_id}" if row.get("origin") == "flathub" else "",
@@ -64,7 +67,7 @@ class FlatpakSource(PackageSource):
             timeout=180,
         )
         if out is None:
-            return {p.key: UpdateResult(UpdateStatus.UNKNOWN, note="Flathub nicht erreichbar.") for p in programs}
+            return {p.key: UpdateResult(UpdateStatus.UNKNOWN, note=_("Flathub nicht erreichbar.")) for p in programs}
         updates = parse_updates(out)
         return {
             p.key: UpdateResult(UpdateStatus.OUTDATED, updates[p.name] or "neuer")

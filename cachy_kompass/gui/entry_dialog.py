@@ -24,6 +24,7 @@ from PySide6.QtWidgets import (
 )
 
 from cachy_kompass import desktop
+from cachy_kompass.i18n import _
 from cachy_kompass.models import DesktopEntry, Program
 
 
@@ -43,11 +44,11 @@ class EntryDialog(QDialog):
         self.setMinimumWidth(560)
 
         if entry is not None:
-            self.setWindowTitle(f"Startmenü-Eintrag „{entry.name}“ bearbeiten")
+            self.setWindowTitle(_("Startmenü-Eintrag „{name}“ bearbeiten").format(name=entry.name))
             if desktop.is_user_entry(entry):
-                text = "Der Eintrag liegt in deinem Benutzerordner und wird direkt geändert."
+                text = _("Der Eintrag liegt in deinem Benutzerordner und wird direkt geändert.")
             else:
-                text = (
+                text = _(
                     "Dies ist ein Eintrag des Systems. Er selbst bleibt unverändert – deine Änderungen "
                     "werden als eigene Fassung in deinem Benutzerordner gespeichert, die ihn im "
                     "Startmenü ersetzt. Mit „Entfernen“ bzw. „Original wiederherstellen“ kommst du "
@@ -58,8 +59,8 @@ class EntryDialog(QDialog):
             terminal_default = entry.terminal
         else:
             assert program is not None
-            self.setWindowTitle(f"Startmenü-Eintrag für „{program.display_name}“")
-            text = (
+            self.setWindowTitle(_("Startmenü-Eintrag für „{name}“").format(name=program.display_name))
+            text = _(
                 "Hier legst du einen Eintrag an, über den du das Programm im Startmenü findest. "
                 "Der Eintrag wird nur für deinen Benutzer gespeichert und kann jederzeit wieder "
                 "entfernt werden."
@@ -72,20 +73,20 @@ class EntryDialog(QDialog):
 
         self.name_edit = QLineEdit(name)
         self.comment_edit = QLineEdit(comment)
-        self.comment_edit.setPlaceholderText("Optional: kurze Beschreibung")
+        self.comment_edit.setPlaceholderText(_("Optional: kurze Beschreibung"))
 
         self.exec_edit = QLineEdit(exec_line)
-        self.exec_edit.setToolTip("Der Befehl, der beim Klick auf den Eintrag ausgeführt wird.")
-        exec_browse = QPushButton("Durchsuchen …")
+        self.exec_edit.setToolTip(_("Der Befehl, der beim Klick auf den Eintrag ausgeführt wird."))
+        exec_browse = QPushButton(_("Durchsuchen …"))
         exec_browse.clicked.connect(self._browse_exec)
         exec_row = self._row(self.exec_edit, exec_browse)
 
         self.icon_edit = QLineEdit(icon)
-        self.icon_edit.setToolTip("Name eines Symbols aus dem Symbol-Design oder Pfad zu einer Bilddatei.")
+        self.icon_edit.setToolTip(_("Name eines Symbols aus dem Symbol-Design oder Pfad zu einer Bilddatei."))
         self.icon_preview = QLabel()
         self.icon_preview.setFixedSize(48, 48)
-        icon_browse = QPushButton("Bild wählen …")
-        icon_browse.setToolTip("Eigenes Bild als Symbol verwenden (am besten SVG oder PNG)")
+        icon_browse = QPushButton(_("Bild wählen …"))
+        icon_browse.setToolTip(_("Eigenes Bild als Symbol verwenden (am besten SVG oder PNG)"))
         icon_browse.clicked.connect(self._browse_icon)
         self.icon_edit.textChanged.connect(self._update_icon_preview)
         icon_row = self._row(self.icon_preview, self.icon_edit, icon_browse)
@@ -94,36 +95,36 @@ class EntryDialog(QDialog):
 
         self.category = QComboBox()
         if entry is not None:
-            self.category.addItem("(unverändert lassen)", None)
+            self.category.addItem(_("(unverändert lassen)"), None)
         for key, label in desktop.CATEGORIES.items():
             self.category.addItem(label, key)
 
-        self.terminal = QCheckBox("In einem Terminalfenster starten")
+        self.terminal = QCheckBox(_("In einem Terminalfenster starten"))
         self.terminal.setChecked(terminal_default)
         terminal_hint = QLabel(
-            "Häkchen setzen bei Kommandozeilenprogrammen, also Programmen ohne eigenes Fenster."
+            _("Häkchen setzen bei Kommandozeilenprogrammen, also Programmen ohne eigenes Fenster.")
         )
         terminal_hint.setWordWrap(True)
         terminal_hint.setStyleSheet("color: gray")
 
         form = QFormLayout()
-        form.addRow("Name im Menü:", self.name_edit)
-        form.addRow("Beschreibung:", self.comment_edit)
-        form.addRow("Startbefehl:", exec_row)
-        form.addRow("Symbol:", icon_row)
+        form.addRow(_("Name im Menü:"), self.name_edit)
+        form.addRow(_("Beschreibung:"), self.comment_edit)
+        form.addRow(_("Startbefehl:"), exec_row)
+        form.addRow(_("Symbol:"), icon_row)
         form.addRow("", self.icon_hint)
-        form.addRow("Kategorie:", self.category)
+        form.addRow(_("Kategorie:"), self.category)
         form.addRow("", self.terminal)
         form.addRow("", terminal_hint)
 
         where = desktop.user_copy_path(entry) if entry is not None else desktop.user_applications_dir()
-        target = QLabel(f"Wird gespeichert in: {where}")
+        target = QLabel(_("Wird gespeichert in: {path}").format(path=where))
         target.setStyleSheet("color: gray")
         target.setWordWrap(True)
 
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-        buttons.button(QDialogButtonBox.StandardButton.Ok).setText("Speichern" if entry is not None else "Eintrag anlegen")
-        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText("Abbrechen")
+        buttons.button(QDialogButtonBox.StandardButton.Ok).setText(_("Speichern") if entry is not None else _("Eintrag anlegen"))
+        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText(_("Abbrechen"))
         buttons.accepted.connect(self._create)
         buttons.rejected.connect(self.reject)
 
@@ -144,17 +145,17 @@ class EntryDialog(QDialog):
         return container
 
     def _browse_exec(self) -> None:
-        path, _ = QFileDialog.getOpenFileName(self, "Programmdatei auswählen", str(Path.home()))
+        path, _filter = QFileDialog.getOpenFileName(self, _("Programmdatei auswählen"), str(Path.home()))
         if path:
             self.exec_edit.setText(desktop.quote_exec_arg(path))
 
     def _browse_icon(self) -> None:
         start = str(Path.home() / "Downloads") if (Path.home() / "Downloads").is_dir() else str(Path.home())
-        path, _ = QFileDialog.getOpenFileName(
+        path, _filter = QFileDialog.getOpenFileName(
             self,
-            "Bild für das Symbol auswählen",
+            _("Bild für das Symbol auswählen"),
             start,
-            "Bilder (*.svg *.png *.xpm *.jpg *.jpeg *.ico *.webp *.bmp *.gif);;Alle Dateien (*)",
+            _("Bilder") + " (*.svg *.png *.xpm *.jpg *.jpeg *.ico *.webp *.bmp *.gif);;" + _("Alle Dateien") + " (*)",
         )
         if path:
             self.icon_edit.setText(path)
@@ -174,16 +175,16 @@ class EntryDialog(QDialog):
             icon = QIcon.fromTheme("application-x-executable")
         self.icon_preview.setPixmap(icon.pixmap(48, 48))
         if found and value.startswith("/"):
-            self.icon_hint.setText("✔ Eigenes Bild – es wird beim Anlegen in deinen Symbolordner kopiert.")
+            self.icon_hint.setText(_("✔ Eigenes Bild – es wird beim Anlegen in deinen Symbolordner kopiert."))
             self.icon_hint.setStyleSheet("color: #2e9d4f")
         elif found:
-            self.icon_hint.setText("✔ Passendes Symbol im Symbol-Design gefunden.")
+            self.icon_hint.setText(_("✔ Passendes Symbol im Symbol-Design gefunden."))
             self.icon_hint.setStyleSheet("color: #2e9d4f")
         else:
-            self.icon_hint.setText(
+            self.icon_hint.setText(_(
                 "⚠ Kein Symbol mit diesem Namen gefunden. Klicke auf „Bild wählen …“ und "
                 "nimm z. B. das Logo von der Webseite des Programms (am besten SVG oder PNG)."
-            )
+            ))
             self.icon_hint.setStyleSheet("color: #d98a00")
 
     def _prepare_icon(self) -> str:
@@ -193,19 +194,19 @@ class EntryDialog(QDialog):
             return value
         image = QImage(value)
         if image.isNull():
-            raise ValueError(f"Das Bild „{value}“ konnte nicht gelesen werden.")
+            raise ValueError(_("Das Bild „{path}“ konnte nicht gelesen werden.").format(path=value))
         if max(image.width(), image.height()) > 256:
             image = image.scaled(256, 256, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         converted = Path(tempfile.mkdtemp(prefix="cachy-kompass-")) / (Path(value).stem + ".png")
         if not image.save(str(converted), "PNG"):
-            raise ValueError("Das Bild konnte nicht in PNG umgewandelt werden.")
+            raise ValueError(_("Das Bild konnte nicht in PNG umgewandelt werden."))
         return str(converted)
 
     def _create(self) -> None:
         name = self.name_edit.text().strip()
         exec_line = self.exec_edit.text().strip()
         if not name or not exec_line:
-            QMessageBox.warning(self, "Angaben fehlen", "Bitte einen Namen und einen Startbefehl eintragen.")
+            QMessageBox.warning(self, _("Angaben fehlen"), _("Bitte einen Namen und einen Startbefehl eintragen."))
             return
         # Beim Bearbeiten nur prüfen, wenn der Startbefehl geändert wurde
         unchanged = self.entry is not None and exec_line == self.entry.exec
@@ -213,9 +214,11 @@ class EntryDialog(QDialog):
         if target:
             answer = QMessageBox.question(
                 self,
-                "Programm nicht gefunden",
-                f"Das Programm „{target}“ wurde nicht gefunden. Der Eintrag würde "
-                "vermutlich nicht funktionieren.\n\nTrotzdem speichern?",
+                _("Programm nicht gefunden"),
+                _(
+                    "Das Programm „{program}“ wurde nicht gefunden. Der Eintrag würde "
+                    "vermutlich nicht funktionieren.\n\nTrotzdem speichern?"
+                ).format(program=target),
             )
             if answer != QMessageBox.StandardButton.Yes:
                 return
@@ -225,11 +228,11 @@ class EntryDialog(QDialog):
             else:
                 self.created_path = self._create_new(name, exec_line)
         except (OSError, ValueError) as exc:
-            QMessageBox.critical(self, "Fehler", f"Der Eintrag konnte nicht gespeichert werden:\n{exc}")
+            QMessageBox.critical(self, _("Fehler"), _("Der Eintrag konnte nicht gespeichert werden:") + f"\n{exc}")
             return
         problems = desktop.validate(self.created_path)
         if problems:
-            QMessageBox.information(self, "Hinweis", f"Der Eintrag wurde gespeichert, die Prüfung meldet aber:\n\n{problems}")
+            QMessageBox.information(self, _("Hinweis"), _("Der Eintrag wurde gespeichert, die Prüfung meldet aber:") + f"\n\n{problems}")
         self.accept()
 
     def _changes(self, name: str, exec_line: str) -> dict[str, str | None]:

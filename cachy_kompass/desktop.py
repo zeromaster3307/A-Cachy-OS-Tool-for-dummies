@@ -18,6 +18,7 @@ from collections.abc import Collection
 from pathlib import Path
 
 from cachy_kompass import util
+from cachy_kompass.i18n import _
 from cachy_kompass.models import DesktopEntry, Kind, Program, Source
 
 OUR_PREFIX = "cachy-kompass-"
@@ -60,16 +61,16 @@ _SHELLS = {"sh", "bash", "zsh", "fish", "dash"}
 
 # Hauptkategorien laut freedesktop.org mit deutscher Beschriftung.
 CATEGORIES = {
-    "Utility": "Dienstprogramme",
+    "Utility": _("Dienstprogramme"),
     "AudioVideo": "Multimedia",
-    "Development": "Entwicklung",
-    "Education": "Bildung",
-    "Game": "Spiele",
-    "Graphics": "Grafik",
+    "Development": _("Entwicklung"),
+    "Education": _("Bildung"),
+    "Game": _("Spiele"),
+    "Graphics": _("Grafik"),
     "Network": "Internet",
-    "Office": "Büro",
-    "Science": "Wissenschaft",
-    "Settings": "Einstellungen",
+    "Office": _("Büro"),
+    "Science": _("Wissenschaft"),
+    "Settings": _("Einstellungen"),
     "System": "System",
 }
 
@@ -517,7 +518,7 @@ def create_entry(
 ) -> Path:
     """Legt einen neuen Startmenü-Eintrag im Benutzerordner an und gibt den Pfad zurück."""
     if not name.strip() or not exec_line.strip():
-        raise ValueError("Name und Startbefehl dürfen nicht leer sein.")
+        raise ValueError(_("Name und Startbefehl dürfen nicht leer sein."))
     target_dir = target_dir or user_applications_dir()
     target_dir.mkdir(parents=True, exist_ok=True)
     base = f"{OUR_PREFIX}{_slug(name)}"
@@ -543,7 +544,7 @@ def install_icon(src: Path, name: str) -> Path:
     """
     suffix = src.suffix.lower()
     if suffix not in ICON_FORMATS:
-        raise ValueError(f"Als Symbol gehen nur {', '.join(ICON_FORMATS)}-Dateien.")
+        raise ValueError(_("Als Symbol gehen nur {formats}-Dateien.").format(formats=", ".join(ICON_FORMATS)))
     target_dir = user_icon_dir()
     target_dir.mkdir(parents=True, exist_ok=True)
     target = target_dir / f"{_slug(name)}{suffix}"
@@ -583,14 +584,14 @@ def entry_kind(entry: DesktopEntry, owner: Program | None) -> Kind:
 def origin_note(entry: DesktopEntry) -> str:
     """Kurze Erklärung, wer einen Eintrag typischerweise anlegt (sonst „“)."""
     if entry.file_id.startswith("userapp-"):
-        return (
+        return _(
             "Von KDE angelegt, als eine Datei oder ein Link über „Öffnen mit …“ diesem "
             "Programm zugeordnet wurde. Versteckter Hilfseintrag, harmlos."
         )
     if entry.raw.get("X-AppImage-Version") or "appimagekit" in entry.file_id.lower():
-        return "Von einem AppImage-Werkzeug angelegt."
+        return _("Von einem AppImage-Werkzeug angelegt.")
     if "steam://" in entry.exec:
-        return "Von Steam angelegte Spiele-Verknüpfung."
+        return _("Von Steam angelegte Spiele-Verknüpfung.")
     return ""
 
 
@@ -624,7 +625,7 @@ def remove_entry(entry: DesktopEntry) -> None:
     """Löscht einen Eintrag aus dem Benutzerordner (niemals Systemeinträge)."""
     if not can_remove(entry):
         raise PermissionError(
-            "Dieser Eintrag gehört zum System bzw. zu einem Paket und wird vom Software-Kompass nicht gelöscht."
+            _("Dieser Eintrag gehört zum System bzw. zu einem Paket und wird vom Software-Kompass nicht gelöscht.")
         )
     entry.path.unlink()
     # Ein von uns kopiertes Symbol wird mit aufgeräumt.

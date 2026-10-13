@@ -8,7 +8,8 @@ from typing import Any
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QColor
 
-from cachy_kompass import util
+from cachy_kompass import i18n, util
+from cachy_kompass.i18n import _
 from cachy_kompass.models import KIND_INFO, AutoUpdate, Kind, MenuStatus, Program, Source, UpdateStatus
 
 GREEN = QColor("#2e9d4f")
@@ -17,22 +18,23 @@ RED = QColor("#d64545")
 GREY = QColor("#8a8a8a")
 
 COLUMNS = [
-    "Programm", "Version", "Quelle", "Art", "Startmenü", "Auto-Update", "Aktuell?", "Größe", "Installiert", "Beschreibung",
+    _("Programm"), _("Version"), _("Quelle"), _("Art"), _("Startmenü"), _("Auto-Update"), _("Aktuell?"), _("Größe"),
+    _("Installiert"), _("Beschreibung"),
 ]
 (
     COL_NAME, COL_VERSION, COL_SOURCE, COL_KIND, COL_MENU, COL_AUTO, COL_UPDATE, COL_SIZE, COL_DATE, COL_DESC,
 ) = range(len(COLUMNS))
 
-KIND_TEXT = {Kind.APP: "🪟 App", Kind.COMMAND: "⌨ Befehl", Kind.OTHER: "📦 Sonstiges"}
+KIND_TEXT = {Kind.APP: "🪟 " + Kind.APP.value, Kind.COMMAND: "⌨ " + Kind.COMMAND.value, Kind.OTHER: "📦 " + Kind.OTHER.value}
 
 #: Beschriftung der Häkchen im Filter „Art“
-KIND_CHECKBOX_TEXT = {Kind.APP: "🪟 Apps", Kind.COMMAND: "⌨ Befehle", Kind.OTHER: "📦 Sonstiges"}
+KIND_CHECKBOX_TEXT = {Kind.APP: "🪟 " + _("Apps"), Kind.COMMAND: "⌨ " + _("Befehle"), Kind.OTHER: "📦 " + Kind.OTHER.value}
 #: Standard: nur Programme mit Fenster
 DEFAULT_KINDS = frozenset({Kind.APP})
 
-MENU_TEXT = {MenuStatus.VISIBLE: "✔ ja", MenuStatus.HIDDEN: "◐ versteckt", MenuStatus.NONE: "✘ nein"}
+MENU_TEXT = {MenuStatus.VISIBLE: "✔ " + _("ja"), MenuStatus.HIDDEN: "◐ " + _("versteckt"), MenuStatus.NONE: "✘ " + _("nein")}
 MENU_COLOR = {MenuStatus.VISIBLE: GREEN, MenuStatus.HIDDEN: ORANGE, MenuStatus.NONE: GREY}
-AUTO_TEXT = {AutoUpdate.YES: "✔ ja", AutoUpdate.PARTIAL: "◐ teilweise", AutoUpdate.NO: "✘ nein"}
+AUTO_TEXT = {AutoUpdate.YES: "✔ " + _("ja"), AutoUpdate.PARTIAL: "◐ " + _("teilweise"), AutoUpdate.NO: "✘ " + _("nein")}
 AUTO_COLOR = {AutoUpdate.YES: GREEN, AutoUpdate.PARTIAL: ORANGE, AutoUpdate.NO: RED}
 UPDATE_COLOR = {
     UpdateStatus.CURRENT: GREEN,
@@ -49,24 +51,24 @@ PROGRAM_ROLE = Qt.ItemDataRole.UserRole + 2
 def date_text(p: Program) -> str:
     if p.installed_at is None:
         return ""
-    return ("ca. " if p.installed_approx else "") + p.installed_at.strftime("%d.%m.%Y")
+    return (_("ca.") + " " if p.installed_approx else "") + i18n.date(p.installed_at)
 
 
 def date_tooltip(p: Program) -> str:
     if p.installed_at is None:
-        return "Installationsdatum unbekannt"
-    when = p.installed_at.strftime("%d.%m.%Y um %H:%M")
+        return _("Installationsdatum unbekannt")
+    when = i18n.date_time(p.installed_at)
     if p.installed_approx:
-        return f"Ungefähr: {when} – Änderungsdatum der Programmdateien (bei Updates evtl. später)"
-    return f"Installiert am {when} (laut pacman-Protokoll)"
+        return _("Ungefähr: {when} – Änderungsdatum der Programmdateien (bei Updates evtl. später)").format(when=when)
+    return _("Installiert am {when} (laut pacman-Protokoll)").format(when=when)
 
 
 def update_text(p: Program) -> str:
     u = p.update
     if u.status is UpdateStatus.OUTDATED:
-        return f"⬆ {u.latest}" if u.latest else "⬆ Update verfügbar"
+        return f"⬆ {u.latest}" if u.latest else "⬆ " + UpdateStatus.OUTDATED.value
     if u.status is UpdateStatus.CURRENT:
-        return "✔ aktuell"
+        return "✔ " + UpdateStatus.CURRENT.value
     return u.status.value
 
 
@@ -156,9 +158,9 @@ class ProgramTableModel(QAbstractTableModel):
             if col == COL_DATE:
                 return date_tooltip(p)
             if col == COL_SIZE and p.source is Source.FLATPAK:
-                return "Nur die App selbst – gemeinsam genutzte Laufzeiten kommen hinzu."
+                return _("Nur die App selbst – gemeinsam genutzte Laufzeiten kommen hinzu.")
             if col == COL_NAME and p.duplicates:
-                return "Auch installiert als: " + ", ".join(f"{d.display_name} ({d.info.label})" for d in p.duplicates)
+                return _("Auch installiert als: {variants}").format(variants=", ".join(f"{d.display_name} ({d.info.label})" for d in p.duplicates))
             if col == COL_DESC:
                 return p.description
         return None

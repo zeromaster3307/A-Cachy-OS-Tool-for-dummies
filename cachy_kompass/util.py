@@ -13,7 +13,7 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
-from cachy_kompass import APP_ID, __version__
+from cachy_kompass import APP_ID, __version__, i18n
 
 log = logging.getLogger(__name__)
 
@@ -111,12 +111,12 @@ def parse_size(text: str) -> int:
 
 
 def format_size(size: int) -> str:
-    """Bytes → gut lesbare Größe auf Deutsch, z. B. „1,2 GB“."""
+    """Bytes → gut lesbare Größe, z. B. „1,2 GB“ (auf Englisch „1.2 GB“)."""
     value = float(size)
     for unit in ("Bytes", "KB", "MB", "GB"):
         if value < 1024 or unit == "GB":
             text = f"{value:.0f}" if unit in ("Bytes", "KB") or value >= 100 else f"{value:.1f}"
-            return f"{text.replace('.', ',')} {unit}"
+            return f"{i18n.decimal(text)} {unit}"
         value /= 1024
     return f"{size} Bytes"
 

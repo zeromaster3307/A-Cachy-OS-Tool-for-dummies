@@ -32,6 +32,10 @@ version = { attr = "cachy_kompass.__version__" }
 [tool.setuptools.packages.find]
 include = ["cachy_kompass*"]
 
+[tool.setuptools.package-data]
+# Übersetzungen (werden direkt als .po-Datei gelesen)
+cachy_kompass = ["locale/*.po"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]

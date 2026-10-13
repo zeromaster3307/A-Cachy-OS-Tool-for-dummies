@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from cachy_kompass import util
+from cachy_kompass.i18n import _
 from cachy_kompass.models import Program, Source, UpdateResult, UpdateStatus
 from cachy_kompass.sources.base import PackageSource, ScanContext, compare_result
 
@@ -63,7 +64,7 @@ class CargoSource(PackageSource):
                     name=row["name"],
                     version=row["version"],
                     source=Source.CARGO,
-                    origin="crates.io" if from_crates else f"Quellcode aus {row['from']}",
+                    origin="crates.io" if from_crates else _("Quellcode aus {where}").format(where=row["from"]),
                     executables=[str(CARGO_BIN / b) for b in row["bins"]],
                     url=f"https://crates.io/crates/{row['name']}" if from_crates else "",
                     install_path="" if from_crates else row["from"],
@@ -76,10 +77,10 @@ class CargoSource(PackageSource):
         from_crates = [p for p in programs if not p.install_path]
         for p in programs:
             if p.install_path:
-                results[p.key] = UpdateResult(UpdateStatus.NOT_CHECKABLE, note="Direkt aus einem Git-Repo/Ordner gebaut.")
+                results[p.key] = UpdateResult(UpdateStatus.NOT_CHECKABLE, note=_("Direkt aus einem Git-Repo/Ordner gebaut."))
         with ThreadPoolExecutor(max_workers=4) as pool:
             for p, latest in zip(from_crates, pool.map(lambda p: crates_latest(p.name), from_crates)):
-                results[p.key] = compare_result(p.version, latest, "" if latest else "crates.io nicht erreichbar.")
+                results[p.key] = compare_result(p.version, latest, "" if latest else _("crates.io nicht erreichbar."))
         return results
 
 
@@ -144,7 +145,7 @@ class NpmSource(PackageSource):
                 name=name,
                 version=version,
                 source=Source.NPM,
-                origin="npm-Registry",
+                origin=_("npm-Registry"),
                 install_path=paths.get(name, ""),
                 executables=[str(bin_dir / b) for b in npm_bin_names(Path(paths[name]))] if bin_dir and name in paths else [],
                 url=f"https://www.npmjs.com/package/{name}",
@@ -157,7 +158,7 @@ class NpmSource(PackageSource):
         # npm outdated endet mit Code 1, wenn es Updates gibt.
         out = util.run(["npm", "outdated", "-g", "--json"], timeout=180, ok_codes=(0, 1))
         if out is None:
-            return {p.key: UpdateResult(UpdateStatus.UNKNOWN, note="npm-Registry nicht erreichbar.") for p in programs}
+            return {p.key: UpdateResult(UpdateStatus.UNKNOWN, note=_("npm-Registry nicht erreichbar.")) for p in programs}
         outdated = parse_npm_outdated(out)
         return {
             p.key: UpdateResult(UpdateStatus.OUTDATED, outdated[p.name])
@@ -219,7 +220,7 @@ class BrewSource(PackageSource):
         brew = find_brew()
         out = util.run([brew, "outdated", "--json=v2"], timeout=300) if brew else None
         if out is None:
-            return {p.key: UpdateResult(UpdateStatus.UNKNOWN, note="Homebrew-Prüfung fehlgeschlagen.") for p in programs}
+            return {p.key: UpdateResult(UpdateStatus.UNKNOWN, note=_("Homebrew-Prüfung fehlgeschlagen.")) for p in programs}
         outdated = parse_brew_outdated(out)
         return {
             p.key: UpdateResult(UpdateStatus.OUTDATED, outdated[p.name])

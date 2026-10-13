@@ -20,6 +20,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from cachy_kompass import util
+from cachy_kompass.i18n import _
 from cachy_kompass.models import Program, Source
 
 PACMAN_LOG = Path("/var/log/pacman.log")
@@ -166,10 +167,10 @@ class RebootInfo:
             return ""
         parts = []
         if self.kernel_replaced:
-            parts.append("Der Kernel wurde aktualisiert – der laufende ist noch der alte.")
+            parts.append(_("Der Kernel wurde aktualisiert – der laufende ist noch der alte."))
         if self.packages:
             shown = ", ".join(self.packages[:6]) + (" …" if len(self.packages) > 6 else "")
-            parts.append(f"Seit dem letzten Start aktualisiert: {shown}.")
+            parts.append(_("Seit dem letzten Start aktualisiert: {packages}.").format(packages=shown))
         return " ".join(parts)
 
 

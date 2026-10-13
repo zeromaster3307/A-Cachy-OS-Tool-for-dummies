@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 
 from cachy_kompass import desktop, duplicates, history, installers, sizes
+from cachy_kompass.i18n import _, ngettext
 from cachy_kompass.models import DesktopEntry, Program, Source, UpdateResult, UpdateStatus
 from cachy_kompass.sources import PackageSource, ScanContext, all_sources
 
@@ -48,7 +49,7 @@ def scan(progress: Progress = _noop, sources: list[PackageSource] | None = None)
         try:
             if not src.is_available():
                 continue
-            progress(f"Lese {src.title} …")
+            progress(_("Lese {what} …").format(what=src.title))
             found = src.scan(ctx)
         except Exception as exc:  # eine kaputte Quelle soll nicht alles abbrechen
             log.exception("Fehler beim Lesen von %s", src.title)
@@ -56,25 +57,26 @@ def scan(progress: Progress = _noop, sources: list[PackageSource] | None = None)
             continue
         ctx.programs.extend(found)
 
-    progress("Lese Startmenü-Einträge …")
+    progress(_("Lese Startmenü-Einträge …"))
     result.programs = ctx.programs
     result.helper_names = ctx.helper_names
     result.entries = desktop.load_entries()
     result.unmatched_entries = desktop.match_entries(result.programs, result.entries)
 
-    progress("Lese Installationsdaten …")
+    progress(_("Lese Installationsdaten …"))
     events = history.read_log()
     history.fill_install_dates(result.programs, events)
     result.reboot = history.check_reboot(events, history.boot_time())
 
-    progress("Berechne Größen …")
+    progress(_("Berechne Größen …"))
     sizes.fill_sizes(result.programs)
     result.duplicate_groups = duplicates.find_duplicates(result.programs)
 
-    progress("Suche Paketverwaltungen …")
+    progress(_("Suche Paketverwaltungen …"))
     result.installers = installers.detect(result.programs)
     result.programs.sort(key=lambda p: p.display_name.lower())
-    progress(f"{sum(p.explicit for p in result.programs)} Programme gefunden.")
+    found = sum(p.explicit for p in result.programs)
+    progress(ngettext("{n} Programm gefunden.", "{n} Programme gefunden.", found).format(n=found))
     return result
 
 
@@ -101,17 +103,17 @@ def check_updates(
 
     def run(group: tuple[PackageSource, list[Program]]) -> dict[str, UpdateResult]:
         src, progs = group
-        progress(f"Prüfe Updates: {src.title} …")
+        progress(_("Prüfe Updates: {what} …").format(what=src.title))
         try:
             return src.check_updates(progs)
         except Exception as exc:
             log.exception("Update-Prüfung %s fehlgeschlagen", src.title)
-            return {p.key: UpdateResult(UpdateStatus.UNKNOWN, note=f"Fehler: {exc}") for p in progs}
+            return {p.key: UpdateResult(UpdateStatus.UNKNOWN, note=_("Fehler: {error}").format(error=exc)) for p in progs}
 
     with ThreadPoolExecutor(max_workers=4) as pool:
         for partial in pool.map(run, groups.values()):
             results.update(partial)
-    progress("Update-Prüfung abgeschlossen.")
+    progress(_("Update-Prüfung abgeschlossen."))
     return results
 
 

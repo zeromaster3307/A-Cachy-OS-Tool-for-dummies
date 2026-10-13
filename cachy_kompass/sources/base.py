@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from cachy_kompass.i18n import _
 from cachy_kompass.models import Program, Source, UpdateResult, UpdateStatus
 
 
@@ -47,14 +48,14 @@ class PackageSource:
 
     def check_updates(self, programs: list[Program]) -> dict[str, UpdateResult]:
         """Liefert pro ``Program.key`` ein Ergebnis. Standard: nicht prüfbar."""
-        note = "Für diese Art von Programm gibt es keine zentrale Versionsliste."
+        note = _("Für diese Art von Programm gibt es keine zentrale Versionsliste.")
         return {p.key: UpdateResult(UpdateStatus.NOT_CHECKABLE, note=note) for p in programs}
 
 
 def compare_result(installed: str, latest: str | None, note: str = "") -> UpdateResult:
     """Einfacher Vergleich: gleiche Version = aktuell, sonst Update verfügbar."""
     if not latest:
-        return UpdateResult(UpdateStatus.UNKNOWN, note=note or "Keine Versionsinformation gefunden.")
+        return UpdateResult(UpdateStatus.UNKNOWN, note=note or _("Keine Versionsinformation gefunden."))
     if installed.lstrip("v") == latest.lstrip("v"):
         return UpdateResult(UpdateStatus.CURRENT, latest, note)
     return UpdateResult(UpdateStatus.OUTDATED, latest, note)

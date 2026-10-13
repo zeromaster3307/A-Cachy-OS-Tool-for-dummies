@@ -7,6 +7,7 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 
 from cachy_kompass import util
+from cachy_kompass.i18n import _
 from cachy_kompass.models import Program, Source, UpdateResult
 from cachy_kompass.sources.base import PackageSource, ScanContext, compare_result
 
@@ -23,7 +24,7 @@ def pypi_latest(package: str) -> str | None:
 def check_pypi(programs: list[Program]) -> dict[str, UpdateResult]:
     with ThreadPoolExecutor(max_workers=8) as pool:
         latest = dict(zip((p.key for p in programs), pool.map(lambda p: pypi_latest(p.name), programs)))
-    return {p.key: compare_result(p.version, latest[p.key], "" if latest[p.key] else "PyPI nicht erreichbar.") for p in programs}
+    return {p.key: compare_result(p.version, latest[p.key], "" if latest[p.key] else _("PyPI nicht erreichbar.")) for p in programs}
 
 
 def parse_pipx_json(text: str) -> list[dict]:
@@ -78,7 +79,7 @@ class _PythonToolSource(PackageSource):
                 name=row["name"],
                 version=row["version"],
                 source=self.source,
-                origin="PyPI (Python-Paketindex)",
+                origin=_("PyPI (Python-Paketindex)"),
                 executables=[str(LOCAL_BIN / app) for app in row["apps"]],
                 url=f"https://pypi.org/project/{row['name']}/",
             )
