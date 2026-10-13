@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from cachy_kompass import util
+from cachy_kompass.i18n import _
 from cachy_kompass.models import Program, Source, UpdateResult, UpdateStatus
 from cachy_kompass.sources.base import PackageSource, ScanContext
 
@@ -60,7 +61,7 @@ class SnapSource(PackageSource):
                     name=name,
                     version=row["version"],
                     source=Source.SNAP,
-                    origin=f"Snap Store (Herausgeber: {row['publisher'] or '?'})",
+                    origin=_("Snap Store (Herausgeber: {publisher})").format(publisher=row["publisher"] or "?"),
                     explicit=not is_runtime(row),
                     executables=[f"/snap/bin/{name}"],
                     url=f"https://snapcraft.io/{name}",
@@ -71,7 +72,7 @@ class SnapSource(PackageSource):
     def check_updates(self, programs: list[Program]) -> dict[str, UpdateResult]:
         out = util.run(["snap", "refresh", "--list"], timeout=120)
         if out is None:
-            return {p.key: UpdateResult(UpdateStatus.UNKNOWN, note="Snap Store nicht erreichbar.") for p in programs}
+            return {p.key: UpdateResult(UpdateStatus.UNKNOWN, note=_("Snap Store nicht erreichbar.")) for p in programs}
         updates = parse_refresh_list(out)
         return {
             p.key: UpdateResult(UpdateStatus.OUTDATED, updates[p.name])

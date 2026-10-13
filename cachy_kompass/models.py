@@ -1,7 +1,7 @@
 """Datenmodelle: Was wissen wir über ein installiertes Programm?
 
 Alle Texte, die später in der Oberfläche landen, stehen bewusst hier zentral,
-damit man sie leicht anpassen oder übersetzen kann.
+damit man sie leicht anpassen kann. Übersetzt werden sie mit ``_()`` (siehe ``i18n.py``).
 """
 
 from __future__ import annotations
@@ -11,6 +11,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
+
+from cachy_kompass.i18n import _
 
 
 class Source(Enum):
@@ -32,36 +34,36 @@ class Source(Enum):
 class AutoUpdate(Enum):
     """Wird das Programm beim normalen CachyOS-Systemupdate mit aktualisiert?"""
 
-    YES = "ja"
-    PARTIAL = "teilweise"
-    NO = "nein"
+    YES = _("ja")
+    PARTIAL = _("teilweise")
+    NO = _("nein")
 
 
 class UpdateStatus(Enum):
     """Ergebnis der Prüfung, ob eine neuere Version verfügbar ist."""
 
-    NOT_CHECKED = "nicht geprüft"
-    CURRENT = "aktuell"
-    OUTDATED = "Update verfügbar"
-    UNKNOWN = "unbekannt"
-    NOT_CHECKABLE = "nicht prüfbar"
+    NOT_CHECKED = _("nicht geprüft")
+    CURRENT = _("aktuell")
+    OUTDATED = _("Update verfügbar")
+    UNKNOWN = _("unbekannt")
+    NOT_CHECKABLE = _("nicht prüfbar")
 
 
 class Kind(Enum):
     """Was für eine Art von Software ist das – kann man es als Benutzer starten?"""
 
-    APP = "App"            # hat ein Fenster, startet aus dem Startmenü
-    COMMAND = "Befehl"     # Kommandozeilenprogramm fürs Terminal
-    OTHER = "Sonstiges"    # nicht startbar: Bibliothek, Schriftart, Treiber, Design …
+    APP = _("App")            # hat ein Fenster, startet aus dem Startmenü
+    COMMAND = _("Befehl")     # Kommandozeilenprogramm fürs Terminal
+    OTHER = _("Sonstiges")    # nicht startbar: Bibliothek, Schriftart, Treiber, Design …
 
 
 KIND_INFO: dict[Kind, str] = {
-    Kind.APP: "Ein Programm mit eigenem Fenster, das du aus dem Startmenü starten kannst.",
-    Kind.COMMAND: (
+    Kind.APP: _("Ein Programm mit eigenem Fenster, das du aus dem Startmenü starten kannst."),
+    Kind.COMMAND: _(
         "Ein Kommandozeilenprogramm: Es wird im Terminal über seinen Befehl gestartet "
         "und hat kein eigenes Fenster."
     ),
-    Kind.OTHER: (
+    Kind.OTHER: _(
         "Nichts zum Starten: z. B. eine Bibliothek, Schriftart, ein Treiber, Firmware, "
         "ein Design oder ein Sammelpaket, das andere Pakete mitbringt."
     ),
@@ -71,9 +73,9 @@ KIND_INFO: dict[Kind, str] = {
 class MenuStatus(Enum):
     """Ist das Programm über das Startmenü erreichbar?"""
 
-    VISIBLE = "ja"
-    HIDDEN = "versteckt"
-    NONE = "nein"
+    VISIBLE = _("ja")
+    HIDDEN = _("versteckt")
+    NONE = _("nein")
 
 
 @dataclass(frozen=True)
@@ -91,14 +93,14 @@ class SourceInfo:
 
 SOURCE_INFO: dict[Source, SourceInfo] = {
     Source.REPO: SourceInfo(
-        label="Offizielles Repo",
-        how_installed=(
+        label=_("Offizielles Repo"),
+        how_installed=_(
             "Installiert mit der Paketverwaltung pacman aus einer offiziellen "
             "Paketquelle (CachyOS- oder Arch-Linux-Repo), z. B. mit "
             "„sudo pacman -S …“, dem CachyOS Package Installer oder Octopi."
         ),
         auto_update=AutoUpdate.YES,
-        update_hint=(
+        update_hint=_(
             "Wird bei jedem normalen Systemupdate automatisch mit aktualisiert "
             "(„sudo pacman -Syu“, „paru“ oder die CachyOS-Update-Benachrichtigung)."
         ),
@@ -106,7 +108,7 @@ SOURCE_INFO: dict[Source, SourceInfo] = {
     ),
     Source.AUR: SourceInfo(
         label="AUR",
-        how_installed=(
+        how_installed=_(
             "Aus dem Arch User Repository (AUR) gebaut, meist mit einem "
             "AUR-Helfer wie paru oder yay. Das AUR ist eine Sammlung von "
             "Bauanleitungen aus der Community und nicht offiziell geprüft. "
@@ -114,7 +116,7 @@ SOURCE_INFO: dict[Source, SourceInfo] = {
             "oder sind aus einem offiziellen Repo entfernt worden."
         ),
         auto_update=AutoUpdate.PARTIAL,
-        update_hint=(
+        update_hint=_(
             "Wird nur aktualisiert, wenn du dein System mit einem AUR-Helfer "
             "aktualisierst (z. B. „paru“ oder „yay“). Ein reines "
             "„sudo pacman -Syu“ aktualisiert AUR-Programme NICHT."
@@ -123,13 +125,13 @@ SOURCE_INFO: dict[Source, SourceInfo] = {
     ),
     Source.FLATPAK: SourceInfo(
         label="Flatpak",
-        how_installed=(
+        how_installed=_(
             "Als Flatpak installiert, meist aus Flathub – z. B. über Discover, "
             "GNOME Software, die Flathub-Webseite oder „flatpak install …“. "
             "Flatpaks laufen abgeschottet vom restlichen System."
         ),
         auto_update=AutoUpdate.PARTIAL,
-        update_hint=(
+        update_hint=_(
             "Wird NICHT von pacman aktualisiert. Aktualisiere mit "
             "„flatpak update“ oder über Discover / GNOME Software, die das "
             "je nach Einstellung auch automatisch erledigen."
@@ -138,13 +140,13 @@ SOURCE_INFO: dict[Source, SourceInfo] = {
     ),
     Source.SNAP: SourceInfo(
         label="Snap",
-        how_installed=(
+        how_installed=_(
             "Als Snap-Paket installiert („sudo snap install …“). Unter "
             "CachyOS ist Snap nicht standardmäßig dabei und wurde vermutlich "
             "nach einer Anleitung nachinstalliert."
         ),
         auto_update=AutoUpdate.YES,
-        update_hint=(
+        update_hint=_(
             "Snap aktualisiert sich selbstständig im Hintergrund "
             "(mehrmals täglich), unabhängig vom CachyOS-Systemupdate."
         ),
@@ -152,14 +154,14 @@ SOURCE_INFO: dict[Source, SourceInfo] = {
     ),
     Source.APPIMAGE: SourceInfo(
         label="AppImage",
-        how_installed=(
+        how_installed=_(
             "Eine AppImage-Datei, die von einer Webseite heruntergeladen wurde. "
             "Sie wird nicht installiert, sondern direkt gestartet. Werkzeuge "
             "wie Gear Lever oder AppImageLauncher legen dafür evtl. "
             "Startmenü-Einträge an."
         ),
         auto_update=AutoUpdate.NO,
-        update_hint=(
+        update_hint=_(
             "Wird NICHT automatisch aktualisiert. Lade die neue Version selbst "
             "herunter oder nutze ein Werkzeug wie Gear Lever."
         ),
@@ -167,34 +169,34 @@ SOURCE_INFO: dict[Source, SourceInfo] = {
     ),
     Source.PIPX: SourceInfo(
         label="pipx (Python)",
-        how_installed=(
+        how_installed=_(
             "Ein Python-Programm, installiert mit „pipx install …“ in eine "
             "eigene, abgeschottete Umgebung im Benutzerordner."
         ),
         auto_update=AutoUpdate.NO,
-        update_hint="Wird NICHT automatisch aktualisiert. Aktualisieren mit „pipx upgrade-all“.",
+        update_hint=_("Wird NICHT automatisch aktualisiert. Aktualisieren mit „pipx upgrade-all“."),
         uninstall_template="pipx uninstall {name}",
         cli_by_default=True,
     ),
     Source.UV: SourceInfo(
         label="uv tool (Python)",
-        how_installed=(
+        how_installed=_(
             "Ein Python-Programm, installiert mit „uv tool install …“ "
             "(ähnlich wie pipx, nur schneller)."
         ),
         auto_update=AutoUpdate.NO,
-        update_hint="Wird NICHT automatisch aktualisiert. Aktualisieren mit „uv tool upgrade --all“.",
+        update_hint=_("Wird NICHT automatisch aktualisiert. Aktualisieren mit „uv tool upgrade --all“."),
         uninstall_template="uv tool uninstall {name}",
         cli_by_default=True,
     ),
     Source.CARGO: SourceInfo(
         label="cargo (Rust)",
-        how_installed=(
+        how_installed=_(
             "Ein Rust-Programm, aus dem Quellcode gebaut mit „cargo install …“. "
             "Die Programmdatei liegt in ~/.cargo/bin."
         ),
         auto_update=AutoUpdate.NO,
-        update_hint=(
+        update_hint=_(
             "Wird NICHT automatisch aktualisiert. Erneut „cargo install {name}“ "
             "ausführen oder das Zusatzwerkzeug cargo-update nutzen "
             "(„cargo install-update -a“)."
@@ -204,33 +206,33 @@ SOURCE_INFO: dict[Source, SourceInfo] = {
     ),
     Source.NPM: SourceInfo(
         label="npm (Node.js)",
-        how_installed="Ein Node.js-Programm, global installiert mit „npm install -g …“.",
+        how_installed=_("Ein Node.js-Programm, global installiert mit „npm install -g …“."),
         auto_update=AutoUpdate.NO,
-        update_hint="Wird NICHT automatisch aktualisiert. Aktualisieren mit „npm update -g“.",
+        update_hint=_("Wird NICHT automatisch aktualisiert. Aktualisieren mit „npm update -g“."),
         uninstall_template="npm uninstall -g {name}",
         cli_by_default=True,
     ),
     Source.BREW: SourceInfo(
         label="Homebrew",
-        how_installed=(
+        how_installed=_(
             "Installiert mit Homebrew („brew install …“). Homebrew kommt "
             "eigentlich von macOS und wurde vermutlich nach einer Anleitung "
             "nachinstalliert."
         ),
         auto_update=AutoUpdate.NO,
-        update_hint="Wird NICHT vom Systemupdate erfasst. Aktualisieren mit „brew upgrade“.",
+        update_hint=_("Wird NICHT vom Systemupdate erfasst. Aktualisieren mit „brew upgrade“."),
         uninstall_template="brew uninstall {name}",
         cli_by_default=True,
     ),
     Source.MANUAL: SourceInfo(
-        label="Manuell",
-        how_installed=(
+        label=_("Manuell"),
+        how_installed=_(
             "Von Hand ins System kopiert (z. B. ein entpacktes Archiv in /opt "
             "oder eine Programmdatei in ~/.local/bin oder /usr/local/bin). "
             "Keine Paketverwaltung weiß davon."
         ),
         auto_update=AutoUpdate.NO,
-        update_hint=(
+        update_hint=_(
             "Wird NICHT automatisch aktualisiert. Updates musst du selbst "
             "beim Hersteller herunterladen."
         ),

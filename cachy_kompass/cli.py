@@ -5,7 +5,8 @@ from __future__ import annotations
 import json
 import sys
 
-from cachy_kompass import scanner, util
+from cachy_kompass import i18n, scanner, util
+from cachy_kompass.i18n import _, ngettext
 from cachy_kompass.models import Program
 
 
@@ -19,12 +20,12 @@ def _row(p: Program) -> list[str]:
         p.info.auto_update.value,
         p.update.status.value + (f" ({p.update.latest})" if p.update.latest and p.update.latest != p.version else ""),
         util.format_size(p.size_bytes) if p.size_bytes else "",
-        p.installed_at.strftime("%d.%m.%Y") if p.installed_at else "",
+        i18n.date(p.installed_at) if p.installed_at else "",
     ]
 
 
 def print_table(programs: list[Program]) -> None:
-    header = ["Programm", "Version", "Quelle", "Art", "Startmenü", "Auto-Update", "Aktuell?", "Größe", "Installiert"]
+    header = [_("Programm"), _("Version"), _("Quelle"), _("Art"), _("Startmenü"), _("Auto-Update"), _("Aktuell?"), _("Größe"), _("Installiert")]
     rows = [header] + [_row(p) for p in programs]
     widths = [min(max(len(r[i]) for r in rows), 40) for i in range(len(header))]
     for n, row in enumerate(rows):
@@ -79,16 +80,17 @@ def run_cli(show_all: bool, updates: bool, as_json: bool, show_installers: bool)
         return 0
 
     if show_installers:
-        print("\nGefundene Paketverwaltungen und App-Stores:\n")
+        print("\n" + _("Gefundene Paketverwaltungen und App-Stores:") + "\n")
         for inst in result.installers:
             if inst.present:
-                count = f" – {inst.program_count} Programme" if inst.program_count is not None else ""
+                n = inst.program_count
+                count = " – " + ngettext("{n} Programm", "{n} Programme", n).format(n=n) if n is not None else ""
                 print(f"  ✔ {inst.spec.name} ({inst.spec.kind}){count}")
         print()
 
     print_table(programs)
     if result.reboot.needed:
-        print(f"\nNeustart empfohlen: {result.reboot.message()}")
+        print("\n" + _("Neustart empfohlen: {reason}").format(reason=result.reboot.message()))
     for w in result.warnings:
-        print(f"Warnung: {w}", file=sys.stderr)
+        print(_("Warnung: {message}").format(message=w), file=sys.stderr)
     return 0

@@ -19,6 +19,8 @@ cachy_kompass/
 ├── __init__.py          Versionsnummer, App-Name
 ├── __main__.py          ermöglicht „python -m cachy_kompass“
 ├── app.py               Befehlszeile auswerten → GUI oder Textmodus starten
+├── i18n.py              Übersetzung: _(), ngettext(), Sprache wählen, Datum/Zahlen
+├── locale/en.po         englische Übersetzung aller Texte
 ├── cli.py               Textmodus (Tabelle / JSON)
 ├── models.py            Datenklassen (Program, DesktopEntry …) und ALLE
 │                        erklärenden Texte zu den Quellen (SOURCE_INFO)
@@ -53,6 +55,7 @@ cachy_kompass/
     ├── cleanup_tab.py   Reiter „Aufräumen“
     └── workers.py       Hintergrund-Threads (damit die GUI nicht einfriert)
 tests/                   pytest-Tests mit Beispielausgaben der echten Befehle
+tools/i18n.py            Texte sammeln und en.po abgleichen bzw. prüfen
 install.sh / uninstall.sh
 ```
 
@@ -159,9 +162,50 @@ QT_QPA_PLATFORM=offscreen python -m cachy_kompass
 
 ## Konventionen
 
-- Alles, was Nutzer lesen, ist **deutsch** und für Laien formuliert.
-  Programmcode-Namen sind englisch, Kommentare deutsch.
+- Alles, was Nutzer lesen, ist **deutsch** im Code, für Laien formuliert und mit
+  `_()` markiert (siehe unten). Programmcode-Namen sind englisch, Kommentare deutsch.
 - Erklärende Texte zu Quellen gehören nach `models.SOURCE_INFO`, nicht verstreut
   in die GUI.
 - Neue Funktionen, die etwas am System ändern, müssen vorher nachfragen und
   dürfen nur Dinge im Benutzerordner anfassen.
+
+## Texte und Übersetzungen
+
+Deutsch ist die Grundsprache: Alle Texte stehen deutsch im Code, die englische
+Übersetzung liegt in `cachy_kompass/locale/en.po`. Die Sprache wird einmal beim
+Start festgelegt (`--lang`, sonst `CACHY_KOMPASS_LANG`, sonst die
+Systemsprache) – vor dem Laden der übrigen Module. Deshalb dürfen auch Texte,
+die schon beim Import entstehen (z. B. `SOURCE_INFO`, `installers.SPECS`),
+`_()` benutzen.
+
+Regeln für neue Texte:
+
+```python
+from cachy_kompass.i18n import _, ngettext
+
+_("Fertig.")                                             # einfacher Text
+_("Eintrag angelegt: {path}").format(path=p)             # mit Platzhalter – nie f-Strings in _()
+ngettext("{n} Paket", "{n} Pakete", n).format(n=n)       # Ein-/Mehrzahl
+i18n.date(dt), i18n.date_time(dt), util.format_size(b)   # Datum und Größen passend zur Sprache
+```
+
+- In `_()` muss ein **fester Text** stehen (keine Variable, kein f-String),
+  sonst findet ihn `tools/i18n.py` nicht.
+- Benannte Platzhalter (`{name}`) statt Text-Stückelung: Im Englischen ändert
+  sich oft die Satzstellung.
+- In Funktionen, die `_()` aufrufen, `_` nicht als Wegwerf-Variable benutzen
+  (`path, _filter = …` statt `path, _ = …`).
+- HTML-Tags dürfen im Text stehen; die Übersetzung muss dieselben Tags haben.
+
+Nach dem Ändern von Texten:
+
+```bash
+python tools/i18n.py update   # neue Texte in en.po eintragen, entfernte löschen
+# … in en.po die leeren msgstr "" übersetzen …
+python tools/i18n.py check    # meldet fehlende Übersetzungen und falsche Platzhalter
+```
+
+Der Test `tests/test_i18n.py` führt dieselbe Prüfung aus, eine unvollständige
+Übersetzung fällt also auch in GitHub Actions auf. Eine weitere Sprache kommt
+dazu, indem man `en.po` nach `<sprache>.po` kopiert und die `msgstr` übersetzt.
+

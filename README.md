@@ -1,5 +1,7 @@
 # 🧭 Cachy Software-Kompass
 
+🇬🇧 [English version](README.en.md)
+
 **Welche Programme habe ich eigentlich installiert – und woher kommen die?**
 
 Der Cachy Software-Kompass ist ein Programm mit grafischer Oberfläche für
@@ -30,15 +32,16 @@ Der Cachy Software-Kompass ist ein Programm mit grafischer Oberfläche für
 
 1. [Installation](#installation)
 2. [Starten](#starten)
-3. [Bedienung](#bedienung)
-4. [Begriffe einfach erklärt](#begriffe-einfach-erklärt)
-5. [Welche Quellen werden erkannt?](#welche-quellen-werden-erkannt)
-6. [Was ändert das Programm an meinem System?](#was-ändert-das-programm-an-meinem-system)
-7. [Textmodus für das Terminal](#textmodus-für-das-terminal)
-8. [Deinstallation](#deinstallation)
-9. [Häufige Fragen & Probleme](#häufige-fragen--probleme)
-10. [Bekannte Grenzen](#bekannte-grenzen)
-11. [Für Entwickler](#für-entwickler)
+3. [Sprache](#sprache)
+4. [Bedienung](#bedienung)
+5. [Begriffe einfach erklärt](#begriffe-einfach-erklärt)
+6. [Welche Quellen werden erkannt?](#welche-quellen-werden-erkannt)
+7. [Was ändert das Programm an meinem System?](#was-ändert-das-programm-an-meinem-system)
+8. [Textmodus für das Terminal](#textmodus-für-das-terminal)
+9. [Deinstallation](#deinstallation)
+10. [Häufige Fragen & Probleme](#häufige-fragen--probleme)
+11. [Bekannte Grenzen](#bekannte-grenzen)
+12. [Für Entwickler](#für-entwickler)
 
 ---
 
@@ -110,6 +113,29 @@ python -m cachy_kompass
 
 Beim Start werden alle Programme eingelesen. Das dauert je nach System ein paar
 Sekunden.
+
+---
+
+## Sprache
+
+Die Oberfläche gibt es auf **Deutsch** und **Englisch**. Der Software-Kompass
+richtet sich nach der Systemsprache: Auf einem englischen System startet er
+englisch, sonst deutsch.
+
+Selbst wählen geht so:
+
+```bash
+cachy-kompass --lang en      # Englisch
+cachy-kompass --lang de      # Deutsch
+```
+
+Soll er auch aus dem Startmenü immer in einer bestimmten Sprache starten, lege
+die Datei `~/.config/environment.d/cachy-kompass.conf` mit dieser Zeile an und
+melde dich einmal ab und wieder an:
+
+```
+CACHY_KOMPASS_LANG=en
+```
 
 ---
 
@@ -438,6 +464,7 @@ cachy-kompass --cli --updates       # … mit Update-Prüfung
 cachy-kompass --cli --all           # … inklusive Abhängigkeiten/Bibliotheken
 cachy-kompass --cli --installers    # … plus Liste der Paketverwaltungen
 cachy-kompass --json > liste.json   # maschinenlesbar, z. B. als Sicherung deiner Programmliste
+cachy-kompass --lang en --cli       # auf Englisch, egal welche Systemsprache
 cachy-kompass --help                # alle Optionen
 ```
 
@@ -518,7 +545,6 @@ Meldungen erscheinen, und eröffne ein Issue auf GitHub.
 
 - Nix-Profile und Distrobox-Container einzeln auflisten
 - PKGBUILD, damit sich der Software-Kompass selbst über das AUR installieren lässt
-- Englische Übersetzung
 
 ---
 
@@ -534,7 +560,12 @@ pip install pytest ruff     # oder: sudo pacman -S python-pytest ruff
 pytest                      # Tests (laufen auch ohne CachyOS)
 ruff check .                # Code-Stil
 python -m cachy_kompass     # starten
+python tools/i18n.py check  # sind alle Texte übersetzt?
 ```
+
+Texte stehen auf Deutsch im Code und werden mit `_("…")` markiert, die englische
+Übersetzung liegt in `cachy_kompass/locale/en.po` (siehe
+[docs/ENTWICKLUNG.md](docs/ENTWICKLUNG.md#texte-und-übersetzungen)).
 
 ## Lizenz
 

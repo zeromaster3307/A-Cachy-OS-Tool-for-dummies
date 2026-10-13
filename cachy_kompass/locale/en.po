@@ -1,0 +1,2394 @@
+# Englische Übersetzung des Cachy Software-Kompass.
+# Gepflegt mit „python tools/i18n.py update“.
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: en\n"
+
+#: cachy_kompass/app.py:16
+msgid "{app}: Zeigt installierte Programme, ihre Herkunft und ihren Startmenü-Status."
+msgstr "{app}: Shows installed programs, where they come from and whether they are in the app menu."
+
+#: cachy_kompass/app.py:18
+msgid "Ergebnis als Text im Terminal statt mit Oberfläche"
+msgstr "Print the result as text in the terminal instead of opening the window"
+
+#: cachy_kompass/app.py:19
+msgid "Ergebnis als JSON ausgeben (setzt --cli voraus)"
+msgstr "Print the result as JSON (implies --cli)"
+
+#: cachy_kompass/app.py:20
+msgid "Auch Abhängigkeiten und Bibliotheken anzeigen"
+msgstr "Also show dependencies and libraries"
+
+#: cachy_kompass/app.py:21
+msgid "Zusätzlich nach Updates suchen (braucht Internet)"
+msgstr "Also check for updates (needs internet)"
+
+#: cachy_kompass/app.py:22
+msgid "Gefundene Paketverwaltungen auflisten"
+msgstr "List the package managers found"
+
+#: cachy_kompass/app.py:23
+msgid "Ausführliche Meldungen zur Fehlersuche"
+msgstr "Detailed messages for troubleshooting"
+
+#: cachy_kompass/app.py:27
+msgid "Sprache der Oberfläche (Standard: Systemsprache)"
+msgstr "Language of the interface (default: system language)"
+
+#: cachy_kompass/app.py:60
+msgid ""
+"Die grafische Oberfläche braucht PySide6.\n"
+"Installieren mit:  sudo pacman -S pyside6\n"
+"(Fehler: {error})\n"
+"Alternativ ohne Oberfläche:  cachy-kompass --cli"
+msgstr ""
+"The graphical interface needs PySide6.\n"
+"Install it with:  sudo pacman -S pyside6\n"
+"(Error: {error})\n"
+"Without the window:  cachy-kompass --cli"
+
+#: cachy_kompass/backup.py:42
+msgid "am {date} um {time}"
+msgstr "on {date} at {time}"
+
+#: cachy_kompass/backup.py:44
+msgid "auf „{host}“"
+msgstr "on “{host}”"
+
+#: cachy_kompass/backup.py:47
+msgid "Programmliste, gesichert mit dem {app} {version}"
+msgstr "Program list, saved with {app} {version}"
+
+#: cachy_kompass/backup.py:50
+msgid ""
+"So stellst du die Programme nach einer Neuinstallation wieder her:\n"
+"  1. Diese Datei z. B. auf einen USB-Stick oder in die Cloud kopieren.\n"
+"  2. Auf dem neuen System im Terminal ausführen:  bash <dateiname>\n"
+"     (CachyOS nutzt die fish-Shell – deshalb ausdrücklich „bash“ davor schreiben.)\n"
+"  3. Jeder Schritt fragt vor dem Installieren nach. Mit „n“ überspringst du ihn.\n"
+"\n"
+"Du kannst die Datei vorher mit einem Texteditor anpassen: Zeilen, die mit „#“\n"
+"beginnen, werden nicht ausgeführt. Einstellungen und Dateien der Programme sind\n"
+"NICHT enthalten – die liegen in deinem Benutzerordner (z. B. ~/.config)."
+msgstr ""
+"How to restore your programs after reinstalling:\n"
+"  1. Copy this file somewhere safe, e.g. a USB stick or the cloud.\n"
+"  2. On the new system, run in a terminal:  bash <file name>\n"
+"     (CachyOS uses the fish shell – that is why you have to type “bash” in front.)\n"
+"  3. Every step asks before installing anything. Answer “n” to skip it.\n"
+"\n"
+"You can edit the file in a text editor first: lines starting with “#” are not\n"
+"executed. Settings and files of your programs are NOT included – they live in\n"
+"your home folder (e.g. ~/.config)."
+
+#: cachy_kompass/backup.py:65
+msgid "[J/n]"
+msgstr "[Y/n]"
+
+#: cachy_kompass/backup.py:74
+msgid "{n} Paket aus den offiziellen Repos installieren?"
+msgid_plural "{n} Pakete aus den offiziellen Repos installieren?"
+msgstr[0] "Install {n} package from the official repos?"
+msgstr[1] "Install {n} packages from the official repos?"
+
+#: cachy_kompass/backup.py:76
+msgid "Offizielle Repos (CachyOS/Arch): {n} Paket"
+msgid_plural "Offizielle Repos (CachyOS/Arch): {n} Pakete"
+msgstr[0] "Official repos (CachyOS/Arch): {n} package"
+msgstr[1] "Official repos (CachyOS/Arch): {n} packages"
+
+#: cachy_kompass/backup.py:77
+msgid ""
+"„--needed“ überspringt, was schon installiert ist. Meldet pacman „target not\n"
+"found“, gibt es ein Paket nicht mehr: dann den Namen unten löschen und neu starten."
+msgstr ""
+"“--needed” skips what is already installed. If pacman reports “target not\n"
+"found”, a package no longer exists: delete its name below and start again."
+
+#: cachy_kompass/backup.py:90
+msgid "{n} Paket aus dem AUR installieren?"
+msgid_plural "{n} Pakete aus dem AUR installieren?"
+msgstr[0] "Install {n} package from the AUR?"
+msgstr[1] "Install {n} packages from the AUR?"
+
+#: cachy_kompass/backup.py:92
+msgid "AUR: {n} Paket"
+msgid_plural "AUR: {n} Pakete"
+msgstr[0] "AUR: {n} package"
+msgstr[1] "AUR: {n} packages"
+
+#: cachy_kompass/backup.py:93
+msgid ""
+"Braucht den AUR-Helfer paru (unter CachyOS vorinstalliert). AUR-Pakete sind\n"
+"nicht offiziell geprüft – entferne vorher, was du nicht mehr brauchst.\n"
+"Pakete, die es im AUR nicht mehr gibt, meldet paru als Fehler."
+msgstr ""
+"Needs the AUR helper paru (preinstalled on CachyOS). AUR packages are not\n"
+"officially reviewed – remove anything you no longer need first.\n"
+"Packages that are no longer in the AUR are reported as errors by paru."
+
+#: cachy_kompass/backup.py:107
+msgid "Flatpak: {n} App"
+msgid_plural "Flatpak: {n} Apps"
+msgstr[0] "Flatpak: {n} app"
+msgstr[1] "Flatpak: {n} apps"
+
+#: cachy_kompass/backup.py:108
+msgid "Flatpak-Apps installieren?"
+msgstr "Install Flatpak apps?"
+
+#: cachy_kompass/backup.py:137
+msgid "{label}: {n} Programm installieren?"
+msgid_plural "{label}: {n} Programme installieren?"
+msgstr[0] "{label}: install {n} program?"
+msgstr[1] "{label}: install {n} programs?"
+
+#: cachy_kompass/backup.py:139
+msgid "{label}: {n} Programm"
+msgid_plural "{label}: {n} Programme"
+msgstr[0] "{label}: {n} program"
+msgstr[1] "{label}: {n} programs"
+
+#: cachy_kompass/backup.py:140
+msgid "Braucht „{tool}“ – falls es fehlt, zuerst über den {app} (Reiter „Paketverwaltungen“) installieren."
+msgstr "Needs “{tool}” – if it is missing, install it first with {app} (tab “Package managers”)."
+
+#: cachy_kompass/backup.py:152
+msgid "Nicht automatisch wiederherstellbar"
+msgstr "Cannot be restored automatically"
+
+#: cachy_kompass/backup.py:153
+msgid ""
+"Diese Programme wurden von Hand heruntergeladen oder gebaut. Lade sie bei\n"
+"Bedarf neu von der Webseite des Herstellers:"
+msgstr ""
+"These programs were downloaded or built by hand. If you need them again,\n"
+"download them from the maker's website:"
+
+#: cachy_kompass/backup.py:161
+msgid "Fertig."
+msgstr "Done."
+
+#: cachy_kompass/backup.py:167
+msgid "programme-{date}.sh"
+msgstr "programs-{date}.sh"
+
+#: cachy_kompass/cleanup.py:77
+msgid "keine"
+msgstr "none"
+
+#: cachy_kompass/cleanup.py:93
+msgid "Verwaiste Pakete"
+msgstr "Orphaned packages"
+
+#: cachy_kompass/cleanup.py:94
+msgid "Pakete, die einmal automatisch als Abhängigkeit für ein anderes Programm mitinstalliert wurden. Dieses Programm ist inzwischen weg – die Abhängigkeit braucht niemand mehr. Sie zu entfernen ist normalerweise gefahrlos."
+msgstr "Packages that were once installed automatically as a dependency of another program. That program is gone by now – nothing needs the dependency any more. Removing them is normally safe."
+
+#: cachy_kompass/cleanup.py:99 cachy_kompass/cleanup.py:286
+msgid "{n} Paket"
+msgid_plural "{n} Pakete"
+msgstr[0] "{n} package"
+msgstr[1] "{n} packages"
+
+#: cachy_kompass/cleanup.py:104
+msgid "pacman zeigt vor dem Löschen die vollständige Liste und fragt noch einmal nach. Wenn du ein Paket davon bewusst behalten willst, brich dort ab (n). Nach dem Aufräumen können weitere verwaiste Pakete auftauchen – einfach erneut prüfen."
+msgstr "Before deleting anything, pacman shows the complete list and asks again. If you want to keep one of these packages on purpose, cancel there (n). After cleaning up, more orphaned packages may show up – simply check again."
+
+#: cachy_kompass/cleanup.py:129
+msgid "pacman bewahrt jede heruntergeladene Paketversion in „/var/cache/pacman/pkg“ auf. Das ist praktisch, um nach einem fehlerhaften Update zur vorigen Version zurückzukehren, wächst aber mit der Zeit auf viele Gigabyte. Aufräumen behält die {keep} neuesten Versionen jedes installierten Pakets und entfernt die von deinstallierten Paketen."
+msgstr "pacman keeps every package version it has downloaded in “/var/cache/pacman/pkg”. That is handy for going back to the previous version after a broken update, but over time it grows to many gigabytes. Cleaning up keeps the {keep} newest versions of each installed package and removes those of uninstalled packages."
+
+#: cachy_kompass/cleanup.py:137 cachy_kompass/cleanup.py:336
+msgid "Paket-Zwischenspeicher"
+msgstr "Package cache"
+
+#: cachy_kompass/cleanup.py:139
+msgid "belegt {size}"
+msgstr "uses {size}"
+
+#: cachy_kompass/cleanup.py:142
+msgid "(Zum Aufräumen wird das Paket „pacman-contrib“ benötigt.)"
+msgstr "(Cleaning up needs the package “pacman-contrib”.)"
+
+#: cachy_kompass/cleanup.py:149
+msgid "{n} ältere Versionen installierter Pakete ({size})"
+msgstr "{n} older versions of installed packages ({size})"
+
+#: cachy_kompass/cleanup.py:151
+msgid "{n} Dateien deinstallierter Pakete ({size})"
+msgstr "{n} files of uninstalled packages ({size})"
+
+#: cachy_kompass/cleanup.py:154
+msgid "{size} frei machbar (von {total})"
+msgstr "{size} can be freed (of {total})"
+
+#: cachy_kompass/cleanup.py:160
+msgid "aufgeräumt ({size})"
+msgstr "clean ({size})"
+
+#: cachy_kompass/cleanup.py:175 cachy_kompass/cleanup.py:337
+msgid "AUR-Bauordner"
+msgstr "AUR build folders"
+
+#: cachy_kompass/cleanup.py:176
+msgid "Beim Installieren aus dem AUR laden paru bzw. yay den Quellcode herunter und bauen das Programm in diesen Ordnern. Danach werden sie nicht mehr gebraucht – beim nächsten Update wird einfach neu heruntergeladen. Löschen ist gefahrlos."
+msgstr "When installing from the AUR, paru or yay download the source code and build the program in these folders. Afterwards they are not needed any more – the next update simply downloads everything again. Deleting them is safe."
+
+#: cachy_kompass/cleanup.py:181
+msgid "leer"
+msgstr "empty"
+
+#: cachy_kompass/cleanup.py:198
+msgid "Unbenutzte Flatpak-Laufzeiten"
+msgstr "Unused Flatpak runtimes"
+
+#: cachy_kompass/cleanup.py:199
+msgid "Flatpak-Apps brauchen „Laufzeiten“ (Bibliothekspakete wie GNOME oder KDE Platform). Wird eine App entfernt oder aktualisiert, bleiben alte Laufzeiten oft liegen – nicht selten mehrere Gigabyte. Was genau unbenutzt ist, ermittelt Flatpak selbst: Es zeigt im Terminal die Liste an und fragt vor dem Löschen nach."
+msgstr "Flatpak apps need “runtimes” (library bundles such as the GNOME or KDE Platform). When an app is removed or updated, old runtimes are often left behind – quite often several gigabytes. Flatpak itself works out what exactly is unused: it shows the list in the terminal and asks before deleting."
+
+#: cachy_kompass/cleanup.py:205
+msgid "im Terminal prüfen"
+msgstr "check in the terminal"
+
+#: cachy_kompass/cleanup.py:206
+msgid "Flatpak zeigt die gefundenen Laufzeiten im Terminal an."
+msgstr "Flatpak shows the runtimes it found in the terminal."
+
+#: cachy_kompass/cleanup.py:227
+msgid "{name}  –  fehlt: {missing}  ({path})"
+msgstr "{name}  –  missing: {missing}  ({path})"
+
+#: cachy_kompass/cleanup.py:229
+msgid "{name}  –  fehlt: {missing}  – Systemeintrag, nur Hinweis  ({path})"
+msgstr "{name}  –  missing: {missing}  – system entry, just a note  ({path})"
+
+#: cachy_kompass/cleanup.py:232
+msgid "Diese Einträge zeigen auf ein Programm, das es nicht (mehr) gibt – meist Reste von deinstallierten Programmen oder AppImages, die verschoben wurden. Einträge in deinem Benutzerordner können direkt entfernt werden."
+msgstr "These entries point to a program that does not exist (any more) – usually leftovers of uninstalled programs or of AppImages that were moved. Entries in your home folder can be removed directly."
+
+#: cachy_kompass/cleanup.py:238
+msgid "Systemeinträge gehören zu einem installierten Paket und werden nicht angefasst – dort fehlt meist nur ein optionales Zusatzprogramm, oder das Paket ist fehlerhaft und wird mit dem nächsten Update repariert."
+msgstr "System entries belong to an installed package and are left alone – usually only an optional add-on is missing, or the package is faulty and will be fixed by the next update."
+
+#: cachy_kompass/cleanup.py:245
+msgid "Kaputte Startmenü-Einträge"
+msgstr "Broken menu entries"
+
+#: cachy_kompass/cleanup.py:247
+msgid "{n} Eintrag"
+msgid_plural "{n} Einträge"
+msgstr[0] "{n} entry"
+msgstr[1] "{n} entries"
+
+#: cachy_kompass/cleanup.py:251
+msgid "Entfernt werden nur die Einträge in deinem Benutzerordner, nicht die Programme selbst."
+msgstr "Only the entries in your home folder are removed, not the programs themselves."
+
+#: cachy_kompass/cleanup.py:272
+msgid "Das AUR war nicht erreichbar – bitte später erneut prüfen."
+msgstr "The AUR could not be reached – please check again later."
+
+#: cachy_kompass/cleanup.py:273 cachy_kompass/gui/cleanup_tab.py:154 cachy_kompass/models.py:49
+msgid "nicht prüfbar"
+msgstr "not checkable"
+
+#: cachy_kompass/cleanup.py:278 cachy_kompass/cleanup.py:271
+msgid "Nicht mehr im AUR"
+msgstr "No longer in the AUR"
+
+#: cachy_kompass/cleanup.py:279
+msgid "Diese Pakete wurden aus dem AUR installiert, stehen dort aber nicht mehr. Sie bekommen deshalb keine Updates mehr. Häufige Gründe: Das Programm ist inzwischen in einem offiziellen Repo (dann besser von dort installieren), wurde umbenannt oder eingestellt. Manche Pakete hast du vielleicht auch selbst gebaut – dann ist alles in Ordnung. Deshalb gibt es hier keinen Aufräum-Knopf: Prüfe selbst, ob du sie noch brauchst."
+msgstr "These packages were installed from the AUR but are no longer listed there, so they get no more updates. Common reasons: the program is now in an official repo (better install it from there), was renamed or discontinued. You may also have built some packages yourself – then everything is fine. That is why there is no clean-up button here: check yourself whether you still need them."
+
+#: cachy_kompass/cleanup.py:300
+msgid "{variants}  –  entfernen mit: {commands}"
+msgstr "{variants}  –  remove with: {commands}"
+
+#: cachy_kompass/cleanup.py:303
+msgid "Doppelt installiert"
+msgstr "Installed twice"
+
+#: cachy_kompass/cleanup.py:304
+msgid "Diese Programme sind mehrfach installiert – aus verschiedenen Quellen, z. B. aus dem Repo und zusätzlich als Flatpak. Das passiert leicht, wenn man verschiedenen Anleitungen folgt. Es kostet Platz, und im Startmenü stehen dann oft zwei Einträge, die unterschiedliche Versionen und Einstellungen haben. Meist ist die Fassung aus dem offiziellen Repo die beste Wahl (wird mit dem Systemupdate aktuell gehalten). Die Erkennung läuft über den Namen – prüfe also selbst, ob es wirklich dasselbe Programm ist. Deshalb gibt es hier keinen Aufräum-Knopf. Die Befehle zum Entfernen findest du auch im Reiter „Programme“ beim jeweiligen Programm."
+msgstr "These programs are installed more than once – from different sources, e.g. from the repo and additionally as a Flatpak. That happens easily when following different guides. It costs space, and the app menu then often shows two entries with different versions and settings. The version from the official repo is usually the best choice (it is kept up to date by the system update). Detection works by name – so check yourself that it really is the same program. That is why there is no clean-up button here. You will also find the commands for removing them in the “Programs” tab, next to each program."
+
+#: cachy_kompass/cleanup.py:314 cachy_kompass/cli.py:87
+msgid "{n} Programm"
+msgid_plural "{n} Programme"
+msgstr[0] "{n} program"
+msgstr[1] "{n} programs"
+
+#: cachy_kompass/cleanup.py:335
+msgid "verwaiste Pakete"
+msgstr "orphaned packages"
+
+#: cachy_kompass/cleanup.py:339 cachy_kompass/gui/main_window.py:237
+msgid "Startmenü-Einträge"
+msgstr "Menu entries"
+
+#: cachy_kompass/cleanup.py:340
+msgid "doppelte Programme"
+msgstr "duplicate programs"
+
+#: cachy_kompass/cleanup.py:341
+msgid "AUR (braucht Internet)"
+msgstr "AUR (needs internet)"
+
+#: cachy_kompass/cleanup.py:345
+msgid "Prüfe {what} …"
+msgstr "Checking {what} …"
+
+#: cachy_kompass/cleanup.py:350 cachy_kompass/gui/cleanup_tab.py:154 cachy_kompass/gui/entry_dialog.py:231 cachy_kompass/gui/main_window.py:439 cachy_kompass/gui/main_window.py:605 cachy_kompass/gui/main_window.py:710 cachy_kompass/gui/main_window.py:827 cachy_kompass/gui/main_window.py:660
+msgid "Fehler"
+msgstr "Error"
+
+#: cachy_kompass/cleanup.py:350
+msgid "Prüfung fehlgeschlagen: {error}"
+msgstr "Check failed: {error}"
+
+#: cachy_kompass/cleanup.py:354
+msgid "Prüfung abgeschlossen."
+msgstr "Check finished."
+
+#: cachy_kompass/cli.py:28 cachy_kompass/gui/table_model.py:21
+msgid "Programm"
+msgstr "Program"
+
+#: cachy_kompass/cli.py:28 cachy_kompass/gui/details.py:54 cachy_kompass/gui/table_model.py:21
+msgid "Version"
+msgstr "Version"
+
+#: cachy_kompass/cli.py:28 cachy_kompass/gui/details.py:55 cachy_kompass/gui/table_model.py:21
+msgid "Quelle"
+msgstr "Source"
+
+#: cachy_kompass/cli.py:28 cachy_kompass/gui/details.py:56 cachy_kompass/gui/main_window.py:326 cachy_kompass/gui/main_window.py:378 cachy_kompass/gui/table_model.py:21
+msgid "Art"
+msgstr "Type"
+
+#: cachy_kompass/cli.py:28 cachy_kompass/gui/details.py:99 cachy_kompass/gui/table_model.py:21
+msgid "Startmenü"
+msgstr "App menu"
+
+#: cachy_kompass/cli.py:28 cachy_kompass/gui/table_model.py:21
+msgid "Auto-Update"
+msgstr "Auto-update"
+
+#: cachy_kompass/cli.py:28 cachy_kompass/gui/table_model.py:21
+msgid "Aktuell?"
+msgstr "Up to date?"
+
+#: cachy_kompass/cli.py:28 cachy_kompass/gui/details.py:73 cachy_kompass/gui/table_model.py:21
+msgid "Größe"
+msgstr "Size"
+
+#: cachy_kompass/cli.py:28 cachy_kompass/gui/details.py:65 cachy_kompass/gui/table_model.py:22
+msgid "Installiert"
+msgstr "Installed"
+
+#: cachy_kompass/cli.py:83
+msgid "Gefundene Paketverwaltungen und App-Stores:"
+msgstr "Package managers and app stores found:"
+
+#: cachy_kompass/cli.py:93
+msgid "Neustart empfohlen: {reason}"
+msgstr "Restart recommended: {reason}"
+
+#: cachy_kompass/cli.py:95
+msgid "Warnung: {message}"
+msgstr "Warning: {message}"
+
+#: cachy_kompass/desktop.py:64
+msgid "Dienstprogramme"
+msgstr "Utilities"
+
+#: cachy_kompass/desktop.py:66
+msgid "Entwicklung"
+msgstr "Development"
+
+#: cachy_kompass/desktop.py:67
+msgid "Bildung"
+msgstr "Education"
+
+#: cachy_kompass/desktop.py:68
+msgid "Spiele"
+msgstr "Games"
+
+#: cachy_kompass/desktop.py:69
+msgid "Grafik"
+msgstr "Graphics"
+
+#: cachy_kompass/desktop.py:71
+msgid "Büro"
+msgstr "Office"
+
+#: cachy_kompass/desktop.py:72
+msgid "Wissenschaft"
+msgstr "Science"
+
+#: cachy_kompass/desktop.py:73
+msgid "Einstellungen"
+msgstr "Settings"
+
+#: cachy_kompass/desktop.py:521
+msgid "Name und Startbefehl dürfen nicht leer sein."
+msgstr "Name and launch command must not be empty."
+
+#: cachy_kompass/desktop.py:547
+msgid "Als Symbol gehen nur {formats}-Dateien."
+msgstr "Only {formats} files can be used as icons."
+
+#: cachy_kompass/desktop.py:587
+msgid "Von KDE angelegt, als eine Datei oder ein Link über „Öffnen mit …“ diesem Programm zugeordnet wurde. Versteckter Hilfseintrag, harmlos."
+msgstr "Created by KDE when a file or link was assigned to this program via “Open with …”. Hidden helper entry, harmless."
+
+#: cachy_kompass/desktop.py:592
+msgid "Von einem AppImage-Werkzeug angelegt."
+msgstr "Created by an AppImage tool."
+
+#: cachy_kompass/desktop.py:594
+msgid "Von Steam angelegte Spiele-Verknüpfung."
+msgstr "Game shortcut created by Steam."
+
+#: cachy_kompass/desktop.py:628
+msgid "Dieser Eintrag gehört zum System bzw. zu einem Paket und wird vom Software-Kompass nicht gelöscht."
+msgstr "This entry belongs to the system or to a package and is not deleted by the Software-Kompass."
+
+#: cachy_kompass/gui/cleanup_tab.py:39
+msgid "Ergebnis: {summary}"
+msgstr "Result: {summary}"
+
+#: cachy_kompass/gui/cleanup_tab.py:45
+msgid "… und {n} weitere."
+msgstr "… and {n} more."
+
+#: cachy_kompass/gui/cleanup_tab.py:48
+msgid "Klicke auf „Aufräumen …“. Es öffnet sich ein Terminalfenster mit diesen Befehlen:"
+msgstr "Click “Clean up …”. A terminal window opens with these commands:"
+
+#: cachy_kompass/gui/cleanup_tab.py:53
+msgid "Klicke auf „Aufräumen …“, um {n} Eintrag aus deinem Benutzerordner zu entfernen."
+msgid_plural "Klicke auf „Aufräumen …“, um {n} Einträge aus deinem Benutzerordner zu entfernen."
+msgstr[0] "Click “Clean up …” to remove {n} entry from your home folder."
+msgstr[1] "Click “Clean up …” to remove {n} entries from your home folder."
+
+#: cachy_kompass/gui/cleanup_tab.py:59
+msgid "Gut zu wissen:"
+msgstr "Good to know:"
+
+#: cachy_kompass/gui/cleanup_tab.py:62
+msgid "Kein Aufräum-Knopf – falls du es selbst machen willst, ginge es so:"
+msgstr "No clean-up button – if you want to do it yourself, this is how:"
+
+#: cachy_kompass/gui/cleanup_tab.py:74
+msgid "Findet Dinge, die unnötig Platz belegen oder kaputt sind. Das Prüfen verändert nichts. Aufgeräumt wird nur, wenn du es bestätigst – Befehle mit Administratorrechten laufen dabei sichtbar in einem Terminalfenster."
+msgstr "Finds things that take up space for no reason or are broken. Checking changes nothing. Cleaning up only happens when you confirm it – commands that need administrator rights run visibly in a terminal window."
+
+#: cachy_kompass/gui/cleanup_tab.py:80
+msgid "Jetzt prüfen"
+msgstr "Check now"
+
+#: cachy_kompass/gui/cleanup_tab.py:88
+msgid "Fund"
+msgstr "Finding"
+
+#: cachy_kompass/gui/cleanup_tab.py:88
+msgid "Ergebnis"
+msgstr "Result"
+
+#: cachy_kompass/gui/cleanup_tab.py:88
+msgid "Platz"
+msgstr "Space"
+
+#: cachy_kompass/gui/cleanup_tab.py:99
+msgid "Klicke auf „Jetzt prüfen“."
+msgstr "Click “Check now”."
+
+#: cachy_kompass/gui/cleanup_tab.py:100
+msgid "Aufräumen …"
+msgstr "Clean up …"
+
+#: cachy_kompass/gui/cleanup_tab.py:103
+msgid "Befehl kopieren"
+msgstr "Copy command"
+
+#: cachy_kompass/gui/cleanup_tab.py:168
+msgid "Nichts Größeres zu holen."
+msgstr "Nothing big to gain."
+
+#: cachy_kompass/gui/cleanup_tab.py:168
+msgid "Möglicher Platzgewinn: <b>{size}</b>"
+msgstr "Space you could free: <b>{size}</b>"
+
+#: cachy_kompass/gui/cleanup_tab.py:170
+msgid "Aufräum-Prüfung abgeschlossen."
+msgstr "Clean-up check finished."
+
+#: cachy_kompass/gui/cleanup_tab.py:194 cachy_kompass/gui/main_window.py:720 cachy_kompass/gui/main_window.py:726 cachy_kompass/gui/main_window.py:854
+msgid "In die Zwischenablage kopiert: {text}"
+msgstr "Copied to the clipboard: {text}"
+
+#: cachy_kompass/gui/cleanup_tab.py:197
+msgid "{title} aufräumen?"
+msgstr "Clean up {title}?"
+
+#: cachy_kompass/gui/cleanup_tab.py:200 cachy_kompass/gui/cleanup_tab.py:203 cachy_kompass/gui/main_window.py:240
+msgid "Aufräumen"
+msgstr "Clean up"
+
+#: cachy_kompass/gui/cleanup_tab.py:204 cachy_kompass/gui/entry_dialog.py:127 cachy_kompass/gui/main_window.py:652 cachy_kompass/gui/main_window.py:704 cachy_kompass/gui/main_window.py:893 cachy_kompass/gui/update_dialog.py:69
+msgid "Abbrechen"
+msgstr "Cancel"
+
+#: cachy_kompass/gui/cleanup_tab.py:212
+msgid "Es öffnet sich ein Terminalfenster mit:"
+msgstr "A terminal window opens with:"
+
+#: cachy_kompass/gui/cleanup_tab.py:215
+msgid "Terminal geöffnet. Danach auf „Jetzt prüfen“ klicken, um das Ergebnis zu sehen."
+msgstr "Terminal opened. Afterwards click “Check now” to see the result."
+
+#: cachy_kompass/gui/cleanup_tab.py:219 cachy_kompass/gui/main_window.py:588 cachy_kompass/gui/main_window.py:902
+msgid "Kein Terminal gefunden"
+msgstr "No terminal found"
+
+#: cachy_kompass/gui/cleanup_tab.py:220
+msgid "Es wurde kein Terminalprogramm gefunden. Der Befehl liegt in der Zwischenablage."
+msgstr "No terminal program was found. The command is in the clipboard."
+
+#: cachy_kompass/gui/cleanup_tab.py:224
+msgid "Diese Einträge werden aus deinem Benutzerordner entfernt:"
+msgstr "These entries will be removed from your home folder:"
+
+#: cachy_kompass/gui/cleanup_tab.py:234
+msgid "Nicht alles entfernt"
+msgstr "Not everything was removed"
+
+#: cachy_kompass/gui/details.py:25 cachy_kompass/gui/details.py:166
+msgid "… und {n} weitere"
+msgstr "… and {n} more"
+
+#: cachy_kompass/gui/details.py:33
+msgid "Technischer Name: {name}"
+msgstr "Technical name: {name}"
+
+#: cachy_kompass/gui/details.py:38
+msgid "{name} – {source}, Version {version}"
+msgstr "{name} – {source}, version {version}"
+
+#: cachy_kompass/gui/details.py:44
+msgid "<b>⚠ Doppelt installiert.</b> Dasselbe Programm gibt es zusätzlich als:"
+msgstr "<b>⚠ Installed twice.</b> The same program is also installed as:"
+
+#: cachy_kompass/gui/details.py:46
+msgid "Meist reicht eine Fassung – am besten die aus dem offiziellen Repo, weil sie mit dem Systemupdate aktuell bleibt. Prüfe aber vorher, ob es wirklich dasselbe Programm ist (die Erkennung geht nach dem Namen)."
+msgstr "One version is usually enough – ideally the one from the official repo, because the system update keeps it current. But check first that it really is the same program (detection works by name)."
+
+#: cachy_kompass/gui/details.py:58
+msgid "Herkunft"
+msgstr "Origin"
+
+#: cachy_kompass/gui/details.py:60
+msgid "Grund"
+msgstr "Reason"
+
+#: cachy_kompass/gui/details.py:60
+msgid "Abhängigkeit – wurde automatisch für ein anderes Programm mitinstalliert"
+msgstr "Dependency – was installed automatically for another program"
+
+#: cachy_kompass/gui/details.py:66
+msgid "Datum der Dateien"
+msgstr "date of the files"
+
+#: cachy_kompass/gui/details.py:66 cachy_kompass/gui/table_model.py:54
+msgid "ca."
+msgstr "approx."
+
+#: cachy_kompass/gui/details.py:69 cachy_kompass/gui/details.py:71
+msgid "Installiert am"
+msgstr "Installed on"
+
+#: cachy_kompass/gui/details.py:75
+msgid "Webseite"
+msgstr "Website"
+
+#: cachy_kompass/gui/details.py:78
+msgid "Wie wurde es installiert?"
+msgstr "How was it installed?"
+
+#: cachy_kompass/gui/details.py:81
+msgid "Updates"
+msgstr "Updates"
+
+#: cachy_kompass/gui/details.py:87
+msgid "⬆ Neuere Version verfügbar: {latest}"
+msgstr "⬆ Newer version available: {latest}"
+
+#: cachy_kompass/gui/details.py:88
+msgid "(installiert: {version})"
+msgstr "(installed: {version})"
+
+#: cachy_kompass/gui/details.py:91
+msgid "✔ Die installierte Version ist aktuell."
+msgstr "✔ The installed version is up to date."
+
+#: cachy_kompass/gui/details.py:93
+msgid "Noch nicht geprüft – klicke oben auf „Nach Updates suchen“."
+msgstr "Not checked yet – click “Check for updates” at the top."
+
+#: cachy_kompass/gui/details.py:95
+msgid "Aktualität: {status}."
+msgstr "Up to date: {status}."
+
+#: cachy_kompass/gui/details.py:102
+msgid "✔ Das Programm ist über das Startmenü erreichbar."
+msgstr "✔ The program can be reached through the app menu."
+
+#: cachy_kompass/gui/details.py:104
+msgid "◐ Der Eintrag ist ausgeblendet – das hast du selbst so eingestellt. Wieder einblenden: Reiter „Startmenü-Einträge“ → Eintrag wählen → „Einblenden“ bzw. „Original wiederherstellen …“."
+msgstr "◐ The entry is hidden – you set it that way yourself. To show it again: tab “Menu entries” → select the entry → “Show” or “Restore original …”."
+
+#: cachy_kompass/gui/details.py:110
+msgid "◐ Es gibt einen Eintrag, er ist aber absichtlich ausgeblendet (das ist oft bei Hilfsprogrammen so)."
+msgstr "◐ There is an entry, but it is hidden on purpose (that is common for helper programs)."
+
+#: cachy_kompass/gui/details.py:115
+msgid "✘ Kein Startmenü-Eintrag gefunden. Viele Kommandozeilenprogramme und Hintergrunddienste haben bewusst keinen. Mit dem Knopf unten kannst du einen eigenen anlegen."
+msgstr "✘ No menu entry found. Many command-line programs and background services deliberately have none. You can create your own with the button below."
+
+#: cachy_kompass/gui/details.py:125
+msgid "von dir ausgeblendet"
+msgstr "hidden by you"
+
+#: cachy_kompass/gui/details.py:127
+msgid "ausgeblendet"
+msgstr "hidden"
+
+#: cachy_kompass/gui/details.py:129
+msgid "vom Software-Kompass angelegt"
+msgstr "created by the Software-Kompass"
+
+#: cachy_kompass/gui/details.py:133
+msgid "in deinem Benutzerordner"
+msgstr "in your home folder"
+
+#: cachy_kompass/gui/details.py:140
+msgid "Starten über das Terminal"
+msgstr "Starting it from the terminal"
+
+#: cachy_kompass/gui/details.py:142
+msgid "Im Terminal (z. B. Konsole) oder über <b>Alt+F2</b> (KRunner) startest du es mit – das klappt auch, wenn der Startmenü-Eintrag ausgeblendet ist:"
+msgstr "In a terminal (e.g. Konsole) or via <b>Alt+F2</b> (KRunner) you start it with – this also works when the menu entry is hidden:"
+
+#: cachy_kompass/gui/details.py:147
+msgid "Im Terminal (z. B. Konsole) oder über <b>Alt+F2</b> (KRunner) startest du es mit:"
+msgstr "In a terminal (e.g. Konsole) or via <b>Alt+F2</b> (KRunner) you start it with:"
+
+#: cachy_kompass/gui/details.py:151
+msgid "Warum ist das installiert?"
+msgstr "Why is this installed?"
+
+#: cachy_kompass/gui/details.py:153
+msgid "Wird gebraucht von:"
+msgstr "Needed by:"
+
+#: cachy_kompass/gui/details.py:153
+msgid "Mitgebracht von bzw. gebraucht für:"
+msgstr "Pulled in by or needed for:"
+
+#: cachy_kompass/gui/details.py:156
+msgid "Kein installiertes Paket braucht es mehr – es ist <b>verwaist</b> und kann vermutlich weg (siehe Reiter „Aufräumen“)."
+msgstr "No installed package needs it any more – it is <b>orphaned</b> and can probably go (see the “Clean up” tab)."
+
+#: cachy_kompass/gui/details.py:161
+msgid "Optional genutzt von:"
+msgstr "Optionally used by:"
+
+#: cachy_kompass/gui/details.py:167
+msgid "Programmdateien"
+msgstr "Program files"
+
+#: cachy_kompass/gui/details.py:170
+msgid "Deinstallieren"
+msgstr "Uninstalling"
+
+#: cachy_kompass/gui/details.py:175
+msgid "✘ Nicht ohne Weiteres entfernbar."
+msgstr "✘ Cannot simply be removed."
+
+#: cachy_kompass/gui/details.py:181
+msgid "Würde zusammen mit diesen nicht mehr benötigten Abhängigkeiten entfernt:"
+msgstr "Would be removed together with these dependencies that are no longer needed:"
+
+#: cachy_kompass/gui/details.py:183
+msgid "Würde allein entfernt – keine weiteren Pakete betroffen."
+msgstr "Would be removed on its own – no other packages affected."
+
+#: cachy_kompass/gui/details.py:186
+msgid "Platzgewinn: ca. <b>{size}</b>"
+msgstr "Space freed: approx. <b>{size}</b>"
+
+#: cachy_kompass/gui/details.py:188
+msgid "Zum Entfernen diesen Befehl in ein Terminal (z. B. Konsole) kopieren:"
+msgstr "To remove it, copy this command into a terminal (e.g. Konsole):"
+
+#: cachy_kompass/gui/details.py:191
+msgid "<b>Achtung:</b> Prüfe vorher, ob du das Programm wirklich nicht mehr brauchst. Manche von Hand installierten Programme bringen ein eigenes Deinstallationsskript mit, das zusätzlich Einstellungen und Startmenü-Einträge aufräumt."
+msgstr "<b>Caution:</b> Check first that you really no longer need the program. Some programs installed by hand come with their own uninstall script that also cleans up settings and menu entries."
+
+#: cachy_kompass/gui/details.py:199
+msgid "Der Software-Kompass löscht selbst keine Programme – so kann nichts aus Versehen kaputtgehen."
+msgstr "The Software-Kompass never deletes programs itself – so nothing can break by accident."
+
+#: cachy_kompass/gui/details.py:212
+msgid "{app} – Version {version}"
+msgstr "{app} – version {version}"
+
+#: cachy_kompass/gui/details.py:213
+msgid ""
+"<h2>Kurze Erklärung</h2>\n"
+"<p>Dieses Programm zeigt dir, <b>welche Programme installiert sind</b>, <b>woher sie\n"
+"stammen</b>, ob sie im <b>Startmenü</b> auftauchen und ob sie beim normalen\n"
+"<b>Systemupdate</b> mit aktualisiert werden.</p>"
+msgstr ""
+"<h2>In short</h2>\n"
+"<p>This program shows you <b>which programs are installed</b>, <b>where they\n"
+"come from</b>, whether they appear in the <b>app menu</b> and whether the normal\n"
+"<b>system update</b> keeps them up to date.</p>"
+
+#: cachy_kompass/gui/details.py:219
+msgid ""
+"<h3>Die Spalten</h3>\n"
+"<ul>\n"
+"<li><b>Quelle</b> – über welchen Weg das Programm installiert wurde (siehe unten).</li>\n"
+"<li><b>Startmenü</b> – ✔ sichtbar, ◐ Eintrag vorhanden aber ausgeblendet, ✘ kein Eintrag.</li>\n"
+"<li><b>Auto-Update</b> – ✔ wird beim Systemupdate mitaktualisiert, ◐ nur mit dem\n"
+"richtigen Werkzeug, ✘ musst du selbst aktualisieren.</li>\n"
+"<li><b>Aktuell?</b> – erst nach Klick auf „Nach Updates suchen“: ✔ aktuell,\n"
+"⬆ neuere Version verfügbar.</li>\n"
+"<li><b>Größe</b> – belegter Speicherplatz.</li>\n"
+"<li><b>Installiert</b> – wann das Programm installiert wurde. „ca.“ heißt: Datum der\n"
+"Programmdateien (bei Flatpak, AppImage usw. gibt es kein Protokoll).</li>\n"
+"<li><b>(2×)</b> hinter dem Namen – das Programm ist doppelt installiert, z. B. aus dem\n"
+"Repo und als Flatpak.</li>\n"
+"</ul>"
+msgstr ""
+"<h3>The columns</h3>\n"
+"<ul>\n"
+"<li><b>Source</b> – how the program was installed (see below).</li>\n"
+"<li><b>App menu</b> – ✔ visible, ◐ entry exists but is hidden, ✘ no entry.</li>\n"
+"<li><b>Auto-update</b> – ✔ updated by the system update, ◐ only with the\n"
+"right tool, ✘ you have to update it yourself.</li>\n"
+"<li><b>Up to date?</b> – only after clicking “Check for updates”: ✔ up to date,\n"
+"⬆ newer version available.</li>\n"
+"<li><b>Size</b> – disk space used.</li>\n"
+"<li><b>Installed</b> – when the program was installed. “approx.” means: date of the\n"
+"program files (Flatpak, AppImage etc. keep no log).</li>\n"
+"<li><b>(2×)</b> after the name – the program is installed twice, e.g. from the\n"
+"repo and as a Flatpak.</li>\n"
+"</ul>"
+
+#: cachy_kompass/gui/details.py:235
+msgid ""
+"<h3>Wichtig zu wissen</h3>\n"
+"<ul>\n"
+"<li>Standardmäßig werden nur Programme gezeigt, die <b>bewusst installiert</b>\n"
+"wurden. Bibliotheken und Abhängigkeiten blendest du mit dem Häkchen\n"
+"„Abhängigkeiten zeigen“ ein.</li>\n"
+"<li>Der Software-Kompass <b>bekommt nie selbst Administratorrechte</b>. Selbst legt er\n"
+"nur Startmenü-Einträge (und deren Symbole) in deinem Benutzerordner an\n"
+"(<code>~/.local/share/applications</code>). Löschen kann er nur Einträge aus deinem\n"
+"Benutzerordner – nach Rückfrage, Systemeinträge nie. Alles andere (Aufräumen,\n"
+"Updates, Nachinstallieren) läuft nur auf deinen Klick sichtbar in einem\n"
+"Terminalfenster, in dem du selbst dein Passwort eingibst.</li>\n"
+"<li>Im Reiter <b>„Aufräumen“</b> findest du verwaiste Pakete, alte Paketversionen\n"
+"und andere Platzfresser – aufgeräumt wird nur nach Rückfrage, sichtbar im Terminal.</li>\n"
+"<li><b>„Alles aktualisieren …“</b> startet das Systemupdate (Repo und AUR),\n"
+"Flatpak-Updates usw. sichtbar in einem Terminalfenster. Erscheint danach oben der\n"
+"Hinweis <b>„Neustart empfohlen“</b>, wurden z. B. Kernel oder Grafiktreiber erneuert.</li>\n"
+"<li><b>„Liste sichern …“</b> speichert alle installierten Programme als Skript. Damit\n"
+"spielst du sie nach einer Neuinstallation mit <code>bash programme-….sh</code> wieder ein.</li>\n"
+"<li>Im Reiter <b>„Startmenü-Einträge“</b> kannst du Einträge bearbeiten sowie ein- und\n"
+"ausblenden. Systemeinträge bleiben dabei unverändert – deine Fassung landet im\n"
+"Benutzerordner und lässt sich mit „Original wiederherstellen“ rückgängig machen.</li>\n"
+"</ul>"
+msgstr ""
+"<h3>Good to know</h3>\n"
+"<ul>\n"
+"<li>By default only programs that were <b>installed on purpose</b> are shown.\n"
+"Libraries and dependencies appear when you tick\n"
+"“Show dependencies”.</li>\n"
+"<li>The Software-Kompass <b>never gets administrator rights itself</b>. On its own it\n"
+"only creates menu entries (and their icons) in your home folder\n"
+"(<code>~/.local/share/applications</code>). It can only delete entries from your\n"
+"home folder – after asking, never system entries. Everything else (cleaning up,\n"
+"updates, installing tools) only runs when you click, visibly in a\n"
+"terminal window where you type your password yourself.</li>\n"
+"<li>The <b>“Clean up”</b> tab finds orphaned packages, old package versions\n"
+"and other space hogs – cleaning up only happens after asking, visibly in the terminal.</li>\n"
+"<li><b>“Update everything …”</b> starts the system update (repo and AUR),\n"
+"Flatpak updates etc. visibly in a terminal window. If the note\n"
+"<b>“Restart recommended”</b> appears at the top afterwards, the kernel or graphics driver, for example, was updated.</li>\n"
+"<li><b>“Save list …”</b> saves all installed programs as a script. After a\n"
+"reinstall you bring them back with <code>bash programs-….sh</code>.</li>\n"
+"<li>In the <b>“Menu entries”</b> tab you can edit entries and show or\n"
+"hide them. System entries stay unchanged – your version is stored in your\n"
+"home folder and can be undone with “Restore original”.</li>\n"
+"</ul>"
+
+#: cachy_kompass/gui/details.py:259
+msgid "Die Installationsquellen"
+msgstr "The installation sources"
+
+#: cachy_kompass/gui/details.py:278
+msgid "Einstufung: {rating}"
+msgstr "Rating: {rating}"
+
+#: cachy_kompass/gui/details.py:281
+msgid "✔ Auf diesem System vorhanden"
+msgstr "✔ Present on this system"
+
+#: cachy_kompass/gui/details.py:281
+msgid "Status"
+msgstr "Status"
+
+#: cachy_kompass/gui/details.py:284
+msgid "gefunden über: {what}"
+msgstr "found via: {what}"
+
+#: cachy_kompass/gui/details.py:288
+msgid "Darüber ist <b>{n} Programm</b> installiert. Würdest du {tool} entfernen, wäre es nicht mehr nutzbar bzw. nicht mehr aktualisierbar."
+msgid_plural "Darüber sind <b>{n} Programme</b> installiert. Würdest du {tool} entfernen, wären diese Programme nicht mehr nutzbar bzw. nicht mehr aktualisierbar."
+msgstr[0] "<b>{n} program</b> is installed through it. If you removed {tool}, it could no longer be used or updated."
+msgstr[1] "<b>{n} programs</b> are installed through it. If you removed {tool}, these programs could no longer be used or updated."
+
+#: cachy_kompass/gui/details.py:298
+msgid "Der Software-Kompass entfernt keine Paketverwaltungen. Falls du es wirklich willst, ginge es mit:"
+msgstr "The Software-Kompass does not remove package managers. If you really want to, this would do it:"
+
+#: cachy_kompass/gui/details.py:303 cachy_kompass/gui/main_window.py:889
+msgid "Installieren"
+msgstr "Install"
+
+#: cachy_kompass/gui/details.py:306
+msgid "Befehl:"
+msgstr "Command:"
+
+#: cachy_kompass/gui/details.py:308
+msgid "Klicke auf „Installieren …“ – der Befehl läuft dann sichtbar in einem Terminalfenster."
+msgstr "Click “Install …” – the command then runs visibly in a terminal window."
+
+#: cachy_kompass/gui/details.py:310
+msgid "Danach:"
+msgstr "Afterwards:"
+
+#: cachy_kompass/gui/details.py:312
+msgid "Wird nicht zur Installation angeboten."
+msgstr "Not offered for installation."
+
+#: cachy_kompass/gui/entry_dialog.py:47
+msgid "Startmenü-Eintrag „{name}“ bearbeiten"
+msgstr "Edit menu entry “{name}”"
+
+#: cachy_kompass/gui/entry_dialog.py:49
+msgid "Der Eintrag liegt in deinem Benutzerordner und wird direkt geändert."
+msgstr "The entry is in your home folder and is changed directly."
+
+#: cachy_kompass/gui/entry_dialog.py:51
+msgid "Dies ist ein Eintrag des Systems. Er selbst bleibt unverändert – deine Änderungen werden als eigene Fassung in deinem Benutzerordner gespeichert, die ihn im Startmenü ersetzt. Mit „Entfernen“ bzw. „Original wiederherstellen“ kommst du jederzeit zum Original zurück. Hinweis: Ändert ein Update später den Systemeintrag, gilt trotzdem weiter deine Fassung."
+msgstr "This is a system entry. It stays unchanged – your changes are saved as your own version in your home folder, which replaces it in the app menu. With “Remove” or “Restore original” you can always go back to the original. Note: if an update changes the system entry later, your version still applies."
+
+#: cachy_kompass/gui/entry_dialog.py:62
+msgid "Startmenü-Eintrag für „{name}“"
+msgstr "Menu entry for “{name}”"
+
+#: cachy_kompass/gui/entry_dialog.py:63
+msgid "Hier legst du einen Eintrag an, über den du das Programm im Startmenü findest. Der Eintrag wird nur für deinen Benutzer gespeichert und kann jederzeit wieder entfernt werden."
+msgstr "Here you create an entry so that you can find the program in the app menu. The entry is only saved for your user and can be removed at any time."
+
+#: cachy_kompass/gui/entry_dialog.py:76
+msgid "Optional: kurze Beschreibung"
+msgstr "Optional: short description"
+
+#: cachy_kompass/gui/entry_dialog.py:79
+msgid "Der Befehl, der beim Klick auf den Eintrag ausgeführt wird."
+msgstr "The command that runs when the entry is clicked."
+
+#: cachy_kompass/gui/entry_dialog.py:80
+msgid "Durchsuchen …"
+msgstr "Browse …"
+
+#: cachy_kompass/gui/entry_dialog.py:85
+msgid "Name eines Symbols aus dem Symbol-Design oder Pfad zu einer Bilddatei."
+msgstr "Name of an icon from the icon theme, or path to an image file."
+
+#: cachy_kompass/gui/entry_dialog.py:88
+msgid "Bild wählen …"
+msgstr "Choose image …"
+
+#: cachy_kompass/gui/entry_dialog.py:89
+msgid "Eigenes Bild als Symbol verwenden (am besten SVG oder PNG)"
+msgstr "Use your own image as the icon (SVG or PNG work best)"
+
+#: cachy_kompass/gui/entry_dialog.py:98
+msgid "(unverändert lassen)"
+msgstr "(leave unchanged)"
+
+#: cachy_kompass/gui/entry_dialog.py:102
+msgid "In einem Terminalfenster starten"
+msgstr "Run in a terminal window"
+
+#: cachy_kompass/gui/entry_dialog.py:105
+msgid "Häkchen setzen bei Kommandozeilenprogrammen, also Programmen ohne eigenes Fenster."
+msgstr "Tick this for command-line programs, i.e. programs without their own window."
+
+#: cachy_kompass/gui/entry_dialog.py:111
+msgid "Name im Menü:"
+msgstr "Name in the menu:"
+
+#: cachy_kompass/gui/entry_dialog.py:112
+msgid "Beschreibung:"
+msgstr "Description:"
+
+#: cachy_kompass/gui/entry_dialog.py:113
+msgid "Startbefehl:"
+msgstr "Launch command:"
+
+#: cachy_kompass/gui/entry_dialog.py:114
+msgid "Symbol:"
+msgstr "Icon:"
+
+#: cachy_kompass/gui/entry_dialog.py:116
+msgid "Kategorie:"
+msgstr "Category:"
+
+#: cachy_kompass/gui/entry_dialog.py:121
+msgid "Wird gespeichert in: {path}"
+msgstr "Will be saved in: {path}"
+
+#: cachy_kompass/gui/entry_dialog.py:126
+msgid "Speichern"
+msgstr "Save"
+
+#: cachy_kompass/gui/entry_dialog.py:126
+msgid "Eintrag anlegen"
+msgstr "Create entry"
+
+#: cachy_kompass/gui/entry_dialog.py:148
+msgid "Programmdatei auswählen"
+msgstr "Choose program file"
+
+#: cachy_kompass/gui/entry_dialog.py:156
+msgid "Bild für das Symbol auswählen"
+msgstr "Choose an image for the icon"
+
+#: cachy_kompass/gui/entry_dialog.py:158 cachy_kompass/gui/main_window.py:598
+msgid "Alle Dateien"
+msgstr "All files"
+
+#: cachy_kompass/gui/entry_dialog.py:158
+msgid "Bilder"
+msgstr "Images"
+
+#: cachy_kompass/gui/entry_dialog.py:178
+msgid "✔ Eigenes Bild – es wird beim Anlegen in deinen Symbolordner kopiert."
+msgstr "✔ Your own image – it will be copied to your icon folder when the entry is created."
+
+#: cachy_kompass/gui/entry_dialog.py:181
+msgid "✔ Passendes Symbol im Symbol-Design gefunden."
+msgstr "✔ Matching icon found in the icon theme."
+
+#: cachy_kompass/gui/entry_dialog.py:184
+msgid "⚠ Kein Symbol mit diesem Namen gefunden. Klicke auf „Bild wählen …“ und nimm z. B. das Logo von der Webseite des Programms (am besten SVG oder PNG)."
+msgstr "⚠ No icon with this name found. Click “Choose image …” and use, for example, the logo from the program's website (SVG or PNG work best)."
+
+#: cachy_kompass/gui/entry_dialog.py:197
+msgid "Das Bild „{path}“ konnte nicht gelesen werden."
+msgstr "The image “{path}” could not be read."
+
+#: cachy_kompass/gui/entry_dialog.py:202
+msgid "Das Bild konnte nicht in PNG umgewandelt werden."
+msgstr "The image could not be converted to PNG."
+
+#: cachy_kompass/gui/entry_dialog.py:209
+msgid "Angaben fehlen"
+msgstr "Missing details"
+
+#: cachy_kompass/gui/entry_dialog.py:209
+msgid "Bitte einen Namen und einen Startbefehl eintragen."
+msgstr "Please enter a name and a launch command."
+
+#: cachy_kompass/gui/entry_dialog.py:217
+msgid "Programm nicht gefunden"
+msgstr "Program not found"
+
+#: cachy_kompass/gui/entry_dialog.py:218
+msgid ""
+"Das Programm „{program}“ wurde nicht gefunden. Der Eintrag würde vermutlich nicht funktionieren.\n"
+"\n"
+"Trotzdem speichern?"
+msgstr ""
+"The program “{program}” was not found. The entry would probably not work.\n"
+"\n"
+"Save anyway?"
+
+#: cachy_kompass/gui/entry_dialog.py:231
+msgid "Der Eintrag konnte nicht gespeichert werden:"
+msgstr "The entry could not be saved:"
+
+#: cachy_kompass/gui/entry_dialog.py:235
+msgid "Hinweis"
+msgstr "Note"
+
+#: cachy_kompass/gui/entry_dialog.py:235
+msgid "Der Eintrag wurde gespeichert, die Prüfung meldet aber:"
+msgstr "The entry was saved, but the check reports:"
+
+#: cachy_kompass/gui/main_window.py:96
+msgid "Werkzeuge"
+msgstr "Tools"
+
+#: cachy_kompass/gui/main_window.py:101
+msgid "Neu einlesen"
+msgstr "Rescan"
+
+#: cachy_kompass/gui/main_window.py:103
+msgid "Alle installierten Programme erneut suchen (F5)"
+msgstr "Search for all installed programs again (F5)"
+
+#: cachy_kompass/gui/main_window.py:107
+msgid "Nach Updates suchen"
+msgstr "Check for updates"
+
+#: cachy_kompass/gui/main_window.py:109
+msgid "Prüft im Internet, ob es neuere Versionen gibt. Es wird nichts installiert."
+msgstr "Checks online whether newer versions exist. Nothing is installed."
+
+#: cachy_kompass/gui/main_window.py:114
+msgid "Alles aktualisieren …"
+msgstr "Update everything …"
+
+#: cachy_kompass/gui/main_window.py:115
+msgid "Systemupdate, Flatpaks usw. sichtbar in einem Terminalfenster installieren"
+msgstr "Install the system update, Flatpaks etc. visibly in a terminal window"
+
+#: cachy_kompass/gui/main_window.py:119
+msgid "Liste sichern …"
+msgstr "Save list …"
+
+#: cachy_kompass/gui/main_window.py:120
+msgid "Speichert alle installierten Programme als Skript – damit lässt sich nach einer Neuinstallation alles wieder einspielen"
+msgstr "Saves all installed programs as a script – so everything can be restored after a reinstall"
+
+#: cachy_kompass/gui/main_window.py:129
+msgid "Suchen (in allen Reitern) …"
+msgstr "Search (all tabs) …"
+
+#: cachy_kompass/gui/main_window.py:130
+msgid "Durchsucht Namen, Beschreibungen, Startmenü-Einträge, Befehle und Pfade"
+msgstr "Searches names, descriptions, menu entries, commands and paths"
+
+#: cachy_kompass/gui/main_window.py:139
+msgid "Filter"
+msgstr "Filter"
+
+#: cachy_kompass/gui/main_window.py:142
+msgid "Filter:"
+msgstr "Filter:"
+
+#: cachy_kompass/gui/main_window.py:145
+msgid "Alle Quellen"
+msgstr "All sources"
+
+#: cachy_kompass/gui/main_window.py:157
+msgid "Welche Arten von Programmen angezeigt werden – mehrere gleichzeitig möglich"
+msgstr "Which kinds of programs are shown – several at once are possible"
+
+#: cachy_kompass/gui/main_window.py:177
+msgid "Startmenü: egal"
+msgstr "App menu: any"
+
+#: cachy_kompass/gui/main_window.py:178
+msgid "Startmenü: vorhanden"
+msgstr "App menu: present"
+
+#: cachy_kompass/gui/main_window.py:179
+msgid "Startmenü: versteckt"
+msgstr "App menu: hidden"
+
+#: cachy_kompass/gui/main_window.py:180
+msgid "Startmenü: fehlt"
+msgstr "App menu: missing"
+
+#: cachy_kompass/gui/main_window.py:187
+msgid "Nur kürzlich installierte Programme zeigen"
+msgstr "Only show recently installed programs"
+
+#: cachy_kompass/gui/main_window.py:188
+msgid "Installiert: egal"
+msgstr "Installed: any time"
+
+#: cachy_kompass/gui/main_window.py:188
+msgid "Installiert: letzte 7 Tage"
+msgstr "Installed: last 7 days"
+
+#: cachy_kompass/gui/main_window.py:189
+msgid "Installiert: letzte 30 Tage"
+msgstr "Installed: last 30 days"
+
+#: cachy_kompass/gui/main_window.py:189
+msgid "Installiert: letztes Jahr"
+msgstr "Installed: last year"
+
+#: cachy_kompass/gui/main_window.py:214
+msgid "Nur veraltete"
+msgstr "Only outdated"
+
+#: cachy_kompass/gui/main_window.py:214
+msgid "Nur Programme mit neuerer Version (erst nach „Nach Updates suchen“)"
+msgstr "Only programs with a newer version (only after “Check for updates”)"
+
+#: cachy_kompass/gui/main_window.py:218
+msgid "Nur ohne Auto-Update"
+msgstr "Only without auto-update"
+
+#: cachy_kompass/gui/main_window.py:218
+msgid "Programme, die beim normalen Systemupdate nicht (sicher) mitaktualisiert werden"
+msgstr "Programs that the normal system update does not (reliably) keep up to date"
+
+#: cachy_kompass/gui/main_window.py:222
+msgid "Nur doppelt installierte"
+msgstr "Only installed twice"
+
+#: cachy_kompass/gui/main_window.py:222
+msgid "Programme, die aus mehreren Quellen installiert sind (z. B. Repo und Flatpak)"
+msgstr "Programs installed from several sources (e.g. repo and Flatpak)"
+
+#: cachy_kompass/gui/main_window.py:226
+msgid "Abhängigkeiten zeigen"
+msgstr "Show dependencies"
+
+#: cachy_kompass/gui/main_window.py:226
+msgid "Auch Bibliotheken und automatisch mitinstallierte Pakete anzeigen"
+msgstr "Also show libraries and automatically installed packages"
+
+#: cachy_kompass/gui/main_window.py:236 cachy_kompass/gui/main_window.py:378
+msgid "Programme"
+msgstr "Programs"
+
+#: cachy_kompass/gui/main_window.py:238
+msgid "Paketverwaltungen"
+msgstr "Package managers"
+
+#: cachy_kompass/gui/main_window.py:244
+msgid "Hilfe"
+msgstr "Help"
+
+#: cachy_kompass/gui/main_window.py:282
+msgid "Wähle links ein Programm aus."
+msgstr "Select a program on the left."
+
+#: cachy_kompass/gui/main_window.py:284
+msgid "Startmenü-Eintrag anlegen …"
+msgstr "Create menu entry …"
+
+#: cachy_kompass/gui/main_window.py:286
+msgid "Eintrag entfernen …"
+msgstr "Remove entry …"
+
+#: cachy_kompass/gui/main_window.py:287
+msgid "Entfernt einen Startmenü-Eintrag aus deinem Benutzerordner"
+msgstr "Removes a menu entry from your home folder"
+
+#: cachy_kompass/gui/main_window.py:289
+msgid "Deinstallier-Befehl kopieren"
+msgstr "Copy uninstall command"
+
+#: cachy_kompass/gui/main_window.py:291 cachy_kompass/gui/main_window.py:350
+msgid "Startbefehl kopieren"
+msgstr "Copy launch command"
+
+#: cachy_kompass/gui/main_window.py:292 cachy_kompass/gui/main_window.py:351
+msgid "Befehl, mit dem das Programm im Terminal oder über Alt+F2 startet"
+msgstr "Command that starts the program in a terminal or via Alt+F2"
+
+#: cachy_kompass/gui/main_window.py:319
+msgid "Alle Startmenü-Einträge auf diesem System. Unter „Startbefehl“ steht, wie du das Programm auch im Terminal oder über Alt+F2 startest. „Programm fehlt“ bedeutet: Der Eintrag zeigt auf ein Programm, das es nicht (mehr) gibt – er ist also vermutlich kaputt."
+msgstr "All menu entries on this system. “Launch command” shows how you can also start the program in a terminal or via Alt+F2. “Program missing” means: the entry points to a program that does not exist (any more) – so it is probably broken."
+
+#: cachy_kompass/gui/main_window.py:326
+msgid "Name"
+msgstr "Name"
+
+#: cachy_kompass/gui/main_window.py:326
+msgid "Sichtbar"
+msgstr "Visible"
+
+#: cachy_kompass/gui/main_window.py:326
+msgid "Gehört zu"
+msgstr "Belongs to"
+
+#: cachy_kompass/gui/main_window.py:326
+msgid "Startbefehl"
+msgstr "Launch command"
+
+#: cachy_kompass/gui/main_window.py:326
+msgid "Datei"
+msgstr "File"
+
+#: cachy_kompass/gui/main_window.py:336
+msgid "Bearbeiten …"
+msgstr "Edit …"
+
+#: cachy_kompass/gui/main_window.py:337
+msgid "Name, Symbol, Startbefehl usw. ändern. Systemeinträge bleiben unverändert – die Änderung wird als eigene Fassung in deinem Benutzerordner gespeichert."
+msgstr "Change name, icon, launch command etc. System entries stay unchanged – the change is saved as your own version in your home folder."
+
+#: cachy_kompass/gui/main_window.py:342 cachy_kompass/gui/main_window.py:650 cachy_kompass/gui/main_window.py:806
+msgid "Einblenden"
+msgstr "Show"
+
+#: cachy_kompass/gui/main_window.py:343
+msgid "Den Eintrag im Startmenü zeigen bzw. verstecken"
+msgstr "Show or hide the entry in the app menu"
+
+#: cachy_kompass/gui/main_window.py:345 cachy_kompass/gui/main_window.py:809
+msgid "Entfernen …"
+msgstr "Remove …"
+
+#: cachy_kompass/gui/main_window.py:347
+msgid "Nur Einträge in deinem Benutzerordner können entfernt werden, Systemeinträge nicht."
+msgstr "Only entries in your home folder can be removed, not system entries."
+
+#: cachy_kompass/gui/main_window.py:371
+msgid "Welche Paketverwaltungen, App-Stores und Update-Werkzeuge auf diesem System vorhanden sind – und ob sie unter CachyOS empfehlenswert sind. Viele davon werden durch Anleitungen aus dem Internet nachinstalliert. Wähle eine Zeile für Details."
+msgstr "Which package managers, app stores and update tools are present on this system – and whether they are recommended on CachyOS. Many of them get installed by following guides from the internet. Select a row for details."
+
+#: cachy_kompass/gui/main_window.py:378
+msgid "Werkzeug"
+msgstr "Tool"
+
+#: cachy_kompass/gui/main_window.py:378
+msgid "Vorhanden"
+msgstr "Present"
+
+#: cachy_kompass/gui/main_window.py:378
+msgid "Einstufung"
+msgstr "Rating"
+
+#: cachy_kompass/gui/main_window.py:378
+msgid "Erklärung"
+msgstr "Explanation"
+
+#: cachy_kompass/gui/main_window.py:394
+msgid "Wähle links ein Werkzeug aus."
+msgstr "Select a tool on the left."
+
+#: cachy_kompass/gui/main_window.py:395
+msgid "Installieren …"
+msgstr "Install …"
+
+#: cachy_kompass/gui/main_window.py:438
+msgid "Fehler – Details im Fenster."
+msgstr "Error – details in the window."
+
+#: cachy_kompass/gui/main_window.py:439
+msgid "Leider ist ein Fehler aufgetreten."
+msgstr "Sorry, an error occurred."
+
+#: cachy_kompass/gui/main_window.py:460
+msgid "{n} Programm gefunden"
+msgid_plural "{n} Programme gefunden"
+msgstr[0] "{n} program found"
+msgstr[1] "{n} programs found"
+
+#: cachy_kompass/gui/main_window.py:462
+msgid "({packages} Pakete inkl. Abhängigkeiten), {no_menu} davon ohne Startmenü-Eintrag."
+msgstr "({packages} packages incl. dependencies), {no_menu} of them without a menu entry."
+
+#: cachy_kompass/gui/main_window.py:467
+msgid "Nicht alles konnte gelesen werden"
+msgstr "Not everything could be read"
+
+#: cachy_kompass/gui/main_window.py:486
+msgid "Update-Prüfung fertig: {n} Programm hat eine neuere Version."
+msgid_plural "Update-Prüfung fertig: {n} Programme haben eine neuere Version."
+msgstr[0] "Update check finished: {n} program has a newer version."
+msgstr[1] "Update check finished: {n} programs have a newer version."
+
+#: cachy_kompass/gui/main_window.py:515
+msgid "Art: keine"
+msgstr "Type: none"
+
+#: cachy_kompass/gui/main_window.py:517
+msgid "Art: alle"
+msgstr "Type: all"
+
+#: cachy_kompass/gui/main_window.py:519
+msgid "Art:"
+msgstr "Type:"
+
+#: cachy_kompass/gui/main_window.py:529 cachy_kompass/gui/main_window.py:530
+msgid "Weitere Filter"
+msgstr "More filters"
+
+#: cachy_kompass/gui/main_window.py:529
+msgid "Weitere Filter ({n})"
+msgstr "More filters ({n})"
+
+#: cachy_kompass/gui/main_window.py:530
+msgid "Aktiv: {filters}"
+msgstr "Active: {filters}"
+
+#: cachy_kompass/gui/main_window.py:568
+msgid "Neustart empfohlen."
+msgstr "Restart recommended."
+
+#: cachy_kompass/gui/main_window.py:569
+msgid "Erst nach einem Neustart läuft alles mit den neuen Versionen."
+msgstr "Only after a restart does everything run with the new versions."
+
+#: cachy_kompass/gui/main_window.py:583
+msgid "Terminal geöffnet. Wenn die Updates fertig sind, auf „Neu einlesen“ klicken."
+msgstr "Terminal opened. When the updates are done, click “Rescan”."
+
+#: cachy_kompass/gui/main_window.py:589
+msgid "Es wurde kein Terminalprogramm gefunden. Die Befehle wurden in die Zwischenablage kopiert:"
+msgstr "No terminal program was found. The commands were copied to the clipboard:"
+
+#: cachy_kompass/gui/main_window.py:598
+msgid "Programmliste sichern"
+msgstr "Save program list"
+
+#: cachy_kompass/gui/main_window.py:598
+msgid "Shell-Skript"
+msgstr "Shell script"
+
+#: cachy_kompass/gui/main_window.py:605
+msgid "Die Datei konnte nicht gespeichert werden:"
+msgstr "The file could not be saved:"
+
+#: cachy_kompass/gui/main_window.py:609
+msgid "Programmliste gesichert"
+msgstr "Program list saved"
+
+#: cachy_kompass/gui/main_window.py:610
+msgid ""
+"Gespeichert in:\n"
+"{path}\n"
+"\n"
+"Die Datei ist gleichzeitig eine lesbare Liste und ein Skript. Kopiere sie am besten auf einen USB-Stick oder in die Cloud. Nach einer Neuinstallation stellst du die Programme im Terminal wieder her mit:\n"
+"\n"
+"    bash {file}\n"
+"\n"
+"Vor jeder Installation wird nachgefragt."
+msgstr ""
+"Saved to:\n"
+"{path}\n"
+"\n"
+"The file is both a readable list and a script. Ideally copy it to a USB stick or the cloud. After a reinstall you restore your programs in a terminal with:\n"
+"\n"
+"    bash {file}\n"
+"\n"
+"You will be asked before every installation."
+
+#: cachy_kompass/gui/main_window.py:625
+msgid "Schon vorhanden"
+msgstr "Already there"
+
+#: cachy_kompass/gui/main_window.py:626
+msgid ""
+"„{name}“ hat bereits einen Startmenü-Eintrag.\n"
+"\n"
+"Trotzdem einen weiteren anlegen?"
+msgstr ""
+"“{name}” already has a menu entry.\n"
+"\n"
+"Create another one anyway?"
+
+#: cachy_kompass/gui/main_window.py:634
+msgid "Eintrag angelegt: {path}"
+msgstr "Entry created: {path}"
+
+#: cachy_kompass/gui/main_window.py:642
+msgid "Versteckter Eintrag vorhanden"
+msgstr "Hidden entry exists"
+
+#: cachy_kompass/gui/main_window.py:643
+msgid ""
+"„{name}“ hat schon einen Startmenü-Eintrag („{entry}“), er ist aber ausgeblendet. Oft ist das Absicht (z. B. bei Hilfsprogrammen).\n"
+"\n"
+"Soll der vorhandene Eintrag eingeblendet werden, oder möchtest du einen neuen anlegen?"
+msgstr ""
+"“{name}” already has a menu entry (“{entry}”), but it is hidden. That is often intentional (e.g. for helper programs).\n"
+"\n"
+"Should the existing entry be shown, or do you want to create a new one?"
+
+#: cachy_kompass/gui/main_window.py:651
+msgid "Neuen anlegen …"
+msgstr "Create new …"
+
+#: cachy_kompass/gui/main_window.py:662
+msgid "„{name}“ eingeblendet."
+msgstr "“{name}” is shown again."
+
+#: cachy_kompass/gui/main_window.py:677
+msgid "Welcher Eintrag soll entfernt werden?"
+msgstr "Which entry should be removed?"
+
+#: cachy_kompass/gui/main_window.py:688
+msgid ""
+"Deine eigene Fassung von „{name}“ entfernen und das Original wiederherstellen?\n"
+"\n"
+"Entfernt wird: {path}\n"
+"Danach gilt wieder: {original}"
+msgstr ""
+"Remove your own version of “{name}” and restore the original?\n"
+"\n"
+"Will be removed: {path}\n"
+"Afterwards this applies again: {original}"
+
+#: cachy_kompass/gui/main_window.py:693
+msgid "Den Eintrag „{name}“ wirklich entfernen?"
+msgstr "Really remove the entry “{name}”?"
+
+#: cachy_kompass/gui/main_window.py:695
+msgid "Achtung: Diesen Eintrag hat nicht der Software-Kompass angelegt, sondern du selbst oder ein anderes Programm (z. B. Steam, Gear Lever, AppImageLauncher). Das Programm selbst bleibt installiert – nur der Menüeintrag verschwindet."
+msgstr "Caution: This entry was not created by the Software-Kompass but by you or by another program (e.g. Steam, Gear Lever, AppImageLauncher). The program itself stays installed – only the menu entry disappears."
+
+#: cachy_kompass/gui/main_window.py:700 cachy_kompass/gui/main_window.py:677
+msgid "Eintrag entfernen"
+msgstr "Remove entry"
+
+#: cachy_kompass/gui/main_window.py:703
+msgid "Wiederherstellen"
+msgstr "Restore"
+
+#: cachy_kompass/gui/main_window.py:703
+msgid "Entfernen"
+msgstr "Remove"
+
+#: cachy_kompass/gui/main_window.py:712
+msgid "Eintrag entfernt: {path}"
+msgstr "Entry removed: {path}"
+
+#: cachy_kompass/gui/main_window.py:754
+msgid "nein (von dir)"
+msgstr "no (by you)"
+
+#: cachy_kompass/gui/main_window.py:754 cachy_kompass/gui/table_model.py:35 cachy_kompass/gui/table_model.py:37 cachy_kompass/models.py:39 cachy_kompass/models.py:78
+msgid "nein"
+msgstr "no"
+
+#: cachy_kompass/gui/main_window.py:758
+msgid "✘ Programm fehlt: {program}"
+msgstr "✘ Program missing: {program}"
+
+#: cachy_kompass/gui/main_window.py:769
+msgid "Vom Software-Kompass angelegt"
+msgstr "Created by the Software-Kompass"
+
+#: cachy_kompass/gui/main_window.py:773
+msgid "Liegt in deinem Benutzerordner (von dir oder einem Programm angelegt)"
+msgstr "In your home folder (created by you or by a program)"
+
+#: cachy_kompass/gui/main_window.py:779
+msgid ""
+"Nicht gefunden: {program}\n"
+"Startbefehl im Eintrag: {command}"
+msgstr ""
+"Not found: {program}\n"
+"Launch command in the entry: {command}"
+
+#: cachy_kompass/gui/main_window.py:782
+msgid ""
+"Im Terminal oder über Alt+F2 starten mit: {shell}\n"
+"Startbefehl im Eintrag: {command}"
+msgstr ""
+"Start in a terminal or via Alt+F2 with: {shell}\n"
+"Launch command in the entry: {command}"
+
+#: cachy_kompass/gui/main_window.py:806
+msgid "Ausblenden"
+msgstr "Hide"
+
+#: cachy_kompass/gui/main_window.py:809
+msgid "Original wiederherstellen …"
+msgstr "Restore original …"
+
+#: cachy_kompass/gui/main_window.py:817
+msgid "Eintrag gespeichert: {path}"
+msgstr "Entry saved: {path}"
+
+#: cachy_kompass/gui/main_window.py:830
+msgid "„{name}“ ausgeblendet (gespeichert in {path})."
+msgstr "“{name}” hidden (saved in {path})."
+
+#: cachy_kompass/gui/main_window.py:832
+msgid "„{name}“ eingeblendet (gespeichert in {path})."
+msgstr "“{name}” shown (saved in {path})."
+
+#: cachy_kompass/gui/main_window.py:837
+msgid "Eintrag ausgeblendet"
+msgstr "Entry hidden"
+
+#: cachy_kompass/gui/main_window.py:838
+msgid ""
+"„{name}“ erscheint nicht mehr im Startmenü. Das Programm ist aber weiter installiert und lässt sich so starten:\n"
+"\n"
+"    {command}\n"
+"\n"
+"– im Terminal (z. B. Konsole) oder nach Alt+F2 (KRunner) eingeben.\n"
+"\n"
+"Wieder einblenden: hier im Reiter „Startmenü-Einträge“ den Eintrag wählen und „Einblenden“ bzw. „Original wiederherstellen …“ klicken."
+msgstr ""
+"“{name}” no longer appears in the app menu. The program is still installed, though, and can be started like this:\n"
+"\n"
+"    {command}\n"
+"\n"
+"– type it in a terminal (e.g. Konsole) or after Alt+F2 (KRunner).\n"
+"\n"
+"To show it again: select the entry here in the “Menu entries” tab and click “Show” or “Restore original …”."
+
+#: cachy_kompass/gui/main_window.py:880
+msgid ""
+"„{name}“ installieren?\n"
+"\n"
+"{description}\n"
+"\n"
+"Einstufung: {rating} – {reason}\n"
+"\n"
+"Es öffnet sich ein Terminalfenster mit diesem Befehl:\n"
+"\n"
+"    {command}\n"
+"\n"
+"Dort siehst du genau, was passiert, und gibst – falls nötig – dein Passwort ein. Bevor pacman etwas installiert, fragt es noch einmal nach."
+msgstr ""
+"Install “{name}”?\n"
+"\n"
+"{description}\n"
+"\n"
+"Rating: {rating} – {reason}\n"
+"\n"
+"A terminal window opens with this command:\n"
+"\n"
+"    {command}\n"
+"\n"
+"There you see exactly what happens and type your password if needed. Before pacman installs anything, it asks once more."
+
+#: cachy_kompass/gui/main_window.py:888
+msgid "Danach wichtig: {note}"
+msgstr "Important afterwards: {note}"
+
+#: cachy_kompass/gui/main_window.py:892 cachy_kompass/gui/update_dialog.py:68
+msgid "Terminal öffnen"
+msgstr "Open terminal"
+
+#: cachy_kompass/gui/main_window.py:897
+msgid "Terminal geöffnet. Wenn die Installation fertig ist, auf „Neu einlesen“ klicken."
+msgstr "Terminal opened. When the installation is done, click “Rescan”."
+
+#: cachy_kompass/gui/main_window.py:903
+msgid ""
+"Es wurde kein Terminalprogramm gefunden. Der Befehl wurde in die Zwischenablage kopiert:\n"
+"\n"
+"{command}\n"
+"\n"
+"Füge ihn in ein Terminal ein und drücke Enter."
+msgstr ""
+"No terminal program was found. The command was copied to the clipboard:\n"
+"\n"
+"{command}\n"
+"\n"
+"Paste it into a terminal and press Enter."
+
+#: cachy_kompass/gui/main_window.py:917 cachy_kompass/gui/main_window.py:754 cachy_kompass/gui/table_model.py:35 cachy_kompass/gui/table_model.py:37 cachy_kompass/models.py:37 cachy_kompass/models.py:76
+msgid "ja"
+msgstr "yes"
+
+#: cachy_kompass/gui/main_window.py:929
+msgid "Gefunden über: {what}"
+msgstr "Found via: {what}"
+
+#: cachy_kompass/gui/table_model.py:22
+msgid "Beschreibung"
+msgstr "Description"
+
+#: cachy_kompass/gui/table_model.py:31
+msgid "Apps"
+msgstr "Apps"
+
+#: cachy_kompass/gui/table_model.py:31
+msgid "Befehle"
+msgstr "Commands"
+
+#: cachy_kompass/gui/table_model.py:35 cachy_kompass/models.py:77
+msgid "versteckt"
+msgstr "hidden"
+
+#: cachy_kompass/gui/table_model.py:37 cachy_kompass/models.py:38
+msgid "teilweise"
+msgstr "partly"
+
+#: cachy_kompass/gui/table_model.py:59
+msgid "Installationsdatum unbekannt"
+msgstr "Installation date unknown"
+
+#: cachy_kompass/gui/table_model.py:62
+msgid "Ungefähr: {when} – Änderungsdatum der Programmdateien (bei Updates evtl. später)"
+msgstr "Approximately: {when} – modification date of the program files (may be later after updates)"
+
+#: cachy_kompass/gui/table_model.py:63
+msgid "Installiert am {when} (laut pacman-Protokoll)"
+msgstr "Installed on {when} (according to the pacman log)"
+
+#: cachy_kompass/gui/table_model.py:161
+msgid "Nur die App selbst – gemeinsam genutzte Laufzeiten kommen hinzu."
+msgstr "Only the app itself – shared runtimes come on top."
+
+#: cachy_kompass/gui/table_model.py:163
+msgid "Auch installiert als: {variants}"
+msgstr "Also installed as: {variants}"
+
+#: cachy_kompass/gui/update_dialog.py:24
+msgid "Alles aktualisieren"
+msgstr "Update everything"
+
+#: cachy_kompass/gui/update_dialog.py:28
+msgid "Diese Updates werden nacheinander in einem Terminalfenster ausgeführt. Dort siehst du genau, was passiert, gibst – falls nötig – dein Passwort ein und bestätigst die Installation. Tipp: Vor einem großen Update laufende Programme speichern."
+msgstr "These updates run one after another in a terminal window. There you see exactly what happens, type your password if needed and confirm the installation. Tip: save your work in open programs before a big update."
+
+#: cachy_kompass/gui/update_dialog.py:51
+msgid "Es wurde kein passendes Update-Werkzeug gefunden."
+msgstr "No suitable update tool was found."
+
+#: cachy_kompass/gui/update_dialog.py:55
+msgid "Nicht dabei:"
+msgstr "Not included:"
+
+#: cachy_kompass/gui/update_dialog.py:59
+msgid "Danach im Software-Kompass auf „Neu einlesen“ klicken. Wurde der Kernel oder der Grafiktreiber aktualisiert, erscheint oben ein Hinweis, dass ein Neustart fällig ist."
+msgstr "Afterwards click “Rescan” in the Software-Kompass. If the kernel or graphics driver was updated, a note at the top tells you that a restart is due."
+
+#: cachy_kompass/history.py:170
+msgid "Der Kernel wurde aktualisiert – der laufende ist noch der alte."
+msgstr "The kernel was updated – the running one is still the old one."
+
+#: cachy_kompass/history.py:173
+msgid "Seit dem letzten Start aktualisiert: {packages}."
+msgstr "Updated since the last boot: {packages}."
+
+#: cachy_kompass/installers.py:30
+msgid "Grundausstattung"
+msgstr "Base system"
+
+#: cachy_kompass/installers.py:31
+msgid "✔ empfohlen"
+msgstr "✔ recommended"
+
+#: cachy_kompass/installers.py:32
+msgid "◐ bei Bedarf"
+msgstr "◐ if needed"
+
+#: cachy_kompass/installers.py:33
+msgid "✘ nicht empfohlen"
+msgstr "✘ not recommended"
+
+#: cachy_kompass/installers.py:73
+msgid "Paketverwaltung"
+msgstr "Package manager"
+
+#: cachy_kompass/installers.py:74
+msgid "Grafischer App-Store"
+msgstr "Graphical app store"
+
+#: cachy_kompass/installers.py:75
+msgid "Update-Werkzeug"
+msgstr "Update tool"
+
+#: cachy_kompass/installers.py:76
+msgid "AppImage-Helfer"
+msgstr "AppImage helper"
+
+#: cachy_kompass/installers.py:79
+msgid "Die Paketverwaltung von Arch Linux und CachyOS. Immer vorhanden."
+msgstr "The package manager of Arch Linux and CachyOS. Always present."
+
+#: cachy_kompass/installers.py:80
+msgid "Das Herzstück des Systems."
+msgstr "The heart of the system."
+
+#: cachy_kompass/installers.py:81
+msgid "AUR-Helfer, bei CachyOS vorinstalliert. Installiert Programme aus dem AUR und aktualisiert Repo- und AUR-Pakete gemeinsam."
+msgstr "AUR helper, preinstalled on CachyOS. Installs programs from the AUR and updates repo and AUR packages together."
+
+#: cachy_kompass/installers.py:82
+msgid "Der AUR-Helfer, den CachyOS selbst mitbringt. Einer reicht."
+msgstr "The AUR helper that CachyOS ships itself. One is enough."
+
+#: cachy_kompass/installers.py:84
+msgid "Weit verbreiteter AUR-Helfer, wird in vielen Anleitungen nachinstalliert."
+msgstr "Widely used AUR helper, installed by many guides."
+
+#: cachy_kompass/installers.py:85
+msgid "Macht dasselbe wie paru, das bei CachyOS schon dabei ist. Zwei AUR-Helfer stiften nur Verwirrung. Wenn eine Anleitung „yay -S …“ sagt, nimm einfach „paru -S …“."
+msgstr "Does the same as paru, which CachyOS already ships. Two AUR helpers only cause confusion. When a guide says “yay -S …”, simply use “paru -S …”."
+
+#: cachy_kompass/installers.py:88
+msgid "Weitere AUR-Helfer."
+msgstr "Other AUR helpers."
+
+#: cachy_kompass/installers.py:89
+msgid "Wie bei yay: paru ist schon da und reicht völlig."
+msgstr "Same as with yay: paru is already there and is all you need."
+
+#: cachy_kompass/installers.py:91
+msgid "Abgeschottete Apps aus Flathub. Unabhängig von pacman."
+msgstr "Sandboxed apps from Flathub. Independent of pacman."
+
+#: cachy_kompass/installers.py:92
+msgid "Riesige Auswahl an Programmen (Flathub), sauber vom System getrennt und in Discover eingebunden. Gute Ergänzung, wenn ein Programm nicht in den Repos ist – besser als das AUR für Einsteiger."
+msgstr "Huge choice of programs (Flathub), cleanly separated from the system and integrated into Discover. A good addition when a program is not in the repos – better than the AUR for beginners."
+
+#: cachy_kompass/installers.py:95
+msgid "Einmal ab- und wieder anmelden, damit Flatpak-Programme im Startmenü erscheinen. Flathub ist unter Arch/CachyOS automatisch eingerichtet."
+msgstr "Log out and back in once so that Flatpak programs appear in the app menu. Flathub is set up automatically on Arch/CachyOS."
+
+#: cachy_kompass/installers.py:97
+msgid "Paketsystem von Ubuntu. Unter CachyOS nicht vorgesehen, meist aus dem AUR nachinstalliert."
+msgstr "Ubuntu's package system. Not intended for CachyOS, usually installed from the AUR."
+
+#: cachy_kompass/installers.py:98
+msgid "Nur über das AUR erhältlich und unter Arch schlecht eingebunden. Fast alles, was es als Snap gibt, gibt es auch als Flatpak oder in den Repos."
+msgstr "Only available through the AUR and poorly integrated on Arch. Almost everything that exists as a Snap is also available as a Flatpak or in the repos."
+
+#: cachy_kompass/installers.py:101
+msgid "Installiert Python-Programme in eigene Umgebungen."
+msgstr "Installs Python programs into their own environments."
+
+#: cachy_kompass/installers.py:102
+msgid "Der saubere Weg für Python-Programme, die es nicht in den Repos gibt (statt „pip install“)."
+msgstr "The clean way for Python programs that are not in the repos (instead of “pip install”)."
+
+#: cachy_kompass/installers.py:104
+msgid "Schneller Python-Paketmanager, kann mit „uv tool“ Programme installieren."
+msgstr "Fast Python package manager, can install programs with “uv tool”."
+
+#: cachy_kompass/installers.py:105
+msgid "Moderne, schnelle Alternative zu pipx. Eins von beiden reicht."
+msgstr "Modern, fast alternative to pipx. One of the two is enough."
+
+#: cachy_kompass/installers.py:107
+msgid "Python-Paketinstaller."
+msgstr "Python package installer."
+
+#: cachy_kompass/installers.py:108
+msgid "„pip install“ am System vorbei kann Python-Programme des Systems beschädigen und wird unter Arch/CachyOS deshalb blockiert. Für Programme: pipx oder uv nehmen."
+msgstr "Running “pip install” outside the system's control can break the system's Python programs, so Arch/CachyOS blocks it. For programs, use pipx or uv."
+
+#: cachy_kompass/installers.py:111
+msgid "Baut Rust-Programme aus dem Quellcode."
+msgstr "Builds Rust programs from source code."
+
+#: cachy_kompass/installers.py:112
+msgid "Nur nötig, wenn du Rust-Programme selbst bauen willst. Die meisten gibt es fertig in den Repos."
+msgstr "Only needed if you want to build Rust programs yourself. Most of them are available ready-made in the repos."
+
+#: cachy_kompass/installers.py:114
+msgid "Paketverwaltung für JavaScript/Node.js."
+msgstr "Package manager for JavaScript/Node.js."
+
+#: cachy_kompass/installers.py:115
+msgid "Nur nötig, wenn eine Anleitung ein Programm per „npm install -g“ verlangt."
+msgstr "Only needed if a guide asks you to install a program with “npm install -g”."
+
+#: cachy_kompass/installers.py:117
+msgid "Paketverwaltung aus der macOS-Welt, gibt es auch für Linux."
+msgstr "Package manager from the macOS world, also available for Linux."
+
+#: cachy_kompass/installers.py:118
+msgid "Wird per Skript aus dem Internet installiert und legt eine zweite, komplette Software-Welt neben pacman an. Unter CachyOS gibt es fast alles in den Repos oder im AUR."
+msgstr "Installed via a script from the internet and sets up a second, complete software world next to pacman. On CachyOS almost everything is available in the repos or the AUR."
+
+#: cachy_kompass/installers.py:121
+msgid "Eigenständige Paketverwaltung mit eigenem Paketbestand. (Programme daraus werden noch nicht einzeln aufgelistet.)"
+msgstr "Independent package manager with its own package collection. (Programs from it are not listed individually yet.)"
+
+#: cachy_kompass/installers.py:122
+msgid "Mächtig, aber ein eigenes Universum mit eigener Denkweise – nichts für Einsteiger."
+msgstr "Powerful, but a universe of its own with its own way of thinking – not for beginners."
+
+#: cachy_kompass/installers.py:124
+msgid "Startet andere Linux-Systeme (z. B. Ubuntu) im Container. Programme darin werden hier nicht erfasst."
+msgstr "Runs other Linux systems (e.g. Ubuntu) in a container. Programs inside are not listed here."
+
+#: cachy_kompass/installers.py:125
+msgid "Praktisch, wenn ein Programm nur für Ubuntu/Fedora angeboten wird. Braucht zusätzlich Podman."
+msgstr "Handy when a program is only offered for Ubuntu/Fedora. Also needs Podman."
+
+#: cachy_kompass/installers.py:127
+msgid "Programmiersprache Go; „go install“ legt Programme in ~/go/bin ab."
+msgstr "The Go programming language; “go install” puts programs into ~/go/bin."
+
+#: cachy_kompass/installers.py:128
+msgid "Nur für Entwickler bzw. wenn eine Anleitung „go install“ verlangt."
+msgstr "Only for developers, or when a guide asks for “go install”."
+
+#: cachy_kompass/installers.py:130
+msgid "Grafisches Programm von CachyOS zum Installieren beliebter Software aus den Repos."
+msgstr "Graphical CachyOS program for installing popular software from the repos."
+
+#: cachy_kompass/installers.py:131
+msgid "Das offizielle, einsteigerfreundliche Installationsprogramm von CachyOS."
+msgstr "The official, beginner-friendly installer of CachyOS."
+
+#: cachy_kompass/installers.py:134
+msgid "Willkommens-App von CachyOS mit Abkürzungen zu Software und Einstellungen."
+msgstr "CachyOS welcome app with shortcuts to software and settings."
+
+#: cachy_kompass/installers.py:135
+msgid "Offizielles CachyOS-Werkzeug mit nützlichen Abkürzungen."
+msgstr "Official CachyOS tool with useful shortcuts."
+
+#: cachy_kompass/installers.py:137
+msgid "Grafische Oberfläche für pacman (und AUR)."
+msgstr "Graphical interface for pacman (and the AUR)."
+
+#: cachy_kompass/installers.py:138
+msgid "Für alle, die Pakete lieber per Maus als im Terminal verwalten."
+msgstr "For anyone who prefers managing packages with the mouse rather than in the terminal."
+
+#: cachy_kompass/installers.py:140
+msgid "App-Store von Manjaro, oft aus dem AUR nachinstalliert. Kann Repo, AUR und Flatpak."
+msgstr "Manjaro's app store, often installed from the AUR. Handles repo, AUR and Flatpak."
+
+#: cachy_kompass/installers.py:141
+msgid "Für Manjaro gebaut und unter CachyOS nur aus dem AUR zu bekommen. Besser: CachyOS Package Installer, Octopi oder Discover."
+msgstr "Built for Manjaro and only available from the AUR on CachyOS. Better: CachyOS Package Installer, Octopi or Discover."
+
+#: cachy_kompass/installers.py:144
+msgid "App-Store von KDE Plasma. Kann Repo-Pakete und Flatpaks installieren und aktualisieren."
+msgstr "KDE Plasma's app store. Can install and update repo packages and Flatpaks."
+
+#: cachy_kompass/installers.py:145
+msgid "Bequemer App-Store unter KDE, besonders für Flatpaks."
+msgstr "Convenient app store on KDE, especially for Flatpaks."
+
+#: cachy_kompass/installers.py:147
+msgid "App-Store von GNOME. Kann Repo-Pakete und Flatpaks installieren."
+msgstr "GNOME's app store. Can install repo packages and Flatpaks."
+
+#: cachy_kompass/installers.py:148
+msgid "Nur unter dem GNOME-Desktop sinnvoll – unter KDE ist Discover die passende Wahl."
+msgstr "Only makes sense on the GNOME desktop – on KDE, Discover is the right choice."
+
+#: cachy_kompass/installers.py:150
+msgid "Grafische Oberfläche für AUR, Flatpak, Snap und AppImage."
+msgstr "Graphical interface for AUR, Flatpak, Snap and AppImage."
+
+#: cachy_kompass/installers.py:151
+msgid "Nur aus dem AUR und kaum noch gepflegt. Besser: Discover für Flatpaks, Octopi für Pakete."
+msgstr "Only from the AUR and hardly maintained any more. Better: Discover for Flatpaks, Octopi for packages."
+
+#: cachy_kompass/installers.py:153
+msgid "Update-Benachrichtigung von CachyOS im Infobereich der Taskleiste."
+msgstr "CachyOS update notifier in the system tray."
+
+#: cachy_kompass/installers.py:154
+msgid "Erinnert dich an Updates und spielt sie mit einem Klick ein."
+msgstr "Reminds you of updates and installs them with one click."
+
+#: cachy_kompass/installers.py:156
+msgid "Update-Benachrichtigung, Vorlage für cachy-update."
+msgstr "Update notifier, the original that cachy-update is based on."
+
+#: cachy_kompass/installers.py:157
+msgid "cachy-update ist die an CachyOS angepasste Variante – beides gleichzeitig ist doppelt."
+msgstr "cachy-update is the variant adapted to CachyOS – having both is redundant."
+
+#: cachy_kompass/installers.py:159
+msgid "Aktualisiert mit einem Befehl alles: pacman, AUR, Flatpak, pipx, cargo, npm …"
+msgstr "Updates everything with one command: pacman, AUR, Flatpak, pipx, cargo, npm …"
+
+#: cachy_kompass/installers.py:160
+msgid "Praktisch, wenn du viele verschiedene Paketverwaltungen nutzt."
+msgstr "Handy if you use many different package managers."
+
+#: cachy_kompass/installers.py:162
+msgid "Verwaltet AppImages und legt Startmenü-Einträge an."
+msgstr "Manages AppImages and creates menu entries."
+
+#: cachy_kompass/installers.py:163
+msgid "Empfehlenswert, wenn du AppImages nutzt: hält sie an einem Ort, legt Menüeinträge an und kann sie aktualisieren."
+msgstr "Recommended if you use AppImages: keeps them in one place, creates menu entries and can update them."
+
+#: cachy_kompass/installers.py:166
+msgid "Integriert AppImages beim ersten Start ins Startmenü."
+msgstr "Adds AppImages to the app menu the first time they are started."
+
+#: cachy_kompass/installers.py:167
+msgid "Nur aus dem AUR und kaum noch weiterentwickelt. Gear Lever ist die modernere Alternative."
+msgstr "Only from the AUR and hardly developed any more. Gear Lever is the more modern alternative."
+
+#: cachy_kompass/installers.py:192
+msgid "Wird bewusst nicht zur Installation angeboten (siehe Begründung)."
+msgstr "Deliberately not offered for installation (see the reason)."
+
+#: cachy_kompass/installers.py:196
+msgid "Aus den offiziellen Paketquellen."
+msgstr "From the official package repositories."
+
+#: cachy_kompass/installers.py:198
+msgid "Als Flatpak von Flathub."
+msgstr "As a Flatpak from Flathub."
+
+#: cachy_kompass/installers.py:200
+msgid "Nicht in deinen offiziellen Paketquellen gefunden – wird deshalb nicht angeboten (der Software-Kompass installiert nichts aus dem AUR oder aus dem Internet)."
+msgstr "Not found in your official package repositories – so it is not offered (the Software-Kompass installs nothing from the AUR or from the internet)."
+
+#: cachy_kompass/installers.py:218
+msgid "Paket {name}"
+msgstr "package {name}"
+
+#: cachy_kompass/models.py:45
+msgid "nicht geprüft"
+msgstr "not checked"
+
+#: cachy_kompass/models.py:46
+msgid "aktuell"
+msgstr "up to date"
+
+#: cachy_kompass/models.py:47
+msgid "Update verfügbar"
+msgstr "update available"
+
+#: cachy_kompass/models.py:48
+msgid "unbekannt"
+msgstr "unknown"
+
+#: cachy_kompass/models.py:55
+msgid "App"
+msgstr "App"
+
+#: cachy_kompass/models.py:56
+msgid "Befehl"
+msgstr "Command"
+
+#: cachy_kompass/models.py:57
+msgid "Sonstiges"
+msgstr "Other"
+
+#: cachy_kompass/models.py:61
+msgid "Ein Programm mit eigenem Fenster, das du aus dem Startmenü starten kannst."
+msgstr "A program with its own window that you can start from the app menu."
+
+#: cachy_kompass/models.py:62
+msgid "Ein Kommandozeilenprogramm: Es wird im Terminal über seinen Befehl gestartet und hat kein eigenes Fenster."
+msgstr "A command-line program: you start it in a terminal by its command, and it has no window of its own."
+
+#: cachy_kompass/models.py:66
+msgid "Nichts zum Starten: z. B. eine Bibliothek, Schriftart, ein Treiber, Firmware, ein Design oder ein Sammelpaket, das andere Pakete mitbringt."
+msgstr "Nothing to start: e.g. a library, font, driver, firmware, theme or a meta package that pulls in other packages."
+
+#: cachy_kompass/models.py:96
+msgid "Offizielles Repo"
+msgstr "Official repo"
+
+#: cachy_kompass/models.py:97
+msgid "Installiert mit der Paketverwaltung pacman aus einer offiziellen Paketquelle (CachyOS- oder Arch-Linux-Repo), z. B. mit „sudo pacman -S …“, dem CachyOS Package Installer oder Octopi."
+msgstr "Installed with the pacman package manager from an official repository (CachyOS or Arch Linux repo), e.g. with “sudo pacman -S …”, the CachyOS Package Installer or Octopi."
+
+#: cachy_kompass/models.py:103
+msgid "Wird bei jedem normalen Systemupdate automatisch mit aktualisiert („sudo pacman -Syu“, „paru“ oder die CachyOS-Update-Benachrichtigung)."
+msgstr "Updated automatically with every normal system update (“sudo pacman -Syu”, “paru” or the CachyOS update notifier)."
+
+#: cachy_kompass/models.py:111
+msgid "Aus dem Arch User Repository (AUR) gebaut, meist mit einem AUR-Helfer wie paru oder yay. Das AUR ist eine Sammlung von Bauanleitungen aus der Community und nicht offiziell geprüft. Pakete, die nicht mehr im AUR stehen, wurden evtl. von Hand gebaut oder sind aus einem offiziellen Repo entfernt worden."
+msgstr "Built from the Arch User Repository (AUR), usually with an AUR helper such as paru or yay. The AUR is a collection of community build recipes and is not officially reviewed. Packages that are no longer in the AUR may have been built by hand or removed from an official repo."
+
+#: cachy_kompass/models.py:119
+msgid "Wird nur aktualisiert, wenn du dein System mit einem AUR-Helfer aktualisierst (z. B. „paru“ oder „yay“). Ein reines „sudo pacman -Syu“ aktualisiert AUR-Programme NICHT."
+msgstr "Only updated when you update your system with an AUR helper (e.g. “paru” or “yay”). A plain “sudo pacman -Syu” does NOT update AUR programs."
+
+#: cachy_kompass/models.py:128
+msgid "Als Flatpak installiert, meist aus Flathub – z. B. über Discover, GNOME Software, die Flathub-Webseite oder „flatpak install …“. Flatpaks laufen abgeschottet vom restlichen System."
+msgstr "Installed as a Flatpak, usually from Flathub – e.g. via Discover, GNOME Software, the Flathub website or “flatpak install …”. Flatpaks run sandboxed from the rest of the system."
+
+#: cachy_kompass/models.py:134
+msgid "Wird NICHT von pacman aktualisiert. Aktualisiere mit „flatpak update“ oder über Discover / GNOME Software, die das je nach Einstellung auch automatisch erledigen."
+msgstr "NOT updated by pacman. Update with “flatpak update” or via Discover / GNOME Software, which can also do it automatically depending on their settings."
+
+#: cachy_kompass/models.py:143
+msgid "Als Snap-Paket installiert („sudo snap install …“). Unter CachyOS ist Snap nicht standardmäßig dabei und wurde vermutlich nach einer Anleitung nachinstalliert."
+msgstr "Installed as a Snap package (“sudo snap install …”). Snap is not included with CachyOS by default and was probably installed by following a guide."
+
+#: cachy_kompass/models.py:149
+msgid "Snap aktualisiert sich selbstständig im Hintergrund (mehrmals täglich), unabhängig vom CachyOS-Systemupdate."
+msgstr "Snap updates itself in the background (several times a day), independently of the CachyOS system update."
+
+#: cachy_kompass/models.py:157
+msgid "Eine AppImage-Datei, die von einer Webseite heruntergeladen wurde. Sie wird nicht installiert, sondern direkt gestartet. Werkzeuge wie Gear Lever oder AppImageLauncher legen dafür evtl. Startmenü-Einträge an."
+msgstr "An AppImage file downloaded from a website. It is not installed but started directly. Tools such as Gear Lever or AppImageLauncher may create menu entries for it."
+
+#: cachy_kompass/models.py:164
+msgid "Wird NICHT automatisch aktualisiert. Lade die neue Version selbst herunter oder nutze ein Werkzeug wie Gear Lever."
+msgstr "NOT updated automatically. Download the new version yourself or use a tool such as Gear Lever."
+
+#: cachy_kompass/models.py:172
+msgid "Ein Python-Programm, installiert mit „pipx install …“ in eine eigene, abgeschottete Umgebung im Benutzerordner."
+msgstr "A Python program, installed with “pipx install …” into its own sandboxed environment in your home folder."
+
+#: cachy_kompass/models.py:177
+msgid "Wird NICHT automatisch aktualisiert. Aktualisieren mit „pipx upgrade-all“."
+msgstr "NOT updated automatically. Update with “pipx upgrade-all”."
+
+#: cachy_kompass/models.py:183
+msgid "Ein Python-Programm, installiert mit „uv tool install …“ (ähnlich wie pipx, nur schneller)."
+msgstr "A Python program, installed with “uv tool install …” (similar to pipx, just faster)."
+
+#: cachy_kompass/models.py:188
+msgid "Wird NICHT automatisch aktualisiert. Aktualisieren mit „uv tool upgrade --all“."
+msgstr "NOT updated automatically. Update with “uv tool upgrade --all”."
+
+#: cachy_kompass/models.py:194
+msgid "Ein Rust-Programm, aus dem Quellcode gebaut mit „cargo install …“. Die Programmdatei liegt in ~/.cargo/bin."
+msgstr "A Rust program, built from source with “cargo install …”. The program file is in ~/.cargo/bin."
+
+#: cachy_kompass/models.py:199
+msgid "Wird NICHT automatisch aktualisiert. Erneut „cargo install {name}“ ausführen oder das Zusatzwerkzeug cargo-update nutzen („cargo install-update -a“)."
+msgstr "NOT updated automatically. Run “cargo install {name}” again or use the add-on tool cargo-update (“cargo install-update -a”)."
+
+#: cachy_kompass/models.py:209
+msgid "Ein Node.js-Programm, global installiert mit „npm install -g …“."
+msgstr "A Node.js program, installed globally with “npm install -g …”."
+
+#: cachy_kompass/models.py:211
+msgid "Wird NICHT automatisch aktualisiert. Aktualisieren mit „npm update -g“."
+msgstr "NOT updated automatically. Update with “npm update -g”."
+
+#: cachy_kompass/models.py:217
+msgid "Installiert mit Homebrew („brew install …“). Homebrew kommt eigentlich von macOS und wurde vermutlich nach einer Anleitung nachinstalliert."
+msgstr "Installed with Homebrew (“brew install …”). Homebrew actually comes from macOS and was probably installed by following a guide."
+
+#: cachy_kompass/models.py:223
+msgid "Wird NICHT vom Systemupdate erfasst. Aktualisieren mit „brew upgrade“."
+msgstr "NOT covered by the system update. Update with “brew upgrade”."
+
+#: cachy_kompass/models.py:228
+msgid "Manuell"
+msgstr "Manual"
+
+#: cachy_kompass/models.py:229
+msgid "Von Hand ins System kopiert (z. B. ein entpacktes Archiv in /opt oder eine Programmdatei in ~/.local/bin oder /usr/local/bin). Keine Paketverwaltung weiß davon."
+msgstr "Copied into the system by hand (e.g. an unpacked archive in /opt or a program file in ~/.local/bin or /usr/local/bin). No package manager knows about it."
+
+#: cachy_kompass/models.py:235
+msgid "Wird NICHT automatisch aktualisiert. Updates musst du selbst beim Hersteller herunterladen."
+msgstr "NOT updated automatically. You have to download updates from the maker yourself."
+
+#: cachy_kompass/scanner.py:52
+msgid "Lese {what} …"
+msgstr "Reading {what} …"
+
+#: cachy_kompass/scanner.py:60
+msgid "Lese Startmenü-Einträge …"
+msgstr "Reading menu entries …"
+
+#: cachy_kompass/scanner.py:66
+msgid "Lese Installationsdaten …"
+msgstr "Reading installation dates …"
+
+#: cachy_kompass/scanner.py:71
+msgid "Berechne Größen …"
+msgstr "Calculating sizes …"
+
+#: cachy_kompass/scanner.py:75
+msgid "Suche Paketverwaltungen …"
+msgstr "Looking for package managers …"
+
+#: cachy_kompass/scanner.py:79
+msgid "{n} Programm gefunden."
+msgid_plural "{n} Programme gefunden."
+msgstr[0] "{n} program found."
+msgstr[1] "{n} programs found."
+
+#: cachy_kompass/scanner.py:106
+msgid "Prüfe Updates: {what} …"
+msgstr "Checking updates: {what} …"
+
+#: cachy_kompass/scanner.py:111
+msgid "Fehler: {error}"
+msgstr "Error: {error}"
+
+#: cachy_kompass/scanner.py:116
+msgid "Update-Prüfung abgeschlossen."
+msgstr "Update check finished."
+
+#: cachy_kompass/sources/base.py:51
+msgid "Für diese Art von Programm gibt es keine zentrale Versionsliste."
+msgstr "There is no central version list for this kind of program."
+
+#: cachy_kompass/sources/base.py:58
+msgid "Keine Versionsinformation gefunden."
+msgstr "No version information found."
+
+#: cachy_kompass/sources/devtools.py:67
+msgid "Quellcode aus {where}"
+msgstr "Source code from {where}"
+
+#: cachy_kompass/sources/devtools.py:80
+msgid "Direkt aus einem Git-Repo/Ordner gebaut."
+msgstr "Built directly from a Git repo/folder."
+
+#: cachy_kompass/sources/devtools.py:83
+msgid "crates.io nicht erreichbar."
+msgstr "crates.io could not be reached."
+
+#: cachy_kompass/sources/devtools.py:148
+msgid "npm-Registry"
+msgstr "npm registry"
+
+#: cachy_kompass/sources/devtools.py:161
+msgid "npm-Registry nicht erreichbar."
+msgstr "npm registry could not be reached."
+
+#: cachy_kompass/sources/devtools.py:223
+msgid "Homebrew-Prüfung fehlgeschlagen."
+msgstr "Homebrew check failed."
+
+#: cachy_kompass/sources/files.py:103
+msgid "Datei {path}"
+msgstr "File {path}"
+
+#: cachy_kompass/sources/files.py:129
+msgid "Manuell installierte Programme"
+msgstr "manually installed programs"
+
+#: cachy_kompass/sources/files.py:144
+msgid "vermutlich über „go install“"
+msgstr "probably via “go install”"
+
+#: cachy_kompass/sources/files.py:150
+msgid "Programmordner in /opt"
+msgstr "Program folder in /opt"
+
+#: cachy_kompass/sources/files.py:168
+msgid "Achtung: Es ist auch „{name}“ als {source} installiert – dies ist eine zusätzliche, von Hand abgelegte Kopie"
+msgstr "Caution: “{name}” is also installed as {source} – this is an additional copy placed there by hand"
+
+#: cachy_kompass/sources/files.py:192
+msgid "Dieses Programm. Wurde mit install.sh in deinen Benutzerordner installiert. Aktualisieren: im heruntergeladenen Ordner „git pull“ und danach „./install.sh“."
+msgstr "This program. Installed into your home folder with install.sh. To update: run “git pull” and then “./install.sh” in the downloaded folder."
+
+#: cachy_kompass/sources/files.py:196
+msgid "{path} (Startbefehl, angelegt von install.sh)"
+msgstr "{path} (launcher, created by install.sh)"
+
+#: cachy_kompass/sources/flatpak.py:54
+msgid "Flatpak-Quelle „{remote}“ ({installation})"
+msgstr "Flatpak remote “{remote}” ({installation})"
+
+#: cachy_kompass/sources/flatpak.py:70
+msgid "Flathub nicht erreichbar."
+msgstr "Flathub could not be reached."
+
+#: cachy_kompass/sources/pacman.py:142
+msgid "Wird noch gebraucht von: {packages}"
+msgstr "Still needed by: {packages}"
+
+#: cachy_kompass/sources/pacman.py:143
+msgid "pacman meldet einen Fehler."
+msgstr "pacman reports an error."
+
+#: cachy_kompass/sources/pacman.py:162
+msgid "für moderne CPUs (x86-64-v3) optimiert"
+msgstr "optimized for modern CPUs (x86-64-v3)"
+
+#: cachy_kompass/sources/pacman.py:163
+msgid "Kernsystem, für x86-64-v3 optimiert"
+msgstr "core system, optimized for x86-64-v3"
+
+#: cachy_kompass/sources/pacman.py:164
+msgid "für x86-64-v3 optimiert"
+msgstr "optimized for x86-64-v3"
+
+#: cachy_kompass/sources/pacman.py:165
+msgid "für sehr moderne CPUs (x86-64-v4) optimiert"
+msgstr "optimized for very modern CPUs (x86-64-v4)"
+
+#: cachy_kompass/sources/pacman.py:166
+msgid "Kernsystem, für x86-64-v4 optimiert"
+msgstr "core system, optimized for x86-64-v4"
+
+#: cachy_kompass/sources/pacman.py:167
+msgid "für x86-64-v4 optimiert"
+msgstr "optimized for x86-64-v4"
+
+#: cachy_kompass/sources/pacman.py:168 cachy_kompass/sources/pacman.py:170
+msgid "für AMD Zen 4/5 optimiert"
+msgstr "optimized for AMD Zen 4/5"
+
+#: cachy_kompass/sources/pacman.py:169
+msgid "Kernsystem, für AMD Zen 4/5 optimiert"
+msgstr "core system, optimized for AMD Zen 4/5"
+
+#: cachy_kompass/sources/pacman.py:172
+msgid "CachyOS-Repo „{repo}“"
+msgstr "CachyOS repo “{repo}”"
+
+#: cachy_kompass/sources/pacman.py:174
+msgid "Arch-Linux-Repo „{repo}“"
+msgstr "Arch Linux repo “{repo}”"
+
+#: cachy_kompass/sources/pacman.py:176
+msgid "Chaotic-AUR (nachträglich hinzugefügtes Zusatz-Repo mit fertig gebauten AUR-Paketen)"
+msgstr "Chaotic-AUR (extra repo added later, with prebuilt AUR packages)"
+
+#: cachy_kompass/sources/pacman.py:177
+msgid "Repo „{repo}“ (nachträglich hinzugefügt)"
+msgstr "Repo “{repo}” (added later)"
+
+#: cachy_kompass/sources/pacman.py:208
+msgid "AUR bzw. selbst gebaut"
+msgstr "AUR or self-built"
+
+#: cachy_kompass/sources/pacman.py:250
+msgid "Vergleich mit der zuletzt heruntergeladenen Paketliste (für genaue Prüfung: pacman-contrib installieren)."
+msgstr "Compared with the most recently downloaded package list (for an exact check: install pacman-contrib)."
+
+#: cachy_kompass/sources/pacman.py:255
+msgid "Nicht mehr in einem Repo gefunden."
+msgstr "No longer found in any repo."
+
+#: cachy_kompass/sources/pacman.py:286
+msgid "AUR nicht erreichbar."
+msgstr "AUR could not be reached."
+
+#: cachy_kompass/sources/pacman.py:286
+msgid "Nicht (mehr) im AUR – evtl. selbst gebaut oder verwaist."
+msgstr "Not (or no longer) in the AUR – possibly self-built or orphaned."
+
+#: cachy_kompass/sources/pacman.py:292
+msgid "Entwicklerversion (-git o. ä.): baut immer den neuesten Stand, die Versionsnummer im AUR ist nicht aussagekräftig."
+msgstr "Development version (-git etc.): always builds the latest state, the version number in the AUR is not meaningful."
+
+#: cachy_kompass/sources/python_tools.py:27
+msgid "PyPI nicht erreichbar."
+msgstr "PyPI could not be reached."
+
+#: cachy_kompass/sources/python_tools.py:82
+msgid "PyPI (Python-Paketindex)"
+msgstr "PyPI (Python Package Index)"
+
+#: cachy_kompass/sources/snap.py:64
+msgid "Snap Store (Herausgeber: {publisher})"
+msgstr "Snap Store (publisher: {publisher})"
+
+#: cachy_kompass/sources/snap.py:75
+msgid "Snap Store nicht erreichbar."
+msgstr "Snap Store could not be reached."
+
+#: cachy_kompass/terminal.py:64
+msgid "Cachy Software-Kompass – folgender Befehl wird ausgeführt:"
+msgid_plural "Cachy Software-Kompass – folgende Befehle werden ausgeführt:"
+msgstr[0] "Cachy Software-Kompass – running the following command:"
+msgstr[1] "Cachy Software-Kompass – running the following commands:"
+
+#: cachy_kompass/terminal.py:69
+msgid "✔ Fertig. Klicke im Software-Kompass auf „Neu einlesen“."
+msgstr "✔ Done. Click “Rescan” in the Software-Kompass."
+
+#: cachy_kompass/terminal.py:71
+msgid "✘ Nicht erfolgreich (Code {code}). Es wurde nichts verändert, falls du abgebrochen hast."
+msgstr "✘ Not successful (code {code}). Nothing was changed if you cancelled."
+
+#: cachy_kompass/terminal.py:73
+msgid "Enter drücken, um dieses Fenster zu schließen …"
+msgstr "Press Enter to close this window …"
+
+#: cachy_kompass/update_all.py:35
+msgid "System + AUR (paru)"
+msgstr "System + AUR (paru)"
+
+#: cachy_kompass/update_all.py:36
+msgid "Aktualisiert alle Pakete aus den Repos und dem AUR – das normale CachyOS-Systemupdate."
+msgstr "Updates all packages from the repos and the AUR – the normal CachyOS system update."
+
+#: cachy_kompass/update_all.py:41
+msgid "System + AUR (yay)"
+msgstr "System + AUR (yay)"
+
+#: cachy_kompass/update_all.py:42
+msgid "Aktualisiert alle Pakete aus den Repos und dem AUR – das normale Systemupdate."
+msgstr "Updates all packages from the repos and the AUR – the normal system update."
+
+#: cachy_kompass/update_all.py:46
+msgid "AUR-Pakete werden dabei nicht aktualisiert (dafür paru installieren)."
+msgstr "AUR packages are not updated this way (install paru for that)."
+
+#: cachy_kompass/update_all.py:48
+msgid "System (pacman)"
+msgstr "System (pacman)"
+
+#: cachy_kompass/update_all.py:49
+msgid "Aktualisiert alle Pakete aus den Repos – das normale Systemupdate."
+msgstr "Updates all packages from the repos – the normal system update."
+
+#: cachy_kompass/update_all.py:55
+msgid "Flatpak-Apps"
+msgstr "Flatpak apps"
+
+#: cachy_kompass/update_all.py:56
+msgid "Aktualisiert alle Flatpak-Apps und ihre Laufzeiten."
+msgstr "Updates all Flatpak apps and their runtimes."
+
+#: cachy_kompass/update_all.py:61
+msgid "pipx-Programme (Python)"
+msgstr "pipx programs (Python)"
+
+#: cachy_kompass/update_all.py:62
+msgid "Aktualisiert alle mit pipx installierten Python-Programme in deinem Benutzerordner."
+msgstr "Updates all Python programs installed with pipx in your home folder."
+
+#: cachy_kompass/update_all.py:67
+msgid "uv-Programme (Python)"
+msgstr "uv programs (Python)"
+
+#: cachy_kompass/update_all.py:68
+msgid "Aktualisiert alle mit „uv tool“ installierten Python-Programme."
+msgstr "Updates all Python programs installed with “uv tool”."
+
+#: cachy_kompass/update_all.py:73
+msgid "cargo-Programme (Rust)"
+msgstr "cargo programs (Rust)"
+
+#: cachy_kompass/update_all.py:74
+msgid "Baut alle mit cargo installierten Programme in neuer Version (kann lange dauern)."
+msgstr "Rebuilds all programs installed with cargo in their new version (can take a long time)."
+
+#: cachy_kompass/update_all.py:82
+msgid "Aktualisiert alle mit Homebrew installierten Programme."
+msgstr "Updates all programs installed with Homebrew."
+
+#: cachy_kompass/update_all.py:95
+msgid "Snap-Pakete aktualisieren sich selbst im Hintergrund."
+msgstr "Snap packages update themselves in the background."
+
+#: cachy_kompass/update_all.py:97
+msgid "npm-Programme: „npm update -g“ (je nach Einrichtung mit sudo)."
+msgstr "npm programs: “npm update -g” (with sudo, depending on your setup)."
+
+#: cachy_kompass/update_all.py:99
+msgid "cargo-Programme: einzeln mit „cargo install <name>“ neu bauen."
+msgstr "cargo programs: rebuild them one by one with “cargo install <name>”."
+
+#: cachy_kompass/update_all.py:101
+msgid "AppImages: neue Version selbst herunterladen (oder Gear Lever nutzen)."
+msgstr "AppImages: download the new version yourself (or use Gear Lever)."
+
+#: cachy_kompass/update_all.py:103
+msgid "Von Hand installierte Programme: beim Hersteller nach Updates schauen."
+msgstr "Programs installed by hand: check the maker's website for updates."

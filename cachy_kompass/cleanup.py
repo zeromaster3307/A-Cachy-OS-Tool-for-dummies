@@ -21,6 +21,7 @@ from enum import Enum
 from pathlib import Path
 
 from cachy_kompass import desktop, util
+from cachy_kompass.i18n import _, ngettext
 from cachy_kompass.models import DesktopEntry, Program, Source
 from cachy_kompass.sources.pacman import AUR_RPC
 
@@ -66,11 +67,15 @@ class CleanupItem:
 Progress = Callable[[str], None]
 
 
-def count(n: int, one: str, many: str) -> str:
-    """„1 Paket“, „3 Pakete“, „keine“."""
+def count(n: int, template: str) -> str:
+    """„1 Paket“, „3 Pakete“, „keine“.
+
+    ``template`` ist schon die passende Ein-/Mehrzahl mit Platzhalter {n},
+    z. B. ``count(n, ngettext("{n} Paket", "{n} Pakete", n))``.
+    """
     if n == 0:
-        return "keine"
-    return f"{n} {one if n == 1 else many}"
+        return _("keine")
+    return template.format(n=n)
 
 
 # --- Verwaiste Pakete ------------------------------------------------------------
@@ -85,18 +90,18 @@ def check_orphans(programs: list[Program]) -> CleanupItem | None:
     total = sum(sizes.get(n, 0) for n in names)
     return CleanupItem(
         key="orphans",
-        title="Verwaiste Pakete",
-        explanation=(
+        title=_("Verwaiste Pakete"),
+        explanation=_(
             "Pakete, die einmal automatisch als Abhängigkeit für ein anderes Programm "
             "mitinstalliert wurden. Dieses Programm ist inzwischen weg – die Abhängigkeit "
             "braucht niemand mehr. Sie zu entfernen ist normalerweise gefahrlos."
         ),
-        summary=count(len(names), "Paket", "Pakete"),
+        summary=count(len(names), ngettext("{n} Paket", "{n} Pakete", len(names))),
         details=[f"{n}  ({util.format_size(sizes[n])})" if sizes.get(n) else n for n in names],
         size=total,
         action=Action.TERMINAL if names else Action.NONE,
         commands=[["sudo", "pacman", "-Rns", *names]] if names else [],
-        warning=(
+        warning=_(
             "pacman zeigt vor dem Löschen die vollständige Liste und fragt noch einmal nach. "
             "Wenn du ein Paket davon bewusst behalten willst, brich dort ab (n). "
             "Nach dem Aufräumen können weitere verwaiste Pakete auftauchen – einfach erneut prüfen."
@@ -121,36 +126,38 @@ def check_package_cache() -> CleanupItem | None:
     if not PACMAN_CACHE.is_dir():
         return None
     total = util.folder_size(PACMAN_CACHE)
-    explanation = (
+    explanation = _(
         "pacman bewahrt jede heruntergeladene Paketversion in „/var/cache/pacman/pkg“ auf. "
         "Das ist praktisch, um nach einem fehlerhaften Update zur vorigen Version zurückzukehren, "
-        f"wächst aber mit der Zeit auf viele Gigabyte. Aufräumen behält die {KEEP_VERSIONS} neuesten "
+        "wächst aber mit der Zeit auf viele Gigabyte. Aufräumen behält die {keep} neuesten "
         "Versionen jedes installierten Pakets und entfernt die von deinstallierten Paketen."
-    )
+    ).format(keep=KEEP_VERSIONS)
     item = CleanupItem(
         key="pkgcache",
-        title="Paket-Zwischenspeicher",
+        title=_("Paket-Zwischenspeicher"),
         explanation=explanation,
-        summary=f"belegt {util.format_size(total)}",
+        summary=_("belegt {size}").format(size=util.format_size(total)),
     )
     if not util.which("paccache"):
-        item.explanation += " (Zum Aufräumen wird das Paket „pacman-contrib“ benötigt.)"
+        item.explanation += " " + _("(Zum Aufräumen wird das Paket „pacman-contrib“ benötigt.)")
         item.manual_command = "sudo pacman -S pacman-contrib"
         return item
     # Trockenläufe („-d“) – zeigen nur, was gelöscht würde, ohne root.
     old_n, old_size = parse_paccache_dry_run(util.run(["paccache", "-d", f"-k{KEEP_VERSIONS}"], ok_codes=(0, 1)) or "")
     gone_n, gone_size = parse_paccache_dry_run(util.run(["paccache", "-du", "-k0"], ok_codes=(0, 1)) or "")
     if old_n:
-        item.details.append(f"{old_n} ältere Versionen installierter Pakete ({util.format_size(old_size)})")
+        item.details.append(_("{n} ältere Versionen installierter Pakete ({size})").format(n=old_n, size=util.format_size(old_size)))
     if gone_n:
-        item.details.append(f"{gone_n} Dateien deinstallierter Pakete ({util.format_size(gone_size)})")
+        item.details.append(_("{n} Dateien deinstallierter Pakete ({size})").format(n=gone_n, size=util.format_size(gone_size)))
     item.size = old_size + gone_size
     if item.size:
-        item.summary = f"{util.format_size(item.size)} frei machbar (von {util.format_size(total)})"
+        item.summary = _("{size} frei machbar (von {total})").format(
+            size=util.format_size(item.size), total=util.format_size(total)
+        )
         item.action = Action.TERMINAL
         item.commands = [["sudo", "paccache", "-r", f"-k{KEEP_VERSIONS}"], ["sudo", "paccache", "-ru", "-k0"]]
     else:
-        item.summary = f"aufgeräumt ({util.format_size(total)})"
+        item.summary = _("aufgeräumt ({size})").format(size=util.format_size(total))
     return item
 
 
@@ -165,13 +172,13 @@ def check_aur_build_cache() -> CleanupItem | None:
     total = sum(sizes.values())
     return CleanupItem(
         key="aurcache",
-        title="AUR-Bauordner",
-        explanation=(
+        title=_("AUR-Bauordner"),
+        explanation=_(
             "Beim Installieren aus dem AUR laden paru bzw. yay den Quellcode herunter und bauen "
             "das Programm in diesen Ordnern. Danach werden sie nicht mehr gebraucht – beim "
             "nächsten Update wird einfach neu heruntergeladen. Löschen ist gefahrlos."
         ),
-        summary=f"{util.format_size(total)}" if total else "leer",
+        summary=util.format_size(total) if total else _("leer"),
         details=[f"{f}  ({util.format_size(s)})" for f, s in sizes.items() if s],
         size=total,
         action=Action.TERMINAL if total else Action.NONE,
@@ -188,15 +195,15 @@ def check_flatpak_unused() -> CleanupItem | None:
         return None
     return CleanupItem(
         key="flatpak",
-        title="Unbenutzte Flatpak-Laufzeiten",
-        explanation=(
+        title=_("Unbenutzte Flatpak-Laufzeiten"),
+        explanation=_(
             "Flatpak-Apps brauchen „Laufzeiten“ (Bibliothekspakete wie GNOME oder KDE Platform). "
             "Wird eine App entfernt oder aktualisiert, bleiben alte Laufzeiten oft liegen – nicht "
             "selten mehrere Gigabyte. Was genau unbenutzt ist, ermittelt Flatpak selbst: Es zeigt "
             "im Terminal die Liste an und fragt vor dem Löschen nach."
         ),
-        summary="im Terminal prüfen",
-        details=["Flatpak zeigt die gefundenen Laufzeiten im Terminal an."],
+        summary=_("im Terminal prüfen"),
+        details=[_("Flatpak zeigt die gefundenen Laufzeiten im Terminal an.")],
         action=Action.TERMINAL,
         commands=[["flatpak", "uninstall", "--unused"], ["flatpak", "uninstall", "--user", "--unused"]],
     )
@@ -217,31 +224,31 @@ def check_broken_entries(entries: list[DesktopEntry], helper_names: Collection[s
     # nützlicher Hinweis (Menüpunkt, der nichts tut).
     system = [e for e in candidates if not desktop.can_remove(e) and e.visible]
     broken = removable + system
-    details = [f"{e.name}  –  fehlt: {missing(e)}  ({e.path})" for e in removable]
+    details = [_("{name}  –  fehlt: {missing}  ({path})").format(name=e.name, missing=missing(e), path=e.path) for e in removable]
     details += [
-        f"{e.name}  –  fehlt: {missing(e)}  – Systemeintrag, nur Hinweis  ({e.path})"
+        _("{name}  –  fehlt: {missing}  – Systemeintrag, nur Hinweis  ({path})").format(name=e.name, missing=missing(e), path=e.path)
         for e in system
     ]
-    explanation = (
+    explanation = _(
         "Diese Einträge zeigen auf ein Programm, das es nicht (mehr) gibt – meist Reste von "
         "deinstallierten Programmen oder AppImages, die verschoben wurden. Einträge in deinem "
         "Benutzerordner können direkt entfernt werden."
     )
     if system:
-        explanation += (
-            " Systemeinträge gehören zu einem installierten Paket und werden nicht angefasst – "
+        explanation += " " + _(
+            "Systemeinträge gehören zu einem installierten Paket und werden nicht angefasst – "
             "dort fehlt meist nur ein optionales Zusatzprogramm, oder das Paket ist fehlerhaft "
             "und wird mit dem nächsten Update repariert."
         )
     return CleanupItem(
         key="entries",
-        title="Kaputte Startmenü-Einträge",
+        title=_("Kaputte Startmenü-Einträge"),
         explanation=explanation,
-        summary=count(len(broken), "Eintrag", "Einträge"),
+        summary=count(len(broken), ngettext("{n} Eintrag", "{n} Einträge", len(broken))),
         details=details,
         action=Action.REMOVE_ENTRIES if removable else Action.NONE,
         entries=removable,
-        warning="Entfernt werden nur die Einträge in deinem Benutzerordner, nicht die Programme selbst.",
+        warning=_("Entfernt werden nur die Einträge in deinem Benutzerordner, nicht die Programme selbst."),
     )
 
 
@@ -261,22 +268,22 @@ def check_not_in_aur(programs: list[Program]) -> CleanupItem | None:
     except Exception:
         return CleanupItem(
             key="aur",
-            title="Nicht mehr im AUR",
-            explanation="Das AUR war nicht erreichbar – bitte später erneut prüfen.",
-            summary="nicht prüfbar",
+            title=_("Nicht mehr im AUR"),
+            explanation=_("Das AUR war nicht erreichbar – bitte später erneut prüfen."),
+            summary=_("nicht prüfbar"),
         )
     missing = [n for n in aur if n not in found]
     return CleanupItem(
         key="aur",
-        title="Nicht mehr im AUR",
-        explanation=(
+        title=_("Nicht mehr im AUR"),
+        explanation=_(
             "Diese Pakete wurden aus dem AUR installiert, stehen dort aber nicht mehr. Sie bekommen "
             "deshalb keine Updates mehr. Häufige Gründe: Das Programm ist inzwischen in einem "
             "offiziellen Repo (dann besser von dort installieren), wurde umbenannt oder eingestellt. "
             "Manche Pakete hast du vielleicht auch selbst gebaut – dann ist alles in Ordnung. "
             "Deshalb gibt es hier keinen Aufräum-Knopf: Prüfe selbst, ob du sie noch brauchst."
         ),
-        summary=count(len(missing), "Paket", "Pakete"),
+        summary=count(len(missing), ngettext("{n} Paket", "{n} Pakete", len(missing))),
         details=missing,
         manual_command=f"sudo pacman -Rns {' '.join(missing)}" if missing else "",
     )
@@ -290,11 +297,11 @@ def check_duplicates(groups: list[list[Program]]) -> CleanupItem:
     for group in groups:
         variants = "  +  ".join(f"{p.display_name} ({p.info.label})" for p in group)
         commands = "   |   ".join(p.uninstall_command() for p in group)
-        details.append(f"{variants}  –  entfernen mit: {commands}")
+        details.append(_("{variants}  –  entfernen mit: {commands}").format(variants=variants, commands=commands))
     return CleanupItem(
         key="duplicates",
-        title="Doppelt installiert",
-        explanation=(
+        title=_("Doppelt installiert"),
+        explanation=_(
             "Diese Programme sind mehrfach installiert – aus verschiedenen Quellen, z. B. aus dem "
             "Repo und zusätzlich als Flatpak. Das passiert leicht, wenn man verschiedenen "
             "Anleitungen folgt. Es kostet Platz, und im Startmenü stehen dann oft zwei Einträge, "
@@ -304,7 +311,7 @@ def check_duplicates(groups: list[list[Program]]) -> CleanupItem:
             "Programm ist. Deshalb gibt es hier keinen Aufräum-Knopf. Die Befehle zum Entfernen "
             "findest du auch im Reiter „Programme“ beim jeweiligen Programm."
         ),
-        summary=count(len(groups), "Programm", "Programme"),
+        summary=count(len(groups), ngettext("{n} Programm", "{n} Programme", len(groups))),
         details=details,
     )
 
@@ -325,22 +332,24 @@ def scan(
 ) -> list[CleanupItem]:
     """Führt alle Prüfungen aus. Ändert nichts am System."""
     checks: list[tuple[str, Callable[[], CleanupItem | None]]] = [
-        ("verwaiste Pakete", lambda: check_orphans(programs)),
-        ("Paket-Zwischenspeicher", check_package_cache),
-        ("AUR-Bauordner", check_aur_build_cache),
+        (_("verwaiste Pakete"), lambda: check_orphans(programs)),
+        (_("Paket-Zwischenspeicher"), check_package_cache),
+        (_("AUR-Bauordner"), check_aur_build_cache),
         ("Flatpak", check_flatpak_unused),
-        ("Startmenü-Einträge", lambda: check_broken_entries(entries, helper_names)),
-        ("doppelte Programme", lambda: check_duplicates(duplicate_groups or [])),
-        ("AUR (braucht Internet)", lambda: check_not_in_aur(programs)),
+        (_("Startmenü-Einträge"), lambda: check_broken_entries(entries, helper_names)),
+        (_("doppelte Programme"), lambda: check_duplicates(duplicate_groups or [])),
+        (_("AUR (braucht Internet)"), lambda: check_not_in_aur(programs)),
     ]
     items = []
     for label, check in checks:
-        progress(f"Prüfe {label} …")
+        progress(_("Prüfe {what} …").format(what=label))
         try:
             item = check()
         except Exception as exc:  # eine fehlerhafte Prüfung soll die anderen nicht stoppen
-            item = CleanupItem(key=label, title=label, explanation=f"Prüfung fehlgeschlagen: {exc}", summary="Fehler")
+            item = CleanupItem(
+                key=label, title=label, explanation=_("Prüfung fehlgeschlagen: {error}").format(error=exc), summary=_("Fehler")
+            )
         if item is not None:
             items.append(item)
-    progress("Prüfung abgeschlossen.")
+    progress(_("Prüfung abgeschlossen."))
     return items

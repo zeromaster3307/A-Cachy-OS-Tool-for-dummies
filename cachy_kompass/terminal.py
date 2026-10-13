@@ -11,6 +11,7 @@ import shlex
 import subprocess
 
 from cachy_kompass import util
+from cachy_kompass.i18n import _, ngettext
 
 # Terminal → Argumente, nach denen der auszuführende Befehl folgt.
 # Reihenfolge = Vorliebe (KDE zuerst, weil Standard unter CachyOS).
@@ -60,14 +61,23 @@ def build_script(command: Command | list[Command]) -> str:
     """
     commands = _as_commands(command)
     shown = "; ".join(f"echo {shlex.quote('    ' + shlex.join(c))}" for c in commands)
-    word = "folgender Befehl wird" if len(commands) == 1 else "folgende Befehle werden"
+    header = ngettext(
+        "Cachy Software-Kompass – folgender Befehl wird ausgeführt:",
+        "Cachy Software-Kompass – folgende Befehle werden ausgeführt:",
+        len(commands),
+    )
+    done = _("✔ Fertig. Klicke im Software-Kompass auf „Neu einlesen“.")
+    # {code} wird im Terminal durch den Rückgabewert ersetzt
+    failed = _("✘ Nicht erfolgreich (Code {code}). Es wurde nichts verändert, falls du abgebrochen hast.")
+    failed_echo = '"$status"'.join(shlex.quote(part) for part in failed.split("{code}"))
+    prompt = _("Enter drücken, um dieses Fenster zu schließen …")
     return (
-        f'echo "Cachy Software-Kompass – {word} ausgeführt:"; echo; '
+        f"echo {shlex.quote(header)}; echo; "
         f"{shown}; echo; "
         f"{describe(commands)}; status=$?; echo; "
-        'if [ "$status" -eq 0 ]; then echo "✔ Fertig. Klicke im Software-Kompass auf „Neu einlesen“."; '
-        'else echo "✘ Nicht erfolgreich (Code $status). Es wurde nichts verändert, falls du abgebrochen hast."; fi; '
-        'echo; read -r -p "Enter drücken, um dieses Fenster zu schließen …" _'
+        f'if [ "$status" -eq 0 ]; then echo {shlex.quote(done)}; '
+        f"else echo {failed_echo}; fi; "
+        f"echo; read -r -p {shlex.quote(prompt + ' ')} _"
     )
 
 

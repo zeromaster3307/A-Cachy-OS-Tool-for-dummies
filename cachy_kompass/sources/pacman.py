@@ -15,6 +15,7 @@ import subprocess
 from concurrent.futures import ThreadPoolExecutor
 
 from cachy_kompass import util
+from cachy_kompass.i18n import _
 from cachy_kompass.models import Program, Source, UpdateResult, UpdateStatus
 from cachy_kompass.sources.base import PackageSource, ScanContext
 
@@ -138,8 +139,8 @@ def parse_removal_error(stderr: str) -> str:
     """Fehlermeldung von pacman verständlich auf Deutsch."""
     needed_by = sorted({m.group(3) for m in _BREAKS_RE.finditer(stderr)})
     if needed_by:
-        return "Wird noch gebraucht von: " + ", ".join(needed_by)
-    return stderr.strip().splitlines()[-1] if stderr.strip() else "pacman meldet einen Fehler."
+        return _("Wird noch gebraucht von: {packages}").format(packages=", ".join(needed_by))
+    return stderr.strip().splitlines()[-1] if stderr.strip() else _("pacman meldet einen Fehler.")
 
 
 def parse_checkupdates(text: str) -> dict[str, str]:
@@ -158,22 +159,22 @@ def describe_repo(repo: str) -> str:
         suffix = repo.removeprefix("cachyos").strip("-")
         detail = {
             "": "",
-            "v3": "für moderne CPUs (x86-64-v3) optimiert",
-            "core-v3": "Kernsystem, für x86-64-v3 optimiert",
-            "extra-v3": "für x86-64-v3 optimiert",
-            "v4": "für sehr moderne CPUs (x86-64-v4) optimiert",
-            "core-v4": "Kernsystem, für x86-64-v4 optimiert",
-            "extra-v4": "für x86-64-v4 optimiert",
-            "znver4": "für AMD Zen 4/5 optimiert",
-            "core-znver4": "Kernsystem, für AMD Zen 4/5 optimiert",
-            "extra-znver4": "für AMD Zen 4/5 optimiert",
+            "v3": _("für moderne CPUs (x86-64-v3) optimiert"),
+            "core-v3": _("Kernsystem, für x86-64-v3 optimiert"),
+            "extra-v3": _("für x86-64-v3 optimiert"),
+            "v4": _("für sehr moderne CPUs (x86-64-v4) optimiert"),
+            "core-v4": _("Kernsystem, für x86-64-v4 optimiert"),
+            "extra-v4": _("für x86-64-v4 optimiert"),
+            "znver4": _("für AMD Zen 4/5 optimiert"),
+            "core-znver4": _("Kernsystem, für AMD Zen 4/5 optimiert"),
+            "extra-znver4": _("für AMD Zen 4/5 optimiert"),
         }.get(suffix, "")
-        return f"CachyOS-Repo „{repo}“" + (f" ({detail})" if detail else "")
+        return _("CachyOS-Repo „{repo}“").format(repo=repo) + (f" ({detail})" if detail else "")
     if repo in {"core", "extra", "multilib", "core-testing", "extra-testing", "multilib-testing"}:
-        return f"Arch-Linux-Repo „{repo}“"
+        return _("Arch-Linux-Repo „{repo}“").format(repo=repo)
     if repo == "chaotic-aur":
-        return "Chaotic-AUR (nachträglich hinzugefügtes Zusatz-Repo mit fertig gebauten AUR-Paketen)"
-    return f"Repo „{repo}“ (nachträglich hinzugefügt)"
+        return _("Chaotic-AUR (nachträglich hinzugefügtes Zusatz-Repo mit fertig gebauten AUR-Paketen)")
+    return _("Repo „{repo}“ (nachträglich hinzugefügt)").format(repo=repo)
 
 
 class PacmanSource(PackageSource):
@@ -204,7 +205,7 @@ class PacmanSource(PackageSource):
                     version=pkg.get("Version", ""),
                     source=Source.AUR if is_aur else Source.REPO,
                     description=pkg.get("Description", ""),
-                    origin="AUR bzw. selbst gebaut" if is_aur else describe_repo(repo),
+                    origin=_("AUR bzw. selbst gebaut") if is_aur else describe_repo(repo),
                     explicit=pkg.get("Install Reason", "").startswith("Explicitly"),
                     executables=exes.get(name, []),
                     owned_desktop_files=desktops.get(name, []),
@@ -246,12 +247,12 @@ class PacmanSource(PackageSource):
         # Rückfall: mit der lokal gespeicherten Paketliste vergleichen. Die ist
         # nur so aktuell wie das letzte „pacman -Sy“.
         repos = parse_sl(util.run(["pacman", "-Sl"]) or "")
-        note = "Vergleich mit der zuletzt heruntergeladenen Paketliste (für genaue Prüfung: pacman-contrib installieren)."
+        note = _("Vergleich mit der zuletzt heruntergeladenen Paketliste (für genaue Prüfung: pacman-contrib installieren).")
         results = {}
         for p in programs:
             latest = repos.get(p.name, ("", ""))[1]
             if not latest:
-                results[p.key] = UpdateResult(UpdateStatus.UNKNOWN, note="Nicht mehr in einem Repo gefunden.")
+                results[p.key] = UpdateResult(UpdateStatus.UNKNOWN, note=_("Nicht mehr in einem Repo gefunden."))
             elif util.vercmp(latest, p.version) > 0:
                 results[p.key] = UpdateResult(UpdateStatus.OUTDATED, latest, note)
             else:
@@ -282,14 +283,14 @@ class PacmanSource(PackageSource):
         for p in programs:
             latest = aur_versions.get(p.name)
             if latest is None:
-                note = "AUR nicht erreichbar." if failed else "Nicht (mehr) im AUR – evtl. selbst gebaut oder verwaist."
+                note = _("AUR nicht erreichbar.") if failed else _("Nicht (mehr) im AUR – evtl. selbst gebaut oder verwaist.")
                 results[p.key] = UpdateResult(UpdateStatus.UNKNOWN, note=note)
             elif re.search(r"-(git|svn|hg|bzr|nightly)$", p.name):
                 results[p.key] = UpdateResult(
                     UpdateStatus.UNKNOWN,
                     latest,
-                    "Entwicklerversion (-git o. ä.): baut immer den neuesten Stand, "
-                    "die Versionsnummer im AUR ist nicht aussagekräftig.",
+                    _("Entwicklerversion (-git o. ä.): baut immer den neuesten Stand, "
+                    "die Versionsnummer im AUR ist nicht aussagekräftig."),
                 )
             elif util.vercmp(latest, p.version) > 0:
                 results[p.key] = UpdateResult(UpdateStatus.OUTDATED, latest)

@@ -8,6 +8,7 @@ import shlex
 from pathlib import Path
 
 from cachy_kompass import APP_ID, APP_NAME, __version__, util
+from cachy_kompass.i18n import _
 from cachy_kompass.models import Program, Source
 from cachy_kompass.sources.base import PackageSource, ScanContext
 
@@ -99,7 +100,7 @@ class AppImageSource(PackageSource):
                     name=name,
                     version=version or "?",
                     source=Source.APPIMAGE,
-                    origin=f"Datei {path}",
+                    origin=_("Datei {path}").format(path=path),
                     executables=[str(path)],
                     install_path=str(path),
                 )
@@ -125,7 +126,7 @@ class ManualSource(PackageSource):
     (z. B. Verknüpfungen von pipx) übersprungen werden.
     """
 
-    title = "Manuell installierte Programme"
+    title = _("Manuell installierte Programme")
     handles = (Source.MANUAL,)
 
     def is_available(self) -> bool:
@@ -140,19 +141,19 @@ class ManualSource(PackageSource):
                 continue
             for entry in sorted(bin_dir.iterdir()):
                 if util.is_executable_file(entry) and not _is_managed_elsewhere(entry, known):
-                    hint = "vermutlich über „go install“" if bin_dir.name == "bin" and bin_dir.parent.name == "go" else ""
+                    hint = _("vermutlich über „go install“") if bin_dir.name == "bin" and bin_dir.parent.name == "go" else ""
                     candidates.append((entry, hint))
 
         if OPT_DIR.is_dir():
             for entry in sorted(OPT_DIR.iterdir()):
                 if entry.is_dir() and not any(str(entry.resolve()).startswith(p) for p in MANAGED_PREFIXES):
-                    candidates.append((entry, "Programmordner in /opt"))
+                    candidates.append((entry, _("Programmordner in /opt")))
 
         # Alles, was doch einem pacman-Paket gehört, fliegt raus. Erste Wahl ist
         # die Dateiliste, die die pacman-Quelle schon eingelesen hat; „pacman -Qo“
         # dient nur als zusätzliche Absicherung.
         candidates = [(p, h) for p, h in candidates if not is_pacman_owned(p, ctx.pacman_paths)]
-        owned_qo = util.pacman_owners(str(p) for p, _ in candidates)
+        owned_qo = util.pacman_owners(str(p) for p, _hint in candidates)
         other_names = {p.name.lower(): p for p in ctx.programs}
         own_launcher = HOME / ".local" / "bin" / APP_ID
 
@@ -164,8 +165,10 @@ class ManualSource(PackageSource):
             namesake = other_names.get(path.name.lower())
             if namesake:
                 notes.append(
-                    f"Achtung: Es ist auch „{namesake.name}“ als {namesake.info.label} installiert – "
-                    "dies ist eine zusätzliche, von Hand abgelegte Kopie"
+                    _(
+                        "Achtung: Es ist auch „{name}“ als {source} installiert – "
+                        "dies ist eine zusätzliche, von Hand abgelegte Kopie"
+                    ).format(name=namesake.name, source=namesake.info.label)
                 )
             exes = [str(path)] if path.is_file() else _find_main_executable(path)
             program = Program(
@@ -186,11 +189,11 @@ def _describe_self(program: Program) -> None:
     """Der Software-Kompass findet sich selbst – das soll er auch verständlich sagen."""
     program.display_name = APP_NAME
     program.version = __version__
-    program.description = (
+    program.description = _(
         "Dieses Programm. Wurde mit install.sh in deinen Benutzerordner installiert. "
         "Aktualisieren: im heruntergeladenen Ordner „git pull“ und danach „./install.sh“."
     )
-    program.origin = f"{program.install_path} (Startbefehl, angelegt von install.sh)"
+    program.origin = _("{path} (Startbefehl, angelegt von install.sh)").format(path=program.install_path)
     # Nur ausgeschriebene Pfade, keine Shell-Variablen: CachyOS nutzt standardmäßig
     # die fish-Shell, die z. B. „${XDG_DATA_HOME:-…}“ nicht versteht.
     data_home = Path(os.environ.get("XDG_DATA_HOME") or HOME / ".local" / "share")

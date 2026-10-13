@@ -59,6 +59,7 @@ from cachy_kompass.gui.table_model import (
 )
 from cachy_kompass.gui.update_dialog import UpdateAllDialog
 from cachy_kompass.gui.workers import TaskRunner
+from cachy_kompass.i18n import _, ngettext
 from cachy_kompass.installers import InstallerStatus, Rating
 from cachy_kompass.models import KIND_INFO, SOURCE_INFO, DesktopEntry, Kind, MenuStatus, Program, Source, UpdateStatus
 from cachy_kompass.sources import pacman
@@ -92,41 +93,41 @@ class MainWindow(QMainWindow):
     # --- Aufbau --------------------------------------------------------------
 
     def _build_toolbar(self) -> None:
-        bar = QToolBar("Werkzeuge")
+        bar = QToolBar(_("Werkzeuge"))
         bar.setMovable(False)
         bar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         self.addToolBar(bar)
 
-        self.scan_action = QAction(QIcon.fromTheme("view-refresh"), "Neu einlesen", self)
+        self.scan_action = QAction(QIcon.fromTheme("view-refresh"), _("Neu einlesen"), self)
         self.scan_action.setShortcut(QKeySequence.StandardKey.Refresh)
-        self.scan_action.setToolTip("Alle installierten Programme erneut suchen (F5)")
+        self.scan_action.setToolTip(_("Alle installierten Programme erneut suchen (F5)"))
         self.scan_action.triggered.connect(self.start_scan)
         bar.addAction(self.scan_action)
 
-        self.update_action = QAction(QIcon.fromTheme("system-software-update"), "Nach Updates suchen", self)
+        self.update_action = QAction(QIcon.fromTheme("system-software-update"), _("Nach Updates suchen"), self)
         self.update_action.setToolTip(
-            "Prüft im Internet, ob es neuere Versionen gibt. Es wird nichts installiert."
+            _("Prüft im Internet, ob es neuere Versionen gibt. Es wird nichts installiert.")
         )
         self.update_action.triggered.connect(self.start_update_check)
         bar.addAction(self.update_action)
 
-        self.upgrade_action = QAction(QIcon.fromTheme("system-upgrade", QIcon.fromTheme("go-up")), "Alles aktualisieren …", self)
-        self.upgrade_action.setToolTip("Systemupdate, Flatpaks usw. sichtbar in einem Terminalfenster installieren")
+        self.upgrade_action = QAction(QIcon.fromTheme("system-upgrade", QIcon.fromTheme("go-up")), _("Alles aktualisieren …"), self)
+        self.upgrade_action.setToolTip(_("Systemupdate, Flatpaks usw. sichtbar in einem Terminalfenster installieren"))
         self.upgrade_action.triggered.connect(self.update_everything)
         bar.addAction(self.upgrade_action)
 
-        self.backup_action = QAction(QIcon.fromTheme("document-save"), "Liste sichern …", self)
-        self.backup_action.setToolTip(
+        self.backup_action = QAction(QIcon.fromTheme("document-save"), _("Liste sichern …"), self)
+        self.backup_action.setToolTip(_(
             "Speichert alle installierten Programme als Skript – damit lässt sich nach einer "
             "Neuinstallation alles wieder einspielen"
-        )
+        ))
         self.backup_action.triggered.connect(self.save_backup)
         bar.addAction(self.backup_action)
         bar.addSeparator()
 
         self.search = QLineEdit()
-        self.search.setPlaceholderText("Suchen (in allen Reitern) …")
-        self.search.setToolTip("Durchsucht Namen, Beschreibungen, Startmenü-Einträge, Befehle und Pfade")
+        self.search.setPlaceholderText(_("Suchen (in allen Reitern) …"))
+        self.search.setToolTip(_("Durchsucht Namen, Beschreibungen, Startmenü-Einträge, Befehle und Pfade"))
         self.search.setClearButtonEnabled(True)
         self.search.setMinimumWidth(200)
         self.search.setMaximumWidth(260)
@@ -135,13 +136,13 @@ class MainWindow(QMainWindow):
 
         # Zweite Zeile: alle Filter (eine Zeile allein ist auf normalen Bildschirmen zu schmal)
         self.addToolBarBreak()
-        bar = QToolBar("Filter")
+        bar = QToolBar(_("Filter"))
         bar.setMovable(False)
         self.addToolBar(bar)
-        bar.addWidget(QLabel(" Filter: "))
+        bar.addWidget(QLabel(" " + _("Filter:") + " "))
 
         self.source_filter = QComboBox()
-        self.source_filter.addItem("Alle Quellen", None)
+        self.source_filter.addItem(_("Alle Quellen"), None)
         for src, info in SOURCE_INFO.items():
             self.source_filter.addItem(info.label, src)
         self.source_filter.currentIndexChanged.connect(
@@ -153,7 +154,7 @@ class MainWindow(QMainWindow):
         self.kind_button = QToolButton()
         self.kind_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
         self.kind_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
-        self.kind_button.setToolTip("Welche Arten von Programmen angezeigt werden – mehrere gleichzeitig möglich")
+        self.kind_button.setToolTip(_("Welche Arten von Programmen angezeigt werden – mehrere gleichzeitig möglich"))
         kind_menu = QMenu(self.kind_button)
         self.kind_boxes: dict[Kind, QCheckBox] = {}
         for kind, label in KIND_CHECKBOX_TEXT.items():
@@ -173,19 +174,19 @@ class MainWindow(QMainWindow):
         bar.addSeparator()
 
         self.menu_filter = QComboBox()
-        self.menu_filter.addItem("Startmenü: egal", None)
-        self.menu_filter.addItem("Startmenü: vorhanden", MenuStatus.VISIBLE)
-        self.menu_filter.addItem("Startmenü: versteckt", MenuStatus.HIDDEN)
-        self.menu_filter.addItem("Startmenü: fehlt", MenuStatus.NONE)
+        self.menu_filter.addItem(_("Startmenü: egal"), None)
+        self.menu_filter.addItem(_("Startmenü: vorhanden"), MenuStatus.VISIBLE)
+        self.menu_filter.addItem(_("Startmenü: versteckt"), MenuStatus.HIDDEN)
+        self.menu_filter.addItem(_("Startmenü: fehlt"), MenuStatus.NONE)
         self.menu_filter.currentIndexChanged.connect(
             lambda: self.proxy.update_filter(menu=self.menu_filter.currentData())
         )
         bar.addWidget(self.menu_filter)
 
         self.date_filter = QComboBox()
-        self.date_filter.setToolTip("Nur kürzlich installierte Programme zeigen")
-        for label, days in [("Installiert: egal", None), ("Installiert: letzte 7 Tage", 7),
-                            ("Installiert: letzte 30 Tage", 30), ("Installiert: letztes Jahr", 365)]:
+        self.date_filter.setToolTip(_("Nur kürzlich installierte Programme zeigen"))
+        for label, days in [(_("Installiert: egal"), None), (_("Installiert: letzte 7 Tage"), 7),
+                            (_("Installiert: letzte 30 Tage"), 30), (_("Installiert: letztes Jahr"), 365)]:
             self.date_filter.addItem(label, days)
         self.date_filter.currentIndexChanged.connect(
             lambda: self.proxy.update_filter(installed_within_days=self.date_filter.currentData())
@@ -210,19 +211,19 @@ class MainWindow(QMainWindow):
             return box
 
         self.outdated_box = add_box(
-            "Nur veraltete", "Nur Programme mit neuerer Version (erst nach „Nach Updates suchen“)",
+            _("Nur veraltete"), _("Nur Programme mit neuerer Version (erst nach „Nach Updates suchen“)"),
             lambda on: self.proxy.update_filter(only_outdated=on),
         )
         self.manual_box = add_box(
-            "Nur ohne Auto-Update", "Programme, die beim normalen Systemupdate nicht (sicher) mitaktualisiert werden",
+            _("Nur ohne Auto-Update"), _("Programme, die beim normalen Systemupdate nicht (sicher) mitaktualisiert werden"),
             lambda on: self.proxy.update_filter(only_manual_update=on),
         )
         self.duplicates_box = add_box(
-            "Nur doppelt installierte", "Programme, die aus mehreren Quellen installiert sind (z. B. Repo und Flatpak)",
+            _("Nur doppelt installierte"), _("Programme, die aus mehreren Quellen installiert sind (z. B. Repo und Flatpak)"),
             lambda on: self.proxy.update_filter(only_duplicates=on),
         )
         self.deps_box = add_box(
-            "Abhängigkeiten zeigen", "Auch Bibliotheken und automatisch mitinstallierte Pakete anzeigen",
+            _("Abhängigkeiten zeigen"), _("Auch Bibliotheken und automatisch mitinstallierte Pakete anzeigen"),
             self._toggle_dependencies,
         )
         self.more_boxes = [self.outdated_box, self.manual_box, self.duplicates_box, self.deps_box]
@@ -232,15 +233,15 @@ class MainWindow(QMainWindow):
 
     def _build_tabs(self) -> None:
         self.tabs = QTabWidget()
-        self.tabs.addTab(self._build_programs_tab(), "Programme")
-        self.tabs.addTab(self._build_entries_tab(), "Startmenü-Einträge")
-        self.tabs.addTab(self._build_installers_tab(), "Paketverwaltungen")
+        self.tabs.addTab(self._build_programs_tab(), _("Programme"))
+        self.tabs.addTab(self._build_entries_tab(), _("Startmenü-Einträge"))
+        self.tabs.addTab(self._build_installers_tab(), _("Paketverwaltungen"))
         self.cleanup_tab = CleanupTab(self)
-        self.tabs.addTab(self.cleanup_tab, "Aufräumen")
+        self.tabs.addTab(self.cleanup_tab, _("Aufräumen"))
         help_view = QTextBrowser()
         help_view.setOpenExternalLinks(True)
         help_view.setHtml(details.help_html())
-        self.tabs.addTab(help_view, "Hilfe")
+        self.tabs.addTab(help_view, _("Hilfe"))
         # Zeilenhöhen erst berechnen, wenn die Tabelle sichtbar ist und ihre echte Breite kennt
         self.tabs.currentChanged.connect(lambda _: self.installer_table.resizeRowsToContents())
 
@@ -278,17 +279,17 @@ class MainWindow(QMainWindow):
 
         self.details = QTextBrowser()
         self.details.setOpenExternalLinks(True)
-        self.details.setHtml("<p style='color:gray'>Wähle links ein Programm aus.</p>")
+        self.details.setHtml("<p style='color:gray'>" + _("Wähle links ein Programm aus.") + "</p>")
 
-        self.create_button = QPushButton(QIcon.fromTheme("list-add"), "Startmenü-Eintrag anlegen …")
+        self.create_button = QPushButton(QIcon.fromTheme("list-add"), _("Startmenü-Eintrag anlegen …"))
         self.create_button.clicked.connect(self.create_entry)
-        self.remove_button = QPushButton(QIcon.fromTheme("list-remove"), "Eintrag entfernen …")
-        self.remove_button.setToolTip("Entfernt einen Startmenü-Eintrag aus deinem Benutzerordner")
+        self.remove_button = QPushButton(QIcon.fromTheme("list-remove"), _("Eintrag entfernen …"))
+        self.remove_button.setToolTip(_("Entfernt einen Startmenü-Eintrag aus deinem Benutzerordner"))
         self.remove_button.clicked.connect(self.remove_own_entry)
-        self.copy_button = QPushButton(QIcon.fromTheme("edit-copy"), "Deinstallier-Befehl kopieren")
+        self.copy_button = QPushButton(QIcon.fromTheme("edit-copy"), _("Deinstallier-Befehl kopieren"))
         self.copy_button.clicked.connect(self.copy_uninstall)
-        self.copy_launch_button = QPushButton(QIcon.fromTheme("utilities-terminal"), "Startbefehl kopieren")
-        self.copy_launch_button.setToolTip("Befehl, mit dem das Programm im Terminal oder über Alt+F2 startet")
+        self.copy_launch_button = QPushButton(QIcon.fromTheme("utilities-terminal"), _("Startbefehl kopieren"))
+        self.copy_launch_button.setToolTip(_("Befehl, mit dem das Programm im Terminal oder über Alt+F2 startet"))
         self.copy_launch_button.clicked.connect(self.copy_launch)
         for b in (self.create_button, self.remove_button, self.copy_button, self.copy_launch_button):
             b.setEnabled(False)
@@ -315,14 +316,14 @@ class MainWindow(QMainWindow):
         return splitter
 
     def _build_entries_tab(self) -> QWidget:
-        info = QLabel(
+        info = QLabel(_(
             "Alle Startmenü-Einträge auf diesem System. Unter „Startbefehl“ steht, wie du das Programm "
             "auch im Terminal oder über Alt+F2 startest. „Programm fehlt“ bedeutet: Der Eintrag "
             "zeigt auf ein Programm, das es nicht (mehr) gibt – er ist also vermutlich kaputt."
-        )
+        ))
         info.setWordWrap(True)
         self.entries_table = QTableWidget(0, 6)
-        self.entries_table.setHorizontalHeaderLabels(["Name", "Sichtbar", "Gehört zu", "Art", "Startbefehl", "Datei"])
+        self.entries_table.setHorizontalHeaderLabels([_("Name"), _("Sichtbar"), _("Gehört zu"), _("Art"), _("Startbefehl"), _("Datei")])
         self.entries_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.entries_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.entries_table.setSortingEnabled(True)
@@ -332,22 +333,22 @@ class MainWindow(QMainWindow):
             self.entries_table.setColumnWidth(col, width)
         self.entries_table.itemSelectionChanged.connect(self._entry_selected)
 
-        self.entry_edit_button = QPushButton(QIcon.fromTheme("document-edit"), "Bearbeiten …")
-        self.entry_edit_button.setToolTip(
+        self.entry_edit_button = QPushButton(QIcon.fromTheme("document-edit"), _("Bearbeiten …"))
+        self.entry_edit_button.setToolTip(_(
             "Name, Symbol, Startbefehl usw. ändern. Systemeinträge bleiben unverändert – "
             "die Änderung wird als eigene Fassung in deinem Benutzerordner gespeichert."
-        )
+        ))
         self.entry_edit_button.clicked.connect(self._edit_selected_entry)
-        self.entry_visible_button = QPushButton(QIcon.fromTheme("view-visible"), "Einblenden")
-        self.entry_visible_button.setToolTip("Den Eintrag im Startmenü zeigen bzw. verstecken")
+        self.entry_visible_button = QPushButton(QIcon.fromTheme("view-visible"), _("Einblenden"))
+        self.entry_visible_button.setToolTip(_("Den Eintrag im Startmenü zeigen bzw. verstecken"))
         self.entry_visible_button.clicked.connect(self._toggle_selected_entry)
-        self.entry_remove_button = QPushButton(QIcon.fromTheme("list-remove"), "Entfernen …")
+        self.entry_remove_button = QPushButton(QIcon.fromTheme("list-remove"), _("Entfernen …"))
         self.entry_remove_button.setToolTip(
-            "Nur Einträge in deinem Benutzerordner können entfernt werden, Systemeinträge nicht."
+            _("Nur Einträge in deinem Benutzerordner können entfernt werden, Systemeinträge nicht.")
         )
         self.entry_remove_button.clicked.connect(self._remove_selected_entry)
-        self.entry_copy_button = QPushButton(QIcon.fromTheme("utilities-terminal"), "Startbefehl kopieren")
-        self.entry_copy_button.setToolTip("Befehl, mit dem das Programm im Terminal oder über Alt+F2 startet")
+        self.entry_copy_button = QPushButton(QIcon.fromTheme("utilities-terminal"), _("Startbefehl kopieren"))
+        self.entry_copy_button.setToolTip(_("Befehl, mit dem das Programm im Terminal oder über Alt+F2 startet"))
         self.entry_copy_button.clicked.connect(self._copy_entry_command)
         for b in (self.entry_edit_button, self.entry_visible_button, self.entry_remove_button, self.entry_copy_button):
             b.setEnabled(False)
@@ -367,14 +368,14 @@ class MainWindow(QMainWindow):
         return widget
 
     def _build_installers_tab(self) -> QWidget:
-        info = QLabel(
+        info = QLabel(_(
             "Welche Paketverwaltungen, App-Stores und Update-Werkzeuge auf diesem System vorhanden "
             "sind – und ob sie unter CachyOS empfehlenswert sind. Viele davon werden durch Anleitungen "
             "aus dem Internet nachinstalliert. Wähle eine Zeile für Details."
-        )
+        ))
         info.setWordWrap(True)
         self.installer_table = QTableWidget(0, 6)
-        self.installer_table.setHorizontalHeaderLabels(["Werkzeug", "Art", "Vorhanden", "Programme", "Einstufung", "Erklärung"])
+        self.installer_table.setHorizontalHeaderLabels([_("Werkzeug"), _("Art"), _("Vorhanden"), _("Programme"), _("Einstufung"), _("Erklärung")])
         self.installer_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.installer_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.installer_table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
@@ -390,8 +391,8 @@ class MainWindow(QMainWindow):
         self.installer_table.itemSelectionChanged.connect(self._installer_selected)
 
         self.installer_details = QTextBrowser()
-        self.installer_details.setHtml("<p style='color:gray'>Wähle links ein Werkzeug aus.</p>")
-        self.install_button = QPushButton(QIcon.fromTheme("run-install", QIcon.fromTheme("list-add")), "Installieren …")
+        self.installer_details.setHtml("<p style='color:gray'>" + _("Wähle links ein Werkzeug aus.") + "</p>")
+        self.install_button = QPushButton(QIcon.fromTheme("run-install", QIcon.fromTheme("list-add")), _("Installieren …"))
         self.install_button.setEnabled(False)
         self.install_button.clicked.connect(self._install_selected)
 
@@ -434,8 +435,8 @@ class MainWindow(QMainWindow):
 
     def _error(self, details_text: str) -> None:
         self._set_busy(False)
-        self._status("Fehler – Details im Fenster.")
-        box = QMessageBox(QMessageBox.Icon.Critical, "Fehler", "Leider ist ein Fehler aufgetreten.", parent=self)
+        self._status(_("Fehler – Details im Fenster."))
+        box = QMessageBox(QMessageBox.Icon.Critical, _("Fehler"), _("Leider ist ein Fehler aufgetreten."), parent=self)
         box.setDetailedText(details_text)
         box.exec()
 
@@ -456,11 +457,14 @@ class MainWindow(QMainWindow):
         visible = sum(p.explicit for p in result.programs)
         no_menu = sum(p.explicit and p.menu_status is MenuStatus.NONE for p in result.programs)
         self._status(
-            f"{visible} Programme gefunden ({len(result.programs)} Pakete inkl. Abhängigkeiten), "
-            f"{no_menu} davon ohne Startmenü-Eintrag."
+            ngettext("{n} Programm gefunden", "{n} Programme gefunden", visible).format(n=visible)
+            + " "
+            + _("({packages} Pakete inkl. Abhängigkeiten), {no_menu} davon ohne Startmenü-Eintrag.").format(
+                packages=len(result.programs), no_menu=no_menu
+            )
         )
         if result.warnings:
-            QMessageBox.warning(self, "Nicht alles konnte gelesen werden", "\n".join(result.warnings))
+            QMessageBox.warning(self, _("Nicht alles konnte gelesen werden"), "\n".join(result.warnings))
 
     def start_update_check(self) -> None:
         if self.runner.busy or not self.result:
@@ -479,7 +483,11 @@ class MainWindow(QMainWindow):
         self._set_busy(False)
         self._show_details(self.table.currentIndex())
         outdated = sum(1 for r in results.values() if r.status is UpdateStatus.OUTDATED)
-        self._status(f"Update-Prüfung fertig: {outdated} Programme haben eine neuere Version.")
+        self._status(ngettext(
+            "Update-Prüfung fertig: {n} Programm hat eine neuere Version.",
+            "Update-Prüfung fertig: {n} Programme haben eine neuere Version.",
+            outdated,
+        ).format(n=outdated))
 
     def _apply_search(self, _text: str = "") -> None:
         """Filtert alle Reiter gleichzeitig nach dem Suchbegriff."""
@@ -504,11 +512,11 @@ class MainWindow(QMainWindow):
     def _update_kind_button(self) -> None:
         kinds = self.selected_kinds()
         if not kinds:
-            text = "Art: keine"
+            text = _("Art: keine")
         elif len(kinds) == len(self.kind_boxes):
-            text = "Art: alle"
+            text = _("Art: alle")
         else:
-            text = "Art: " + ", ".join(KIND_CHECKBOX_TEXT[k] for k in self.kind_boxes if k in kinds)
+            text = _("Art:") + " " + ", ".join(KIND_CHECKBOX_TEXT[k] for k in self.kind_boxes if k in kinds)
         self.kind_button.setText(text)
 
     def _kinds_changed(self, _checked: bool = False) -> None:
@@ -518,8 +526,8 @@ class MainWindow(QMainWindow):
 
     def _update_more_button(self, _checked: bool = False) -> None:
         active = [b.text() for b in self.more_boxes if b.isChecked()]
-        self.more_button.setText(f"Weitere Filter ({len(active)})" if active else "Weitere Filter")
-        self.more_button.setToolTip("Aktiv: " + ", ".join(active) if active else "Weitere Filter")
+        self.more_button.setText(_("Weitere Filter ({n})").format(n=len(active)) if active else _("Weitere Filter"))
+        self.more_button.setToolTip(_("Aktiv: {filters}").format(filters=", ".join(active)) if active else _("Weitere Filter"))
 
     def _toggle_dependencies(self, on: bool) -> None:
         self.proxy.update_filter(show_dependencies=on)
@@ -557,8 +565,8 @@ class MainWindow(QMainWindow):
         info = self.result.reboot
         if info.needed:
             self.reboot_banner.setText(
-                f"<b>🔄 Neustart empfohlen.</b> {info.message()} Erst nach einem Neustart läuft "
-                "alles mit den neuen Versionen."
+                "<b>🔄 " + _("Neustart empfohlen.") + "</b> " + info.message() + " "
+                + _("Erst nach einem Neustart läuft alles mit den neuen Versionen.")
             )
         self.reboot_banner.setVisible(info.needed)
 
@@ -572,37 +580,39 @@ class MainWindow(QMainWindow):
             return
         commands = dialog.selected_commands()
         if terminal.run_in_terminal(commands):
-            self._status("Terminal geöffnet. Wenn die Updates fertig sind, auf „Neu einlesen“ klicken.")
+            self._status(_("Terminal geöffnet. Wenn die Updates fertig sind, auf „Neu einlesen“ klicken."))
         else:
             QGuiApplication.clipboard().setText(terminal.describe(commands))
             QMessageBox.information(
                 self,
-                "Kein Terminal gefunden",
-                "Es wurde kein Terminalprogramm gefunden. Die Befehle wurden in die Zwischenablage kopiert:\n\n"
-                f"{terminal.describe(commands)}",
+                _("Kein Terminal gefunden"),
+                _("Es wurde kein Terminalprogramm gefunden. Die Befehle wurden in die Zwischenablage kopiert:")
+                + f"\n\n{terminal.describe(commands)}",
             )
 
     def save_backup(self) -> None:
         if not self.result:
             return
         start = Path.home() / backup.default_filename()
-        path, _ = QFileDialog.getSaveFileName(
-            self, "Programmliste sichern", str(start), "Shell-Skript (*.sh);;Alle Dateien (*)"
+        path, _filter = QFileDialog.getSaveFileName(
+            self, _("Programmliste sichern"), str(start), _("Shell-Skript") + " (*.sh);;" + _("Alle Dateien") + " (*)"
         )
         if not path:
             return
         try:
             Path(path).write_text(backup.build_script(self.result.programs, hostname=socket.gethostname()), encoding="utf-8")
         except OSError as exc:
-            QMessageBox.critical(self, "Fehler", f"Die Datei konnte nicht gespeichert werden:\n{exc}")
+            QMessageBox.critical(self, _("Fehler"), _("Die Datei konnte nicht gespeichert werden:") + f"\n{exc}")
             return
         QMessageBox.information(
             self,
-            "Programmliste gesichert",
-            f"Gespeichert in:\n{path}\n\nDie Datei ist gleichzeitig eine lesbare Liste und ein Skript. "
-            "Kopiere sie am besten auf einen USB-Stick oder in die Cloud. Nach einer Neuinstallation "
-            f"stellst du die Programme im Terminal wieder her mit:\n\n    bash {Path(path).name}\n\n"
-            "Vor jeder Installation wird nachgefragt.",
+            _("Programmliste gesichert"),
+            _(
+                "Gespeichert in:\n{path}\n\nDie Datei ist gleichzeitig eine lesbare Liste und ein Skript. "
+                "Kopiere sie am besten auf einen USB-Stick oder in die Cloud. Nach einer Neuinstallation "
+                "stellst du die Programme im Terminal wieder her mit:\n\n    bash {file}\n\n"
+                "Vor jeder Installation wird nachgefragt."
+            ).format(path=path, file=Path(path).name),
         )
 
     def create_entry(self) -> None:
@@ -612,8 +622,8 @@ class MainWindow(QMainWindow):
         if program.menu_status is MenuStatus.VISIBLE:
             answer = QMessageBox.question(
                 self,
-                "Schon vorhanden",
-                f"„{program.display_name}“ hat bereits einen Startmenü-Eintrag.\n\nTrotzdem einen weiteren anlegen?",
+                _("Schon vorhanden"),
+                _("„{name}“ hat bereits einen Startmenü-Eintrag.\n\nTrotzdem einen weiteren anlegen?").format(name=program.display_name),
             )
             if answer != QMessageBox.StandardButton.Yes:
                 return
@@ -621,7 +631,7 @@ class MainWindow(QMainWindow):
             return
         dialog = EntryDialog(program, self)
         if dialog.exec() and dialog.created_path:
-            self._status(f"Eintrag angelegt: {dialog.created_path}")
+            self._status(_("Eintrag angelegt: {path}").format(path=dialog.created_path))
             self._rematch()
 
     def _offer_unhide(self, program: Program) -> bool:
@@ -629,15 +639,17 @@ class MainWindow(QMainWindow):
         entry = program.desktop_entries[0]
         box = QMessageBox(
             QMessageBox.Icon.Question,
-            "Versteckter Eintrag vorhanden",
-            f"„{program.display_name}“ hat schon einen Startmenü-Eintrag („{entry.name}“), er ist aber "
-            "ausgeblendet. Oft ist das Absicht (z. B. bei Hilfsprogrammen).\n\n"
-            "Soll der vorhandene Eintrag eingeblendet werden, oder möchtest du einen neuen anlegen?",
+            _("Versteckter Eintrag vorhanden"),
+            _(
+                "„{name}“ hat schon einen Startmenü-Eintrag („{entry}“), er ist aber "
+                "ausgeblendet. Oft ist das Absicht (z. B. bei Hilfsprogrammen).\n\n"
+                "Soll der vorhandene Eintrag eingeblendet werden, oder möchtest du einen neuen anlegen?"
+            ).format(name=program.display_name, entry=entry.name),
             parent=self,
         )
-        unhide = box.addButton("Einblenden", QMessageBox.ButtonRole.AcceptRole)
-        new = box.addButton("Neuen anlegen …", QMessageBox.ButtonRole.ActionRole)
-        box.addButton("Abbrechen", QMessageBox.ButtonRole.RejectRole)
+        unhide = box.addButton(_("Einblenden"), QMessageBox.ButtonRole.AcceptRole)
+        new = box.addButton(_("Neuen anlegen …"), QMessageBox.ButtonRole.ActionRole)
+        box.addButton(_("Abbrechen"), QMessageBox.ButtonRole.RejectRole)
         box.exec()
         if box.clickedButton() is new:
             return False
@@ -645,9 +657,9 @@ class MainWindow(QMainWindow):
             try:
                 desktop.set_visible(entry, True)
             except OSError as exc:
-                QMessageBox.critical(self, "Fehler", str(exc))
+                QMessageBox.critical(self, _("Fehler"), str(exc))
                 return True
-            self._status(f"„{entry.name}“ eingeblendet.")
+            self._status(_("„{name}“ eingeblendet.").format(name=entry.name))
             self._rematch()
         return True
 
@@ -661,7 +673,9 @@ class MainWindow(QMainWindow):
         entry = removable[0]
         if len(removable) > 1:
             labels = [f"{e.name}  ({e.path.name})" for e in removable]
-            choice, ok = QInputDialog.getItem(self, "Eintrag entfernen", "Welcher Eintrag soll entfernt werden?", labels, 0, False)
+            choice, ok = QInputDialog.getItem(
+                self, _("Eintrag entfernen"), _("Welcher Eintrag soll entfernt werden?"), labels, 0, False
+            )
             if not ok:
                 return
             entry = removable[labels.index(choice)]
@@ -671,31 +685,31 @@ class MainWindow(QMainWindow):
     def _confirm_remove(self, entry: DesktopEntry) -> bool:
         system = desktop.overridden_system_entry(entry)
         if system:
-            text = (
-                f"Deine eigene Fassung von „{entry.name}“ entfernen und das Original wiederherstellen?\n\n"
-                f"Entfernt wird: {entry.path}\nDanach gilt wieder: {system}"
-            )
+            text = _(
+                "Deine eigene Fassung von „{name}“ entfernen und das Original wiederherstellen?\n\n"
+                "Entfernt wird: {path}\nDanach gilt wieder: {original}"
+            ).format(name=entry.name, path=entry.path, original=system)
         else:
-            text = f"Den Eintrag „{entry.name}“ wirklich entfernen?\n\n{entry.path}"
+            text = _("Den Eintrag „{name}“ wirklich entfernen?").format(name=entry.name) + f"\n\n{entry.path}"
         if not system and not entry.created_by_us:
-            text += (
-                "\n\nAchtung: Diesen Eintrag hat nicht der Software-Kompass angelegt, sondern du selbst "
+            text += "\n\n" + _(
+                "Achtung: Diesen Eintrag hat nicht der Software-Kompass angelegt, sondern du selbst "
                 "oder ein anderes Programm (z. B. Steam, Gear Lever, AppImageLauncher). "
                 "Das Programm selbst bleibt installiert – nur der Menüeintrag verschwindet."
             )
-        box = QMessageBox(QMessageBox.Icon.Question, "Eintrag entfernen", text, parent=self)
+        box = QMessageBox(QMessageBox.Icon.Question, _("Eintrag entfernen"), text, parent=self)
         box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         box.setDefaultButton(QMessageBox.StandardButton.No)
-        box.button(QMessageBox.StandardButton.Yes).setText("Wiederherstellen" if system else "Entfernen")
-        box.button(QMessageBox.StandardButton.No).setText("Abbrechen")
+        box.button(QMessageBox.StandardButton.Yes).setText(_("Wiederherstellen") if system else _("Entfernen"))
+        box.button(QMessageBox.StandardButton.No).setText(_("Abbrechen"))
         if box.exec() != QMessageBox.StandardButton.Yes:
             return False
         try:
             desktop.remove_entry(entry)
         except OSError as exc:
-            QMessageBox.critical(self, "Fehler", str(exc))
+            QMessageBox.critical(self, _("Fehler"), str(exc))
             return False
-        self._status(f"Eintrag entfernt: {entry.path}")
+        self._status(_("Eintrag entfernt: {path}").format(path=entry.path))
         return True
 
     def copy_launch(self) -> None:
@@ -703,13 +717,13 @@ class MainWindow(QMainWindow):
         command = desktop.launch_command(program) if program else ""
         if command:
             QGuiApplication.clipboard().setText(command)
-            self._status(f"In die Zwischenablage kopiert: {command}")
+            self._status(_("In die Zwischenablage kopiert: {text}").format(text=command))
 
     def copy_uninstall(self) -> None:
         program = self.current_program()
         if program:
             QGuiApplication.clipboard().setText(program.uninstall_command())
-            self._status(f"In die Zwischenablage kopiert: {program.uninstall_command()}")
+            self._status(_("In die Zwischenablage kopiert: {text}").format(text=program.uninstall_command()))
 
     def _rematch(self) -> None:
         """Startmenü neu einlesen, ohne alle Pakete erneut abzufragen."""
@@ -737,11 +751,12 @@ class MainWindow(QMainWindow):
             kind = desktop.entry_kind(e, owner)
             cells = [
                 (e.name, None),
-                ("ja" if e.visible else "nein (von dir)" if e.hidden_by_user else "nein",
+                (_("ja") if e.visible else _("nein (von dir)") if e.hidden_by_user else _("nein"),
                  GREEN if e.visible else ORANGE if e.hidden_by_user else GREY),
                 (owner_text, None),
                 (KIND_TEXT[kind], None),
-                (desktop.shell_command(e.exec) if exists else f"✘ Programm fehlt: {missing}", None if exists else RED),
+                (desktop.shell_command(e.exec) if exists else _("✘ Programm fehlt: {program}").format(program=missing),
+                 None if exists else RED),
                 (str(e.path), None),
             ]
             for col, (text, color) in enumerate(cells):
@@ -751,21 +766,22 @@ class MainWindow(QMainWindow):
                 if col == 0:
                     item.setData(Qt.ItemDataRole.UserRole, e)
                     if e.created_by_us:
-                        item.setToolTip("Vom Software-Kompass angelegt")
+                        item.setToolTip(_("Vom Software-Kompass angelegt"))
                     elif desktop.origin_note(e):
                         item.setToolTip(desktop.origin_note(e))
                     elif desktop.is_user_entry(e):
-                        item.setToolTip("Liegt in deinem Benutzerordner (von dir oder einem Programm angelegt)")
+                        item.setToolTip(_("Liegt in deinem Benutzerordner (von dir oder einem Programm angelegt)"))
                 if col == ENTRY_COL_KIND:
                     item.setData(Qt.ItemDataRole.UserRole, kind)
                     item.setToolTip(KIND_INFO[kind])
                 if col == ENTRY_COL_COMMAND:
                     if missing:
-                        item.setToolTip(f"Nicht gefunden: {missing}\nStartbefehl im Eintrag: {e.exec}")
+                        item.setToolTip(_("Nicht gefunden: {program}\nStartbefehl im Eintrag: {command}").format(program=missing, command=e.exec))
                     else:
                         item.setToolTip(
-                            f"Im Terminal oder über Alt+F2 starten mit: {desktop.shell_command(e.exec)}\n"
-                            f"Startbefehl im Eintrag: {e.exec}"
+                            _("Im Terminal oder über Alt+F2 starten mit: {shell}\nStartbefehl im Eintrag: {command}").format(
+                                shell=desktop.shell_command(e.exec), command=e.exec
+                            )
                         )
                 table.setItem(row, col, item)
         table.setSortingEnabled(True)
@@ -787,10 +803,10 @@ class MainWindow(QMainWindow):
         self.entry_copy_button.setEnabled(bool(entry and desktop.shell_command(entry.exec)))
         if entry is None:
             return
-        self.entry_visible_button.setText("Ausblenden" if entry.visible else "Einblenden")
+        self.entry_visible_button.setText(_("Ausblenden") if entry.visible else _("Einblenden"))
         self.entry_visible_button.setIcon(QIcon.fromTheme("view-hidden" if entry.visible else "view-visible"))
         restores = desktop.can_remove(entry) and desktop.overridden_system_entry(entry) is not None
-        self.entry_remove_button.setText("Original wiederherstellen …" if restores else "Entfernen …")
+        self.entry_remove_button.setText(_("Original wiederherstellen …") if restores else _("Entfernen …"))
 
     def _edit_selected_entry(self) -> None:
         entry = self._selected_entry()
@@ -798,7 +814,7 @@ class MainWindow(QMainWindow):
             return
         dialog = EntryDialog(self.result.owner_of(entry), self, entry=entry)
         if dialog.exec() and dialog.created_path:
-            self._status(f"Eintrag gespeichert: {dialog.created_path}")
+            self._status(_("Eintrag gespeichert: {path}").format(path=dialog.created_path))
             self._rematch()
 
     def _toggle_selected_entry(self) -> None:
@@ -808,21 +824,25 @@ class MainWindow(QMainWindow):
         try:
             path = desktop.set_visible(entry, not entry.visible)
         except OSError as exc:
-            QMessageBox.critical(self, "Fehler", str(exc))
+            QMessageBox.critical(self, _("Fehler"), str(exc))
             return
-        word = "ausgeblendet" if entry.visible else "eingeblendet"
-        self._status(f"„{entry.name}“ {word} (gespeichert in {path}).")
+        if entry.visible:
+            self._status(_("„{name}“ ausgeblendet (gespeichert in {path}).").format(name=entry.name, path=path))
+        else:
+            self._status(_("„{name}“ eingeblendet (gespeichert in {path}).").format(name=entry.name, path=path))
         command = desktop.shell_command(entry.exec)
         if entry.visible and command:
             QMessageBox.information(
                 self,
-                "Eintrag ausgeblendet",
-                f"„{entry.name}“ erscheint nicht mehr im Startmenü. Das Programm ist aber weiter "
-                f"installiert und lässt sich so starten:\n\n"
-                f"    {command}\n\n"
-                "– im Terminal (z. B. Konsole) oder nach Alt+F2 (KRunner) eingeben.\n\n"
-                "Wieder einblenden: hier im Reiter „Startmenü-Einträge“ den Eintrag wählen und "
-                "„Einblenden“ bzw. „Original wiederherstellen …“ klicken.",
+                _("Eintrag ausgeblendet"),
+                _(
+                    "„{name}“ erscheint nicht mehr im Startmenü. Das Programm ist aber weiter "
+                    "installiert und lässt sich so starten:\n\n"
+                    "    {command}\n\n"
+                    "– im Terminal (z. B. Konsole) oder nach Alt+F2 (KRunner) eingeben.\n\n"
+                    "Wieder einblenden: hier im Reiter „Startmenü-Einträge“ den Eintrag wählen und "
+                    "„Einblenden“ bzw. „Original wiederherstellen …“ klicken."
+                ).format(name=entry.name, command=command),
             )
         self._rematch()
 
@@ -831,7 +851,7 @@ class MainWindow(QMainWindow):
         command = desktop.shell_command(entry.exec) if entry else ""
         if command:
             QGuiApplication.clipboard().setText(command)
-            self._status(f"In die Zwischenablage kopiert: {command}")
+            self._status(_("In die Zwischenablage kopiert: {text}").format(text=command))
 
     def _remove_selected_entry(self) -> None:
         entry = self._selected_entry()
@@ -857,31 +877,33 @@ class MainWindow(QMainWindow):
             return
         spec = status.spec
         command = shlex.join(status.install_command)
-        text = (
-            f"„{spec.name}“ installieren?\n\n{spec.description}\n\n"
-            f"Einstufung: {spec.rating.value} – {spec.reason}\n\n"
-            f"Es öffnet sich ein Terminalfenster mit diesem Befehl:\n\n    {command}\n\n"
+        text = _(
+            "„{name}“ installieren?\n\n{description}\n\n"
+            "Einstufung: {rating} – {reason}\n\n"
+            "Es öffnet sich ein Terminalfenster mit diesem Befehl:\n\n    {command}\n\n"
             "Dort siehst du genau, was passiert, und gibst – falls nötig – dein Passwort ein. "
             "Bevor pacman etwas installiert, fragt es noch einmal nach."
-        )
+        ).format(name=spec.name, description=spec.description, rating=spec.rating.value, reason=spec.reason, command=command)
         if spec.after_install:
-            text += f"\n\nDanach wichtig: {spec.after_install}"
-        box = QMessageBox(QMessageBox.Icon.Question, "Installieren", text, parent=self)
+            text += "\n\n" + _("Danach wichtig: {note}").format(note=spec.after_install)
+        box = QMessageBox(QMessageBox.Icon.Question, _("Installieren"), text, parent=self)
         box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         box.setDefaultButton(QMessageBox.StandardButton.No)
-        box.button(QMessageBox.StandardButton.Yes).setText("Terminal öffnen")
-        box.button(QMessageBox.StandardButton.No).setText("Abbrechen")
+        box.button(QMessageBox.StandardButton.Yes).setText(_("Terminal öffnen"))
+        box.button(QMessageBox.StandardButton.No).setText(_("Abbrechen"))
         if box.exec() != QMessageBox.StandardButton.Yes:
             return
         if terminal.run_in_terminal(status.install_command):
-            self._status("Terminal geöffnet. Wenn die Installation fertig ist, auf „Neu einlesen“ klicken.")
+            self._status(_("Terminal geöffnet. Wenn die Installation fertig ist, auf „Neu einlesen“ klicken."))
         else:
             QGuiApplication.clipboard().setText(command)
             QMessageBox.information(
                 self,
-                "Kein Terminal gefunden",
-                f"Es wurde kein Terminalprogramm gefunden. Der Befehl wurde in die Zwischenablage kopiert:\n\n{command}\n\n"
-                "Füge ihn in ein Terminal ein und drücke Enter.",
+                _("Kein Terminal gefunden"),
+                _(
+                    "Es wurde kein Terminalprogramm gefunden. Der Befehl wurde in die Zwischenablage kopiert:\n\n{command}\n\n"
+                    "Füge ihn in ein Terminal ein und drücke Enter."
+                ).format(command=command),
             )
 
     def _fill_installer_table(self) -> None:
@@ -892,7 +914,7 @@ class MainWindow(QMainWindow):
         table.setRowCount(len(rows))
         for row, status in enumerate(rows):
             spec = status.spec
-            present_text = "✔ ja" if status.present else "–"
+            present_text = "✔ " + _("ja") if status.present else "–"
             count = "" if status.program_count is None else str(status.program_count)
             cells = [spec.name, spec.kind, present_text, count, spec.rating.value, spec.description]
             for col, text in enumerate(cells):
@@ -904,7 +926,7 @@ class MainWindow(QMainWindow):
                 if col == 2:
                     item.setForeground(GREEN if status.present else GREY)
                     if status.found_via:
-                        item.setToolTip("Gefunden über: " + ", ".join(status.found_via))
+                        item.setToolTip(_("Gefunden über: {what}").format(what=", ".join(status.found_via)))
                 if col == 4:
                     item.setForeground(RATING_COLOR[spec.rating])
                     item.setToolTip(spec.reason)

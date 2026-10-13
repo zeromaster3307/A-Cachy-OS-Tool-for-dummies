@@ -4,6 +4,20 @@ Hier steht, was sich von Version zu Version geändert hat. Die installierte
 Version siehst du im Fenstertitel, im Reiter „Hilfe“ oder mit
 `cachy-kompass --version`.
 
+## 0.6.0
+
+- **Englische Oberfläche:** Der Software-Kompass gibt es jetzt auch auf
+  Englisch – Oberfläche, Hilfe, Textmodus, Terminal-Meldungen und das
+  Wiederherstellungs-Skript von „Liste sichern“. Die Sprache richtet sich nach
+  der Systemsprache; mit `--lang en` bzw. `--lang de` oder der Variable
+  `CACHY_KOMPASS_LANG` lässt sie sich festlegen. Datum und Zahlen werden passend
+  geschrieben (`2026-10-03`, `1.2 GB`).
+- **README auf Englisch:** [README.en.md](README.en.md).
+- Kleinigkeiten: „1 Paket“ statt „1 Pakete“ in Statuszeile, Aufräumen und
+  Wiederherstellungs-Skript.
+- Für Entwickler: Texte werden mit `_()` markiert, `python tools/i18n.py check`
+  meldet fehlende Übersetzungen (siehe docs/ENTWICKLUNG.md).
+
 ## 0.5.3
 
 - **Behoben:** Der Software-Kompass zeigte bei sich selbst nur die Größe des

@@ -26,6 +26,7 @@ from PySide6.QtWidgets import (
 from cachy_kompass import cleanup, desktop, terminal, util
 from cachy_kompass.cleanup import Action, CleanupItem
 from cachy_kompass.gui.table_model import GREEN, GREY, ORANGE
+from cachy_kompass.i18n import _, ngettext
 
 if TYPE_CHECKING:
     from cachy_kompass.gui.main_window import MainWindow
@@ -35,25 +36,30 @@ MAX_DETAILS = 60
 
 def item_html(item: CleanupItem) -> str:
     parts = [f"<h2>{escape(item.title)}</h2>", f"<p>{escape(item.explanation)}</p>"]
-    parts.append(f"<h3>Ergebnis: {escape(item.summary)}</h3>")
+    parts.append("<h3>" + escape(_("Ergebnis: {summary}").format(summary=item.summary)) + "</h3>")
     if item.details:
         shown = item.details[:MAX_DETAILS]
         rest = len(item.details) - len(shown)
         parts.append("<ul>" + "".join(f"<li>{escape(d)}</li>" for d in shown) + "</ul>")
         if rest:
-            parts.append(f"<p style='color:gray'>… und {rest} weitere.</p>")
+            parts.append("<p style='color:gray'>" + escape(_("… und {n} weitere.").format(n=rest)) + "</p>")
     if item.action is Action.TERMINAL:
         parts.append(
-            "<p>Klicke auf „Aufräumen …“. Es öffnet sich ein Terminalfenster mit diesen Befehlen:<br>"
+            "<p>" + escape(_("Klicke auf „Aufräumen …“. Es öffnet sich ein Terminalfenster mit diesen Befehlen:")) + "<br>"
             f"<code>{escape(terminal.describe(item.commands))}</code></p>"
         )
     elif item.action is Action.REMOVE_ENTRIES:
-        parts.append(f"<p>Klicke auf „Aufräumen …“, um {len(item.entries)} Einträge aus deinem Benutzerordner zu entfernen.</p>")
+        n = len(item.entries)
+        parts.append("<p>" + escape(ngettext(
+            "Klicke auf „Aufräumen …“, um {n} Eintrag aus deinem Benutzerordner zu entfernen.",
+            "Klicke auf „Aufräumen …“, um {n} Einträge aus deinem Benutzerordner zu entfernen.",
+            n,
+        ).format(n=n)) + "</p>")
     if item.warning:
-        parts.append(f"<p><b>Gut zu wissen:</b> {escape(item.warning)}</p>")
+        parts.append("<p><b>" + escape(_("Gut zu wissen:")) + f"</b> {escape(item.warning)}</p>")
     if item.manual_command:
         parts.append(
-            "<p style='color:gray'>Kein Aufräum-Knopf – falls du es selbst machen willst, ginge es so:<br>"
+            "<p style='color:gray'>" + escape(_("Kein Aufräum-Knopf – falls du es selbst machen willst, ginge es so:")) + "<br>"
             f"<code>{escape(item.manual_command)}</code></p>"
         )
     return "".join(parts)
@@ -65,13 +71,13 @@ class CleanupTab(QWidget):
         self.main = window
         self.items: list[CleanupItem] = []
 
-        info = QLabel(
+        info = QLabel(_(
             "Findet Dinge, die unnötig Platz belegen oder kaputt sind. Das Prüfen verändert nichts. "
             "Aufgeräumt wird nur, wenn du es bestätigst – Befehle mit Administratorrechten laufen "
             "dabei sichtbar in einem Terminalfenster."
-        )
+        ))
         info.setWordWrap(True)
-        self.check_button = QPushButton(QIcon.fromTheme("edit-find"), "Jetzt prüfen")
+        self.check_button = QPushButton(QIcon.fromTheme("edit-find"), _("Jetzt prüfen"))
         self.check_button.clicked.connect(self.start_check)
         self.total_label = QLabel()
         top = QHBoxLayout()
@@ -79,7 +85,7 @@ class CleanupTab(QWidget):
         top.addWidget(self.total_label, 1)
 
         self.table = QTableWidget(0, 3)
-        self.table.setHorizontalHeaderLabels(["Fund", "Ergebnis", "Platz"])
+        self.table.setHorizontalHeaderLabels([_("Fund"), _("Ergebnis"), _("Platz")])
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
@@ -90,11 +96,11 @@ class CleanupTab(QWidget):
         self.table.itemSelectionChanged.connect(self._selected)
 
         self.details = QTextBrowser()
-        self.details.setHtml("<p style='color:gray'>Klicke auf „Jetzt prüfen“.</p>")
-        self.clean_button = QPushButton(QIcon.fromTheme("edit-clear-all", QIcon.fromTheme("edit-delete")), "Aufräumen …")
+        self.details.setHtml("<p style='color:gray'>" + escape(_("Klicke auf „Jetzt prüfen“.")) + "</p>")
+        self.clean_button = QPushButton(QIcon.fromTheme("edit-clear-all", QIcon.fromTheme("edit-delete")), _("Aufräumen …"))
         self.clean_button.setEnabled(False)
         self.clean_button.clicked.connect(self._clean_selected)
-        self.copy_button = QPushButton(QIcon.fromTheme("edit-copy"), "Befehl kopieren")
+        self.copy_button = QPushButton(QIcon.fromTheme("edit-copy"), _("Befehl kopieren"))
         self.copy_button.setEnabled(False)
         self.copy_button.clicked.connect(self._copy_command)
 
@@ -145,7 +151,7 @@ class CleanupTab(QWidget):
         self.main._set_busy(False)
         self.table.setRowCount(len(items))
         for row, item in enumerate(items):
-            if item.summary in ("nicht prüfbar", "Fehler"):
+            if item.summary in (_("nicht prüfbar"), _("Fehler")):
                 color = GREY
             else:
                 color = ORANGE if item.found else GREEN
@@ -159,9 +165,9 @@ class CleanupTab(QWidget):
                 self.table.setItem(row, col, cell)
         total = sum(i.size for i in items)
         self.total_label.setText(
-            f"Möglicher Platzgewinn: <b>{util.format_size(total)}</b>" if total else "Nichts Größeres zu holen."
+            _("Möglicher Platzgewinn: <b>{size}</b>").format(size=util.format_size(total)) if total else _("Nichts Größeres zu holen.")
         )
-        self.main._status("Aufräum-Prüfung abgeschlossen.")
+        self.main._status(_("Aufräum-Prüfung abgeschlossen."))
         if items:
             self.table.selectRow(0)
 
@@ -185,17 +191,17 @@ class CleanupTab(QWidget):
             return
         text = terminal.describe(item.commands) if item.commands else item.manual_command
         QGuiApplication.clipboard().setText(text)
-        self.main._status(f"In die Zwischenablage kopiert: {text}")
+        self.main._status(_("In die Zwischenablage kopiert: {text}").format(text=text))
 
     def _confirm(self, item: CleanupItem, what: str) -> bool:
-        text = f"{item.title} aufräumen?\n\n{what}"
+        text = _("{title} aufräumen?").format(title=item.title) + f"\n\n{what}"
         if item.warning:
             text += f"\n\n{item.warning}"
-        box = QMessageBox(QMessageBox.Icon.Question, "Aufräumen", text, parent=self)
+        box = QMessageBox(QMessageBox.Icon.Question, _("Aufräumen"), text, parent=self)
         box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         box.setDefaultButton(QMessageBox.StandardButton.No)
-        box.button(QMessageBox.StandardButton.Yes).setText("Aufräumen")
-        box.button(QMessageBox.StandardButton.No).setText("Abbrechen")
+        box.button(QMessageBox.StandardButton.Yes).setText(_("Aufräumen"))
+        box.button(QMessageBox.StandardButton.No).setText(_("Abbrechen"))
         return box.exec() == QMessageBox.StandardButton.Yes
 
     def _clean_selected(self) -> None:
@@ -203,19 +209,19 @@ class CleanupTab(QWidget):
         if item is None:
             return
         if item.action is Action.TERMINAL:
-            if not self._confirm(item, f"Es öffnet sich ein Terminalfenster mit:\n\n    {terminal.describe(item.commands)}"):
+            if not self._confirm(item, _("Es öffnet sich ein Terminalfenster mit:") + f"\n\n    {terminal.describe(item.commands)}"):
                 return
             if terminal.run_in_terminal(item.commands):
-                self.main._status("Terminal geöffnet. Danach auf „Jetzt prüfen“ klicken, um das Ergebnis zu sehen.")
+                self.main._status(_("Terminal geöffnet. Danach auf „Jetzt prüfen“ klicken, um das Ergebnis zu sehen."))
             else:
                 QGuiApplication.clipboard().setText(terminal.describe(item.commands))
                 QMessageBox.information(
-                    self, "Kein Terminal gefunden",
-                    "Es wurde kein Terminalprogramm gefunden. Der Befehl liegt in der Zwischenablage.",
+                    self, _("Kein Terminal gefunden"),
+                    _("Es wurde kein Terminalprogramm gefunden. Der Befehl liegt in der Zwischenablage."),
                 )
         elif item.action is Action.REMOVE_ENTRIES:
             names = "\n".join(f"  • {e.name} ({e.path.name})" for e in item.entries[:20])
-            if not self._confirm(item, f"Diese Einträge werden aus deinem Benutzerordner entfernt:\n\n{names}"):
+            if not self._confirm(item, _("Diese Einträge werden aus deinem Benutzerordner entfernt:") + f"\n\n{names}"):
                 return
             failed = []
             for entry in item.entries:
@@ -225,5 +231,5 @@ class CleanupTab(QWidget):
                     failed.append(f"{entry.path}: {exc}")
             self.main._rematch()
             if failed:
-                QMessageBox.warning(self, "Nicht alles entfernt", "\n".join(failed))
+                QMessageBox.warning(self, _("Nicht alles entfernt"), "\n".join(failed))
             self.start_check()
