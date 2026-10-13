@@ -186,13 +186,25 @@ def _describe_self(program: Program) -> None:
     """Der Software-Kompass findet sich selbst – das soll er auch verständlich sagen."""
     program.display_name = APP_NAME
     program.version = __version__
-    program.description = "Dieses Programm. Wurde mit install.sh in deinen Benutzerordner installiert."
+    program.description = (
+        "Dieses Programm. Wurde mit install.sh in deinen Benutzerordner installiert. "
+        "Aktualisieren: im heruntergeladenen Ordner „git pull“ und danach „./install.sh“."
+    )
     program.origin = f"{program.install_path} (Startbefehl, angelegt von install.sh)"
     # Nur ausgeschriebene Pfade, keine Shell-Variablen: CachyOS nutzt standardmäßig
     # die fish-Shell, die z. B. „${XDG_DATA_HOME:-…}“ nicht versteht.
     data_home = Path(os.environ.get("XDG_DATA_HOME") or HOME / ".local" / "share")
     paths = [data_home / APP_ID, HOME / ".local" / "bin" / APP_ID, data_home / "applications" / f"{APP_ID}.desktop"]
     program.uninstall_override = "rm -rf " + " ".join(shlex.quote(str(p)) for p in paths)
+    # Sonst zählt nur der kleine Startbefehl – der Programmordner gehört dazu.
+    program.size_bytes = sum(util.folder_size(p) if p.is_dir() else _size_or_zero(p) for p in paths)
+
+
+def _size_or_zero(path: Path) -> int:
+    try:
+        return path.stat().st_size
+    except OSError:
+        return 0
 
 
 _VERSION_RE = re.compile(r"^v?\d+(\.\d+)+([-+.~]\w+)*$")

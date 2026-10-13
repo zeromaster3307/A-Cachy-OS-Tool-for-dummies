@@ -103,3 +103,19 @@ def test_uninstall_commands_work_in_fish():
     commands += [Program("tool", "1", s, install_path="/home/u/My Apps/Tool 1.AppImage").uninstall_command() for s in Source]
     for cmd in commands:
         assert subprocess.run(["fish", "-n", "-c", cmd]).returncode == 0, cmd
+
+
+def test_self_size_counts_program_folder(tmp_path, monkeypatch):
+    """Die eigene Größe umfasst den Programmordner, nicht nur den kleinen Startbefehl."""
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "share"))
+    monkeypatch.setattr(files, "HOME", tmp_path)
+    program_dir = tmp_path / "share" / "cachy-kompass"
+    program_dir.mkdir(parents=True)
+    (program_dir / "code.py").write_text("x" * 5000)
+    launcher = tmp_path / ".local" / "bin" / "cachy-kompass"
+    launcher.parent.mkdir(parents=True)
+    launcher.write_text("#!/bin/sh\n")
+
+    me = Program("cachy-kompass", "?", Source.MANUAL, install_path=str(launcher))
+    files._describe_self(me)
+    assert me.size_bytes == 5000 + len("#!/bin/sh\n")

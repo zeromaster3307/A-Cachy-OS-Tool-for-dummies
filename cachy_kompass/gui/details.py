@@ -210,10 +210,12 @@ Repo und als Flatpak.</li>
 <li>Standardmäßig werden nur Programme gezeigt, die <b>bewusst installiert</b>
 wurden. Bibliotheken und Abhängigkeiten blendest du mit dem Häkchen
 „Abhängigkeiten zeigen“ ein.</li>
-<li>Der Software-Kompass <b>verändert nichts am System</b>. Er legt höchstens
-Startmenü-Einträge (und deren Symbole) in deinem Benutzerordner an
+<li>Der Software-Kompass <b>bekommt nie selbst Administratorrechte</b>. Selbst legt er
+nur Startmenü-Einträge (und deren Symbole) in deinem Benutzerordner an
 (<code>~/.local/share/applications</code>). Löschen kann er nur Einträge aus deinem
-Benutzerordner – nach Rückfrage, Systemeinträge nie.</li>
+Benutzerordner – nach Rückfrage, Systemeinträge nie. Alles andere (Aufräumen,
+Updates, Nachinstallieren) läuft nur auf deinen Klick sichtbar in einem
+Terminalfenster, in dem du selbst dein Passwort eingibst.</li>
 <li>Im Reiter <b>„Aufräumen“</b> findest du verwaiste Pakete, alte Paketversionen
 und andere Platzfresser – aufgeräumt wird nur nach Rückfrage, sichtbar im Terminal.</li>
 <li><b>„Alles aktualisieren …“</b> startet das Systemupdate (Repo und AUR),

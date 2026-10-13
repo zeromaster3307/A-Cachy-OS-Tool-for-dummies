@@ -4,6 +4,17 @@ Hier steht, was sich von Version zu Version geändert hat. Die installierte
 Version siehst du im Fenstertitel, im Reiter „Hilfe“ oder mit
 `cachy-kompass --version`.
 
+## 0.5.3
+
+- **Behoben:** Der Software-Kompass zeigte bei sich selbst nur die Größe des
+  kleinen Startbefehls (etwa 190 Bytes). Jetzt zählt der ganze Programmordner
+  mit. Die Details nennen außerdem den Weg zum Aktualisieren
+  (`git pull` und `./install.sh`).
+- **README und Hilfe:** Der Hinweis „verändert nichts am System“ war seit
+  Aufräumen, „Alles aktualisieren“ und dem Nachinstallieren von
+  Paketverwaltungen veraltet. Er beschreibt jetzt genau, was der
+  Software-Kompass selbst tut und was nur auf Klick im Terminal läuft.
+
 ## 0.5.2
 
 - **Startbefehl überall sichtbar:** Die Details zeigen, wie man ein Programm im

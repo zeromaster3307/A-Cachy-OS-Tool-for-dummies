@@ -15,10 +15,14 @@ Der Cachy Software-Kompass ist ein Programm mit grafischer Oberfläche für
 ![Hauptfenster mit Programmliste und Detailansicht](docs/screenshot-programme.png)
 <sub>(Screenshot mit Beispieldaten)</sub>
 
-> **Sicher:** Der Software-Kompass schaut nur nach. Er installiert, aktualisiert
-> und löscht **keine** Programme. Das Einzige, was er anlegen kann, sind
-> Startmenü-Einträge in deinem eigenen Benutzerordner, und nur genau diese kann
-> er auch wieder entfernen.
+> **Sicher:** Der Software-Kompass bekommt nie selbst Administratorrechte.
+> Einlesen und Prüfen ändern nichts. Selbst ändert er nur Startmenü-Einträge in
+> deinem eigenen Benutzerordner. Alles andere – Aufräumen, „Alles aktualisieren“,
+> eine Paketverwaltung nachinstallieren – startet er nur auf deinen Klick und nach
+> Rückfrage, sichtbar in einem Terminalfenster, in dem du selbst dein Passwort
+> eingibst und pacman bzw. flatpak noch einmal nachfragen. Programme deinstalliert
+> er nie, er zeigt dir nur den passenden Befehl. Genaueres steht unter
+> [Was ändert das Programm an meinem System?](#was-ändert-das-programm-an-meinem-system)
 
 ---
 
